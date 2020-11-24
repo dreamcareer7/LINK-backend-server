@@ -11,12 +11,15 @@ const Schema = mongoose.Schema;
 /**
  * Schema Definition
  */
-const organizationSchema = new Schema({
-    subscriptionPrice: {
-        monthly: 19.0,
-        yearly: 160.0,
+const organizationSchema = new Schema(
+    {
+        subscriptionPrice: {
+            monthly: 19.0,
+            yearly: 160.0,
+        },
     },
-});
+    { timestamps: true },
+);
 
 /**
  * Export Schema
