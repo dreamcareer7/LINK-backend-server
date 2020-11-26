@@ -32,12 +32,6 @@ const clientSchema = new Schema(
             interval: { type: Schema.Types.String, enum: ['DAILY', 'WEEKLY', 'MONTHLY', 'CUSTOM'] },
             customDate: { type: Schema.Types.Date, default: null },
         },
-        support: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'support',
-            },
-        ],
         tags: [
             {
                 type: mongoose.Schema.Types.ObjectId,
@@ -48,12 +42,6 @@ const clientSchema = new Schema(
         isSubscriptionPushed: { type: Schema.Types.Boolean, default: true },
         isSubscriptionCanclled: { type: Schema.Types.Boolean, default: false },
         isSubscribed: { type: Schema.Types.Boolean, default: false },
-        paymentRecord: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'payment',
-            },
-        ],
         isFreeTrialUsed: { type: Schema.Types.Boolean, default: false },
         selectedPlan: {
             currentPlan: { type: Schema.Types.String, enum: ['FREE_TRIAL', 'MONTHLY', 'YEARLY'] },

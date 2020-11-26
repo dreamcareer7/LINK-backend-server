@@ -23,6 +23,10 @@ const paymentSchema = new Schema(
         plan: { type: Schema.Types.String, enum: ['FREE_TRIAL', 'MONTHLY', 'YEARLY'] },
         planStartDate: Schema.Types.Date,
         planEndDate: Schema.Types.Date,
+        client: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'client',
+        },
     },
     { timestamps: true },
 );

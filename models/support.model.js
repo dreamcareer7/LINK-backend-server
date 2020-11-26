@@ -18,6 +18,10 @@ const supportSchema = new Schema(
         attachment: Schema.Types.String,
         isViewed: { type: Schema.Types.Boolean, default: false },
         isResloved: { type: Schema.Types.Boolean, default: false },
+        client: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'client',
+        },
     },
     { timestamps: true },
 );
