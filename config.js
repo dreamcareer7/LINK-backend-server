@@ -8,4 +8,8 @@ module.exports = {
         alertLogLevel: process.env.ALERT_LOG_LEVEL || 'all',
         mongoDBConnectionUrl: process.env.MONGODB_URL || 'mongodb://127.0.0.1:27017/Link',
     },
+    stripe: {
+        publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+        secretKey: process.env.STRIPE_SECRET_KEY,
+    },
 };

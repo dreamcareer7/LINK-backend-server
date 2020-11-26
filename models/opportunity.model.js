@@ -21,12 +21,12 @@ const opportunitySchema = new Schema(
         profile: Schema.Types.String,
         stage: {
             type: Schema.Types.String,
-            enum: ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED'],
+            enum: ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED', 'LOST'],
         },
         dealSize: Schema.Types.Number,
-        potential: { type: Schema.Types.String, enum: ['LIKELY_DEALS', 'VERY_LIKELY_DEALS', 'NOT_LIKELY_DEALS'] },
+        potential: { type: Schema.Types.String, enum: ['LIKELY', 'VERY_LIKELY', 'NOT_LIKELY'] },
         followUp: Schema.Types.Date,
-        note: [{ text: Schema.Types.String, creationTime: Schema.Types.Date, updationTime: Schema.Types.Date }],
+        notes: [{ text: Schema.Types.String, creationTime: Schema.Types.Date, updationTime: Schema.Types.Date }],
     },
     { timestamps: true },
 );

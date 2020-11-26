@@ -17,6 +17,23 @@ const organizationSchema = new Schema(
             monthly: 19.0,
             yearly: 160.0,
         },
+        errorMessages: [{ title: '', text: '' }],
+        industries: {
+            type: Schema.Types.String,
+            enum: [
+                'Automotive',
+                'Civil Engineering',
+                'Computer Software',
+                'Financial Services',
+                'Architecture & Planing',
+                'Government Administration',
+                'Hospitality',
+                'Human Resources',
+                'Information Technology & Services',
+                'Marketing & Advertising',
+            ],
+        },
+        gender: { type: Schema.Types.String, enum: ['MALE', 'FEMALE', 'OTHER'] },
     },
     { timestamps: true },
 );

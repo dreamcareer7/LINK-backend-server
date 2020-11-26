@@ -20,6 +20,7 @@ const adminSchema = new Schema(
         password: Schema.Types.String,
         profileUrl: Schema.Types.String,
         isDeleted: { type: Schema.Types.Boolean, default: false },
+        integrations: { strip: { publishableKey: Schema.Types.String, secretKey: Schema.Types.String }, zendesk: {} },
     },
     { timestamps: true },
 );

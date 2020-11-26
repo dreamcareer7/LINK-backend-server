@@ -12,7 +12,7 @@ const Schema = mongoose.Schema;
  * Schema Definition
  */
 
-const customerSchema = new Schema(
+const clientSchema = new Schema(
     {
         name: Schema.Types.String,
         email: Schema.Types.String,
@@ -32,20 +32,29 @@ const customerSchema = new Schema(
             interval: { type: Schema.Types.String, enum: ['DAILY', 'WEEKLY', 'MONTHLY', 'CUSTOM'] },
             customDate: { type: Schema.Types.Date, default: null },
         },
+        support: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'support',
+            },
+        ],
+        tags: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'tag',
+            },
+        ],
         isDeleted: { type: Schema.Types.Boolean, default: false },
         isSubscriptionPushed: { type: Schema.Types.Boolean, default: true },
+        isSubscriptionCanclled: { type: Schema.Types.Boolean, default: false },
         isSubscribed: { type: Schema.Types.Boolean, default: false },
         paymentRecord: [
             {
-                paymentAmount: { type: Schema.Types.Number },
-                paymentDate: Schema.Types.Date,
-                paymentStatus: {
-                    type: Schema.Types.String,
-                    enum: ['PAID', 'PAYMENT_REQUESTED', 'PENDING'],
-                    default: 'PENDING',
-                },
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'payment',
             },
         ],
+        isFreeTrialUsed: { type: Schema.Types.Boolean, default: false },
         selectedPlan: {
             currentPlan: { type: Schema.Types.String, enum: ['FREE_TRIAL', 'MONTHLY', 'YEARLY'] },
             planStartDate: Schema.Types.Date,
@@ -58,4 +67,4 @@ const customerSchema = new Schema(
 /**
  * Export Schema
  */
-module.exports = mongoose.model('customer', customerSchema);
+module.exports = mongoose.model('client', clientSchema);
