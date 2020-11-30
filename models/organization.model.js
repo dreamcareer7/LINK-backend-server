@@ -13,10 +13,10 @@ const Schema = mongoose.Schema;
  */
 const organizationSchema = new Schema(
     {
-        subscriptionPrice: {
-            monthly: 19.0,
-            yearly: 160.0,
-        },
+        // subscriptionPrice: {
+        //     monthly: 19.0,
+        //     yearly: 160.0,
+        // },
         errorMessages: [{ title: '', text: '' }],
         industries: {
             type: Schema.Types.String,
