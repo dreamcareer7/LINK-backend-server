@@ -1,11 +1,16 @@
 module.exports = {
     jwtSecret: process.env.JWT_SECRET || 'SimpleJWT',
+    expireTime: process.env.EXPIRE_TIME || '2',
     BaseUrl: process.env.BASE_URL || 'http://localhost:3500/',
     environment: process.env.ENVIRONMENT || 'local',
     mailer: {
         fromAddress: process.env.FROM_EMAIL_ADDRESS || 'pratik.rajkotiya@kevit.io',
         sendgridApiKey: process.env.SENDGRID_API_KEY,
         send: process.env.SEND_MAIL || true,
+    },
+    organization: {
+        adminEmail: process.env.ADMIN_EMAIL || 'pratik.rajkotiya@kevit.io',
+        adminPassword: process.env.ADMIN_PASSWORD || '12345',
     },
     server: {
         port: process.env.PORT || 3500,

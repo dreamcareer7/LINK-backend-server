@@ -37,8 +37,16 @@ app.use(cookieParser());
  * Import and Register Routes
  */
 let index = require('./routes/index');
+let admin = require('./routes/admin.route');
 
 app.use('/', index);
+app.use('/admin', admin);
+
+/**
+ * Create Admin
+ */
+let ServerInitializer = require('./helper/serverInitialization');
+ServerInitializer.createAdmin();
 
 /**
  * Catch 404 routes

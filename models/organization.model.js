@@ -34,6 +34,7 @@ const organizationSchema = new Schema(
             ],
         },
         gender: { type: Schema.Types.String, enum: ['MALE', 'FEMALE', 'OTHER'] },
+        integrations: { strip: { publishableKey: Schema.Types.String, secretKey: Schema.Types.String }, zendesk: {} },
     },
     { timestamps: true },
 );
