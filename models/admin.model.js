@@ -11,6 +11,8 @@ const { schema } = require('./organization.model');
 const Schema = mongoose.Schema;
 const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
+const { connectLogger } = require('log4js');
+const logger = require('./../services/logger');
 /**
  * Schema Definition
  */

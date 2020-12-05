@@ -13,7 +13,7 @@ const Logger = require('./../services/logger');
 let createAdmin = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            let existingAdmin = await Admin.findOne({ email: Config.organization.adminEmail, isDeleted: false });
+            let existingAdmin = await Admin.findOne({ email: Config.organization.adminEmail });
             if (existingAdmin) {
                 Logger.log.trace('Admin already exists');
                 return resolve();

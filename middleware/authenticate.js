@@ -13,6 +13,7 @@ let adminAuthMiddleWare = async (req, res, next) => {
             admin.password = undefined;
             if (admin) {
                 req.admin = admin;
+                req.admin.token = token;
                 next();
             } else {
                 res.status(401).send('Auth-Token is not valid');
