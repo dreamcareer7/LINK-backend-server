@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const { compile } = require('morgan');
 const { route } = require('.');
 const Admin = mongoose.model('admin');
+const passwordHash = require('password-hash');
 const config = require('../config');
 const authMiddleWare = require('../middleware/authenticate');
 
@@ -238,6 +239,12 @@ logout admin
 router.post('/logout', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
         let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false });
+        if (!admin) {
+            return res.status(400).send({
+                status: 'ADMIN_NOT_FOUND',
+                message: 'admin is not found.',
+            });
+        }
         for (let i = 0; i < admin.jwtToken.length; i++) {
             if (admin.jwtToken[i].token === req.admin.token) {
                 admin.jwtToken.splice(i, 1);
@@ -264,6 +271,12 @@ router.post('/logout', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
 router.post('/logout-all-devices', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
         let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false });
+        if (!admin) {
+            return res.status(400).send({
+                status: 'ADMIN_NOT_FOUND',
+                message: 'admin is not found.',
+            });
+        }
         admin.jwtToken = [];
         admin.save();
         res.status(200).json({
@@ -272,6 +285,41 @@ router.post('/logout-all-devices', authMiddleWare.adminAuthMiddleWare, async (re
         });
     } catch (e) {
         Logger.log.error('Error in logout Admin from all devices API call', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+/*
+update admin password
+*/
+
+router.post('/update-password', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+    try {
+        let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false });
+        if (!admin) {
+            return res.status(400).send({
+                status: 'ADMIN_NOT_FOUND',
+                message: 'admin is not found.',
+            });
+        }
+        if (passwordHash.verify(req.body.oldPassword, admin.password)) {
+            admin.password = req.body.newPassword;
+            await admin.save();
+            return res.status(200).send({
+                status: 'SUCESS',
+                message: 'Password is sucessfully updated.',
+            });
+        } else {
+            return res.status(400).send({
+                status: 'ERROR',
+                message: 'Old password is not matched.',
+            });
+        }
+    } catch (e) {
+        Logger.log.error('Error in update Admin password API call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,
