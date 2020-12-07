@@ -7,11 +7,9 @@
  */
 const mongoose = require('mongoose');
 const config = require('../config');
-
 const Schema = mongoose.Schema;
 const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
-
 const logger = require('./../services/logger');
 /**
  * Schema Definition

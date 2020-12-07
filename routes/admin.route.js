@@ -1,9 +1,6 @@
 const express = require('express');
-const { connectLogger } = require('log4js');
 const router = express.Router();
 const mongoose = require('mongoose');
-const { compile } = require('morgan');
-const { route } = require('.');
 const Admin = mongoose.model('admin');
 const passwordHash = require('password-hash');
 const config = require('../config');
