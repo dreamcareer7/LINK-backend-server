@@ -38,9 +38,11 @@ app.use(cookieParser());
  */
 let index = require('./routes/index');
 let admin = require('./routes/admin.route');
+let quote = require('./routes/quote.route');
 
 app.use('/', index);
 app.use('/admin', admin);
+app.use('/quote', quote);
 
 /**
  * Create Admin
