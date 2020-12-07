@@ -2,10 +2,11 @@ module.exports = {
     jwtSecret: process.env.JWT_SECRET || 'SimpleJWT',
     expireTime: process.env.EXPIRE_TIME || '2', //in hrs
     backEndBaseUrl: process.env.BACKEND_BASE_URL || 'http://localhost:3500/',
-    forgotPasswordExpTime: process.env.FORGOT_PASSWORD_EXPIRE_TIME || '10', //in mins
+    forgotOrSetPasswordExpTime: process.env.FORGOT_PASSWORD_EXPIRE_TIME || '10', //in mins
     adminUrls: {
         adminFrontEndBaseUrl: process.env.ADMIN_FRONTEND_BASE_URL || 'http://localhost:4200/',
         forgotPasswordPage: 'forgot/',
+        setPasswordPage: 'setPassword/',
     },
     clientUrls: {
         clientFrontEndBaseUrl: process.env.CLIENT_FRONTEND_BASE_URL || 'http://localhost:4700/',

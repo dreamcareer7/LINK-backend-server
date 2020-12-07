@@ -39,8 +39,8 @@ const clientSchema = new Schema(
             },
         ],
         isDeleted: { type: Schema.Types.Boolean, default: false },
-        isSubscriptionPushed: { type: Schema.Types.Boolean, default: true },
-        isSubscriptionCanclled: { type: Schema.Types.Boolean, default: false },
+        isSubscriptionPaused: { type: Schema.Types.Boolean, default: true },
+        isSubscriptionCancelled: { type: Schema.Types.Boolean, default: false },
         isSubscribed: { type: Schema.Types.Boolean, default: false },
         isFreeTrialUsed: { type: Schema.Types.Boolean, default: false },
         selectedPlan: {
