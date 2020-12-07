@@ -100,7 +100,7 @@ router.post('/login', async (req, res) => {
 router.post('/update/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
         if (req.admin._id != req.params.id) {
-            return res.status(200).send({
+            return res.status(400).send({
                 status: 'ERROR',
                 message: `Can not update Admin by other Admins`,
             });
@@ -139,7 +139,7 @@ router.post('/update/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) 
 router.delete('/delete/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
         if (req.admin._id == req.params.id) {
-            return res.status(200).send({
+            return res.status(400).send({
                 status: 'ERROR',
                 message: `Can not delete Admin by it's Self`,
             });
@@ -176,7 +176,7 @@ active admin
 router.put('/active/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
         if (req.admin._id == req.params.id) {
-            return res.status(200).send({
+            return res.status(400).send({
                 status: 'ERROR',
                 message: `Can Active Admin by it's Self`,
             });
@@ -296,7 +296,7 @@ router.post('/logout-all-devices', authMiddleWare.adminAuthMiddleWare, async (re
 update admin password
 */
 
-router.post('/update-password', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.post('/change-password', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
         let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false });
         if (!admin) {
