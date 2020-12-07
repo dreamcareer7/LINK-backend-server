@@ -31,6 +31,10 @@ const adminSchema = new Schema(
                 token: Schema.Types.String,
             },
         ],
+        forgotPassword: {
+            expiredTime: Schema.Types.Number,
+            token: Schema.Types.String,
+        },
     },
     { timestamps: true },
 );

@@ -24,7 +24,11 @@ const sendMail = ({ toAddress, subject, text, html, mailFor }) => {
             toAddressStr += toAddr + ', ';
         });
         toAddressStr.substr(0, toAddressStr.lastIndexOf(','));
-
+        switch (mailFor) {
+            case 'forgot-admin-password':
+                html = adminForgotPassword({ name: text.name, setPasswordLink: text.setPasswordLink });
+                break;
+        }
         const mailBody = {
             from: config.mailer.fromAddress,
             to: toAddressStr,
@@ -32,7 +36,7 @@ const sendMail = ({ toAddress, subject, text, html, mailFor }) => {
             html: html,
         };
 
-        if (!mailBody.html) mailBody.html = text;
+        if (!mailBody.html) mailBody.text = text;
 
         if (config.mailer.send === 'true') {
             transporter.sendMail(mailBody, (err, info) => {

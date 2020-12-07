@@ -8,6 +8,8 @@ const Admin = mongoose.model('admin');
 const passwordHash = require('password-hash');
 const config = require('../config');
 const authMiddleWare = require('../middleware/authenticate');
+const mailHelper = require('../helper/mailer.helper');
+const jwt = require('jsonwebtoken');
 
 const Logger = require('../services/logger');
 
@@ -320,6 +322,109 @@ router.post('/change-password', authMiddleWare.adminAuthMiddleWare, async (req, 
         }
     } catch (e) {
         Logger.log.error('Error in update Admin password API call', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+/*
+admin forgot password
+*/
+router.post('/forgot-password', async (req, res) => {
+    try {
+        let jwtSecret = config.jwtSecret;
+        let access = 'auth';
+
+        if (!req.body.email) {
+            return res.status(400).send({
+                status: 'EMIALID_REQUIRED',
+                message: 'Email Id is required.',
+            });
+        }
+        let admin = await Admin.findOne({ email: req.body.email, isDeleted: false });
+        if (!admin) {
+            return res.status(400).send({
+                status: 'NOT_FOUND',
+                message: 'Email Id is not found',
+            });
+        }
+        let token = jwt.sign({ _id: admin._id.toHexString(), access }, jwtSecret).toString();
+        let link = config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.forgotPasswordPage + `?token=${token}`;
+        let d = new Date();
+        admin.forgotPassword.expiredTime = parseInt(config.forgotPasswordExpTime) * 60000 + d.getTime();
+        admin.forgotPassword.token = token;
+        await admin.save();
+        let mailObj = { toAddress: [admin.email], subject: 'Reset Password Link', text: link };
+        mailHelper.sendMail(mailObj);
+        res.status(200).send({
+            status: 'SUCESS',
+            message: `Reset password link is sent in your registerd Email and This link is expired in ${config.forgotPasswordExpTime} Minutes.`,
+        });
+    } catch (e) {
+        Logger.log.error('Error in forgot Admin password API call', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+router.put('/reset-password', async (req, res) => {
+    try {
+        let d = new Date();
+        if (!req.body.password || !req.body.confirmPassword || !req.query.token) {
+            return res.status(400).send({
+                status: 'REQUIRED',
+                message: 'Password Confirm Password and Toke is required.',
+            });
+        }
+        if (req.body.password !== req.body.confirmPassword) {
+            return res.status(400).send({
+                status: 'NOT_MATCHED',
+                message: 'Password and Confirm Password is does not matched !',
+            });
+        }
+        decoded = jwt.verify(req.query.token, config.jwtSecret);
+        let admin = await Admin.findOne({ _id: decoded._id, isDeleted: false });
+        if (admin && decoded) {
+            if (admin.forgotPassword.token === req.query.token) {
+                if (admin.forgotPassword.expiredTime > d.getTime()) {
+                    admin.password = req.body.password;
+                    admin.forgotPassword.token = null;
+                    admin.forgotPassword.expiredTime = null;
+                    await admin.save();
+                    return res.status(200).send({
+                        status: 'SUCESS',
+                        message: 'Your Password is sucessfully reset.',
+                    });
+                } else {
+                    admin.forgotPassword.token = null;
+                    admin.forgotPassword.expiredTime = null;
+                    await admin.save();
+                    return res.status(400).send({
+                        status: 'EXPIRED_LINK',
+                        message: 'Reset Password link is Expired !',
+                    });
+                }
+            } else {
+                admin.forgotPassword.token = null;
+                admin.forgotPassword.expiredTime = null;
+                await admin.save();
+                return res.status(400).send({
+                    status: 'TOKEN_NOT_FOUND',
+                    message: 'Token not found in DB !',
+                });
+            }
+        } else {
+            return res.status(200).send({
+                status: 'ERROR',
+                message: 'Error in reset Admin password API call',
+            });
+        }
+    } catch (e) {
+        Logger.log.error('Error in reset Admin password API call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,
