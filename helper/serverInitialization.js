@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Admin = mongoose.model('admin');
 const jwt = require('jsonwebtoken');
 const mailHelper = require('./mailer.helper');
+const Organization = mongoose.model('organization');
 
 /**
  * config
@@ -42,6 +43,31 @@ let createAdmin = () => {
     });
 };
 
+let createOrganization = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let existingOrganization = await Organization.findOne({
+                organizationId: config.organization.organizationId,
+            });
+            if (existingOrganization) {
+                Logger.log.trace('Organization is already exists.');
+                return resolve();
+            }
+
+            let newOrganization = new Organization({
+                organizationId: config.organization.organizationId,
+            });
+
+            await newOrganization.save();
+            Logger.log.trace('New Organization is Created.');
+        } catch (e) {
+            Logger.log.error('Error creating Organization Admin', e.message || e);
+            return reject(e);
+        }
+    });
+};
+
 module.exports = {
     createAdmin,
+    createOrganization,
 };

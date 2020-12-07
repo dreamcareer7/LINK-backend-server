@@ -17,7 +17,8 @@ const organizationSchema = new Schema(
         //     monthly: 19.0,
         //     yearly: 160.0,
         // },
-        errorMessages: [{ title: '', text: '' }],
+        organizationId: Schema.Types.String,
+        errorMessages: [{ title: Schema.Types.String, text: Schema.Types.String }],
         industries: {
             type: Schema.Types.String,
             enum: [

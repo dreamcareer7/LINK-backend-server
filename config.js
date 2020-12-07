@@ -21,6 +21,7 @@ module.exports = {
     organization: {
         adminEmail: process.env.ADMIN_EMAIL || 'pratik.rajkotiya@kevit.io',
         adminPassword: process.env.ADMIN_PASSWORD || '12345',
+        organizationId: 'LINK_ORG',
     },
     server: {
         port: process.env.PORT || 3500,

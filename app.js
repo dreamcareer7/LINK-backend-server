@@ -33,22 +33,27 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+let authMiddleWare = require('./middleware/authenticate');
 /**
  * Import and Register Routes
  */
 let index = require('./routes/index');
 let admin = require('./routes/admin.route');
 let quote = require('./routes/quote.route');
+let errorMessage = require('./routes/error-messages.route');
 
 app.use('/', index);
 app.use('/admin', admin);
 app.use('/quote', quote);
+app.use('/error-message', authMiddleWare.adminAuthMiddleWare, errorMessage);
 
 /**
  * Create Admin
  */
 let ServerInitializer = require('./helper/serverInitialization');
+
 ServerInitializer.createAdmin();
+ServerInitializer.createOrganization();
 
 /**
  * Catch 404 routes
