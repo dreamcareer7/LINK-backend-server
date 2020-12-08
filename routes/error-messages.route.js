@@ -5,6 +5,11 @@ const mongoose = require('mongoose');
 const Organization = mongoose.model('organization');
 const Logger = require('../services/logger');
 
+/**
+ *
+ * add error message
+ */
+
 router.post('/add-message', async function(req, res) {
     try {
         if (!req.body.title || !req.body.text) {
@@ -30,6 +35,11 @@ router.post('/add-message', async function(req, res) {
         });
     }
 });
+
+/**
+ *
+ * update message by id
+ */
 
 router.put('/update-message/:id', async function(req, res) {
     try {
@@ -59,7 +69,12 @@ router.put('/update-message/:id', async function(req, res) {
         });
     }
 });
-router.get('/all-message', async function(req, res) {
+/**
+ *
+ * get all error message
+ */
+
+router.get('/get-messages', async function(req, res) {
     try {
         let org = await Organization.findOne({
             organizationId: config.organization.organizationId,
@@ -70,6 +85,40 @@ router.get('/all-message', async function(req, res) {
         });
     } catch (e) {
         Logger.log.error('Error in get all Message API call', e.message || e);
+        res.status(500).json({
+            status: 'Error',
+            message: e.message,
+        });
+    }
+});
+
+/**
+ * delete message by id
+ *
+ */
+
+router.delete('/delete-message/:id', async function(req, res) {
+    try {
+        if (!req.params.id) {
+            return res.status(400).json({
+                status: 'REQUIRE_FIELD_EMPTY',
+                message: 'delete message id must be in params !',
+            });
+        }
+
+        let organization = await Organization.findOneAndUpdate(
+            { organizationId: config.organization.organizationId },
+            {
+                $pull: { errorMessages: { _id: req.params.id } },
+            },
+        );
+
+        res.status(200).send({
+            status: 'SUCESS',
+            data: organization.errorMessages,
+        });
+    } catch (e) {
+        Logger.log.error('Error in delete Message API call', e.message || e);
         res.status(500).json({
             status: 'Error',
             message: e.message,
