@@ -13,6 +13,12 @@ const Logger = require('../services/logger');
  */
 router.get('/sign-up', async (req, res) => {
     try {
+        if (!req.query.code) {
+            return res.status(400).send({
+                status: 'CODE_NOT_FOUND',
+                message: 'Code is not Found',
+            });
+        }
         let token = await linkedInHelper.genLinkedInAccessToken(req.query.code);
         let user = await linkedInHelper.getLinkedInUserData(token);
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
