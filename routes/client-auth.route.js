@@ -36,10 +36,10 @@ router.get('/sign-up', async (req, res) => {
                 status: 'SUCESS',
             });
         }
-        (client.firstName = user.localizedFirstName),
-            (client.lastName = user.localizedLastName),
-            (client.linkedInID = user.id),
-            (client.profileUrl = user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier);
+        client.firstName = user.localizedFirstName;
+        client.lastName = user.localizedLastName;
+        client.linkedInID = user.id;
+        client.profileUrl = user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier;
         await client.save();
         if (!client.isSubscribed) {
             Logger.log.info('Client still not Subscribed.');
@@ -96,6 +96,59 @@ router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) 
         Logger.log.error('Error in get client API.', e.message || e);
         res.status(500).json({
             status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
+/*
+ update client data
+ */
+router.post('/update/:id', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+    try {
+        if (!req.params.id) {
+            return res.status(400).send({
+                status: 'ERROR',
+                message: `ClientId is require in params`,
+            });
+        }
+        let client = await Client.findOne({ _id: req.params.id, isDeleted: false });
+        if (!client) {
+            return res.status(400).send({
+                status: 'CLIENT_NOT_FOUND',
+                message: 'Client is not found.',
+            });
+        }
+
+        client.industry = req.body.industry;
+        client.companyName = req.body.companyName;
+        client.companySize = req.body.companySize;
+        client.companyLocation = req.body.companyLocation;
+        client['notificationType']['email'] = req.body.notificationType.email;
+        client['notificationType']['browser'] = req.body.notificationType.browser;
+        client['notificationPeriod']['interval'] = req.body.notificationPeriod.interval;
+        client['notificationPeriod']['customDate'] = req.body.notificationPeriod.customDate;
+        await client.save();
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: {
+                industry: client.industry,
+                companyName: client.companyName,
+                companySize: client.companySize,
+                companyLocation: client.companyLocation,
+                notificationType: {
+                    email: client.notificationType.email,
+                    browser: client.notificationType.browser,
+                },
+                notificationPeriod: {
+                    interval: client.notificationPeriod.interval,
+                    customDate: client.notificationPeriod.customDate,
+                },
+            },
+        });
+    } catch (e) {
+        Logger.log.error('Error in update Client API call', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
             message: e.message,
         });
     }

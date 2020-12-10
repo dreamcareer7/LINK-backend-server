@@ -21,7 +21,7 @@ const clientSchema = new Schema(
         email: Schema.Types.String,
         phone: Schema.Types.String,
         title: Schema.Types.String,
-        password: Schema.Types.String,
+        //password: Schema.Types.String,
         profileUrl: Schema.Types.String,
         industry: Schema.Types.String,
         companyName: Schema.Types.String,
