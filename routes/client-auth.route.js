@@ -63,7 +63,7 @@ router.get('/sign-up', async (req, res) => {
             });
         }
     } catch (e) {
-        Logger.log.error('Error in getCode API call.', e.message || e);
+        Logger.log.error('Error in SignUp API call.', e.message || e);
         res.status(500).json({
             status: e.status || 'ERROR',
             message: e.message,
