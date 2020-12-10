@@ -33,4 +33,9 @@ module.exports = {
         publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
         secretKey: process.env.STRIPE_SECRET_KEY,
     },
+    linkedIn: {
+        clientId: process.env.LINKEDIN_CLIENT_ID,
+        clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
+        redirectUri: process.env.BACKEND_BASE_URL + 'client-auth/sign-up',
+    },
 };

@@ -100,11 +100,39 @@ router.post('/login', async (req, res) => {
         });
     }
 });
+/**
+ * Get admin data
+ *
+ */
+
+router.get('/get-admin', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+    try {
+        let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false }).select(
+            'firstName lastName email phone profileUrl',
+        );
+
+        if (!admin) {
+            return res.status(400).send({
+                status: 'ADMIN_NOT_FOUND',
+                message: 'admin is not found.',
+            });
+        }
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: admin,
+        });
+    } catch (e) {
+        Logger.log.error('Error in get Admin API.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
 
 /*
  update admin data
  */
-
 router.post('/update/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
         if (req.admin._id != req.params.id) {
@@ -140,10 +168,10 @@ router.post('/update/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) 
         });
     }
 });
+
 /*
  inactive admin 
  */
-
 router.delete('/delete/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
         if (req.admin._id == req.params.id) {
