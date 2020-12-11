@@ -57,7 +57,9 @@ router.get('/sign-up', async (req, res) => {
             await client.save();
             console.log('Client Token ::', token);
             Logger.log.info('Login sucessfully to Client Deshbord.');
-            return res.redirect('https://www.linkedin.com/');
+            setTimeout(() => {
+                return res.redirect(`/client-auth/server?linkedInId=${client.linkedInID}`);
+            }, 3000);
         }
     } catch (e) {
         Logger.log.error('Error in SignUp API call.', e.message || e);
@@ -66,6 +68,12 @@ router.get('/sign-up', async (req, res) => {
             message: e.message,
         });
     }
+});
+
+router.get('/server', async (req, res) => {
+    setTimeout(() => {
+        return res.redirect('https://www.linkedin.com/');
+    }, 3000);
 });
 
 /**
