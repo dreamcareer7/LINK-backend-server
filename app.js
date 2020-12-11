@@ -32,6 +32,7 @@ app.use(Logger.morgan);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'upload')));
 
 let authMiddleWare = require('./middleware/authenticate');
 /**

@@ -40,6 +40,7 @@ router.get('/sign-up', async (req, res) => {
         client.lastName = user.localizedLastName;
         client.linkedInID = user.id;
         client.profileUrl = user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier;
+        client.isSubscribed = true;
         await client.save();
         if (!client.isSubscribed) {
             Logger.log.info('Client still not Subscribed.');
@@ -57,9 +58,12 @@ router.get('/sign-up', async (req, res) => {
             await client.save();
             console.log('Client Token ::', token);
             Logger.log.info('Login sucessfully to Client Deshbord.');
-            setTimeout(() => {
-                return res.redirect(`/client-auth/server?linkedInId=${client.linkedInID}`);
-            }, 3000);
+            // setTimeout(() => {
+            console.log('Calling the internal route at::', new Date());
+            // res.sendFile('linkedin-signin.html', {root: __dirname })
+
+            return res.redirect(`https://ec31b11c5d51.ngrok.io/linkedin-signin.html?linkedInId=${client.linkedInID}`);
+            // }, 3000);
         }
     } catch (e) {
         Logger.log.error('Error in SignUp API call.', e.message || e);
@@ -71,7 +75,9 @@ router.get('/sign-up', async (req, res) => {
 });
 
 router.get('/server', async (req, res) => {
+    console.log('In the internal route at::', new Date());
     setTimeout(() => {
+        console.log('Redirecting to LinkedIn at::', new Date());
         return res.redirect('https://www.linkedin.com/');
     }, 3000);
 });
