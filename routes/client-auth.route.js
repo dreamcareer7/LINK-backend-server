@@ -57,10 +57,7 @@ router.get('/sign-up', async (req, res) => {
             await client.save();
             console.log('Client Token ::', token);
             Logger.log.info('Login sucessfully to Client Deshbord.');
-            return res.status(200).send({
-                message: 'Welcome to Dashbord.',
-                status: 'SUCESS',
-            });
+            return res.redirect('https://www.linkedin.com/');
         }
     } catch (e) {
         Logger.log.error('Error in SignUp API call.', e.message || e);
@@ -85,7 +82,7 @@ router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) 
         if (!client) {
             return res.status(400).send({
                 status: 'CLIENT_NOT_FOUND',
-                message: 'clent is not found.',
+                message: 'client is not found.',
             });
         }
         return res.status(200).send({
@@ -147,6 +144,104 @@ router.post('/update/:id', authMiddleWare.clientAuthMiddleWare, async (req, res)
         });
     } catch (e) {
         Logger.log.error('Error in update Client API call', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+/**
+ * delete client
+ */
+
+router.delete('/delete/:id', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+    try {
+        if (!req.params.id) {
+            return res.status(400).send({
+                status: 'ERROR',
+                message: `ClientId is required in params.`,
+            });
+        } else {
+            let client = await Client.findOne({ _id: req.params.id, isDeleted: false });
+            if (!client) {
+                return res.status(400).send({
+                    status: 'CLIENT_NOT_FOUND',
+                    message: 'client is not found.',
+                });
+            }
+            client.isDeleted = true;
+            client.jwtToken = [];
+            await client.save();
+            return res.status(200).send({
+                status: 'SUCCESS',
+                data: {
+                    isDeleted: client.isDeleted,
+                },
+            });
+        }
+    } catch (e) {
+        Logger.log.error('Error in delete Client API call', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+/*
+logout Client
+*/
+
+router.post('/logout', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+    try {
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false });
+        if (!client) {
+            return res.status(400).send({
+                status: 'CLIENT_NOT_FOUND',
+                message: 'client is not found.',
+            });
+        }
+        for (let i = 0; i < client.jwtToken.length; i++) {
+            if (client.jwtToken[i].token === req.client.token) {
+                client.jwtToken.splice(i, 1);
+                break;
+            }
+        }
+        client.save();
+        res.status(200).json({
+            status: 'SUCESS',
+            message: 'Client is Sucessfully logout.',
+        });
+    } catch (e) {
+        Logger.log.error('Error in logout Client API call', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+/** 
+ logout from all devices
+*/
+router.post('/logout-all-devices', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+    try {
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false });
+        if (!client) {
+            return res.status(400).send({
+                status: 'CLIENT_NOT_FOUND',
+                message: 'Client is not found.',
+            });
+        }
+        client.jwtToken = [];
+        client.save();
+        res.status(200).json({
+            status: 'SUCESS',
+            message: 'Client is Sucessfully logout from all devices.',
+        });
+    } catch (e) {
+        Logger.log.error('Error in logout Client from all devices API call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,
