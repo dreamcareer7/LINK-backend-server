@@ -22,12 +22,19 @@ const clientSchema = new Schema(
         phone: Schema.Types.String,
         title: Schema.Types.String,
         //password: Schema.Types.String,
-        profileUrl: Schema.Types.String,
+        profilePicUrl: Schema.Types.String,
         industry: Schema.Types.String,
         companyName: Schema.Types.String,
         companySize: Schema.Types.String,
         linkedInID: Schema.Types.String,
+        publicIdentifier: Schema.Types.String,
         companyLocation: Schema.Types.String,
+        opportunitys: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'opportunity',
+            },
+        ],
         jwtToken: [
             {
                 expiredTime: Schema.Types.Number,

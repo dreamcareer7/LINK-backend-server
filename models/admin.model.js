@@ -21,7 +21,7 @@ const adminSchema = new Schema(
         email: Schema.Types.String,
         phone: Schema.Types.String,
         password: Schema.Types.String,
-        profileUrl: Schema.Types.String,
+        profilePicUrl: Schema.Types.String,
         isDeleted: { type: Schema.Types.Boolean, default: false },
         jwtToken: [
             {

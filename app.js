@@ -43,13 +43,14 @@ let admin = require('./routes/admin.route');
 let quote = require('./routes/quote.route');
 let errorMessage = require('./routes/error-messages.route');
 let clientAuth = require('./routes/client-auth.route');
+let opportunity = require('./routes/opportunity.route');
 
 app.use('/', index);
 app.use('/admin', admin);
 app.use('/quote', quote);
 app.use('/error-message', authMiddleWare.adminAuthMiddleWare, errorMessage);
 app.use('/client-auth', clientAuth);
-
+app.use('/opportunity', opportunity);
 /**
  * Create Admin
  */
