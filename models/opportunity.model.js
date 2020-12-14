@@ -16,7 +16,7 @@ const opportunitySchema = new Schema(
         firstName: Schema.Types.String,
         lastName: Schema.Types.String,
         title: Schema.Types.String,
-        companyName: Schema.Types.String,
+        companyName: [{ type: Schema.Types.String }],
         linkedInUrl: Schema.Types.String,
         email: Schema.Types.String,
         profilePicUrl: Schema.Types.String,
