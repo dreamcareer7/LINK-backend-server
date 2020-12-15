@@ -87,6 +87,7 @@ router.put('/update-quote/:id', authMiddleWare.adminAuthMiddleWare, async (req, 
 
         quote.quote = req.body.quote;
         quote.quoteBy = req.body.quoteBy;
+        quote.isPublished = req.body.isPublished;
         let tags = await Tag.find({});
 
         for (let i = 0; i < req.body.tag.length; i++) {
