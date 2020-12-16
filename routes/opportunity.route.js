@@ -151,6 +151,32 @@ router.delete('/delete-opportunity/:id', async (req, res) => {
         });
     }
 });
+
+router.post('/sync-with-linkedIn/:id', async (req, res) => {
+    try {
+        let opportunity = await Opportunity.findOne({ _id: req.params.id });
+        if (!opportunity) {
+            return res.status(400).json({
+                status: 'ERROR',
+                message: 'opportunitys is not Found!',
+            });
+        }
+        opportunity = await opportunityHelper.getProfile(opportunity.publicIdentifier);
+
+        opportunity = await Opportunity.findOneAndUpdate({ _id: req.params.id }, opportunity, { new: true });
+        return res.status(200).json({
+            status: 'SUCESS',
+            data: opportunity,
+        });
+    } catch (e) {
+        Logger.log.error('Error in sync with linkedIn API call.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
 /**
  * Export Router
  */
