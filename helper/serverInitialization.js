@@ -3,6 +3,7 @@ const Admin = mongoose.model('admin');
 const jwt = require('jsonwebtoken');
 const mailHelper = require('./mailer.helper');
 const Organization = mongoose.model('organization');
+const org = require('../upload/organization.json');
 
 /**
  * config
@@ -50,12 +51,20 @@ let createOrganization = () => {
                 organizationId: config.organization.organizationId,
             });
             if (existingOrganization) {
-                Logger.log.trace('Organization is already exists.');
+                existingOrganization.errorMessages = org.errorMessages;
+                existingOrganization.industries = org.industries;
+                existingOrganization.gender = org.gender;
+
+                await existingOrganization.save();
+                Logger.log.trace('Organization is Updated.');
                 return resolve();
             }
 
             let newOrganization = new Organization({
                 organizationId: config.organization.organizationId,
+                errorMessages: org.errorMessages,
+                industries: org.industries,
+                gender: org.gender,
             });
 
             await newOrganization.save();
