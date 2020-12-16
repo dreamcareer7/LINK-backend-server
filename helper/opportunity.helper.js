@@ -37,7 +37,6 @@ const getProfile = async (publicIdentifier) => {
         for (let i = 0; i < response.data.included.length; i++) {
             if (response.data.included[i].hasOwnProperty('firstName')) {
                 p = i;
-                break;
             }
             if (response.data.included[i].hasOwnProperty('multiLocaleTitle')) {
                 companyArr.push(response.data.included[i]);
