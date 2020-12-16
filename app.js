@@ -45,6 +45,7 @@ let errorMessage = require('./routes/error-messages.route');
 let clientAuth = require('./routes/client-auth.route');
 let opportunity = require('./routes/opportunity.route');
 let opportunityNote = require('./routes/opportunity-note.route');
+let subscribers = require('./routes/subscribers.route');
 
 app.use('/', index);
 app.use('/admin', admin);
@@ -53,6 +54,7 @@ app.use('/error-message', authMiddleWare.adminAuthMiddleWare, errorMessage);
 app.use('/client-auth', clientAuth);
 app.use('/opportunity', opportunity);
 app.use('/opportunity-note', opportunityNote);
+app.use('/subscribers', subscribers);
 /**
  * Create Admin
  */

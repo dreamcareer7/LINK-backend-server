@@ -76,7 +76,7 @@ router.put('/update-quote/:id', authMiddleWare.adminAuthMiddleWare, async (req, 
             });
         }
         let quote = await Quote.findOne({ _id: req.params.id })
-            .populate('tag')
+            .populate('tags')
             .exec();
         if (!quote) {
             return res.status(400).json({
@@ -171,7 +171,7 @@ get all  quotes
 router.get('/all-quote', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
         let quote = await Quote.find({})
-            .populate('tag')
+            .populate('tags')
             .exec();
         if (!quote) {
             return res.status(400).json({

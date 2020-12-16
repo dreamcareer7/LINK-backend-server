@@ -56,7 +56,7 @@ const clientSchema = new Schema(
             },
         ],
         isDeleted: { type: Schema.Types.Boolean, default: false },
-        isSubscriptionPaused: { type: Schema.Types.Boolean, default: true },
+        isSubscriptionPaused: { type: Schema.Types.Boolean, default: false },
         isSubscriptionCancelled: { type: Schema.Types.Boolean, default: false },
         isSubscribed: { type: Schema.Types.Boolean, default: false },
         isFreeTrialUsed: { type: Schema.Types.Boolean, default: false },
@@ -65,6 +65,8 @@ const clientSchema = new Schema(
             planStartDate: Schema.Types.Date,
             planEndDate: Schema.Types.Date,
         },
+        cookie: Schema.Types.String,
+        ajaxToken: Schema.Types.String,
     },
     { timestamps: true },
 );

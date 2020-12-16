@@ -54,7 +54,7 @@ router.post('/sign-up', authMiddleWare.adminAuthMiddleWare, async (req, res) => 
     } catch (e) {
         Logger.log.error('Error in sign-up API call', e.message || e);
         res.status(500).json({
-            status: 'Error',
+            status: 'ERROR',
             message: error.message,
         });
     }
