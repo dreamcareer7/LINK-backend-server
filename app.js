@@ -54,8 +54,8 @@ app.use('/quote', quote);
 app.use('/error-message', authMiddleWare.adminAuthMiddleWare, errorMessage);
 app.use('/client-auth', clientAuth);
 app.use('/authAdmin', authAdmin);
-app.use('/opportunity', opportunity);
-app.use('/opportunity-note', opportunityNote);
+app.use('/opportunity', authMiddleWare.clientAuthMiddleWare, opportunity);
+app.use('/opportunity-note', authMiddleWare.clientAuthMiddleWare, opportunityNote);
 app.use('/subscribers', subscribers);
 /**
  * Create Admin

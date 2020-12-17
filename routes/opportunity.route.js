@@ -10,7 +10,7 @@ router.post('/add-opportunity', async (req, res) => {
     try {
         if (req.body.publicIdentifier) {
             let opportunity = await opportunityHelper.getProfile(req.body.publicIdentifier);
-            let client = await Client.findOne({ linkedInID: 'MbfgnL4Nx6', isDeleted: false })
+            let client = await Client.findOne({ _id: req.client._id, isDeleted: false })
                 .populate('opportunitys')
                 .exec();
             if (!client) {
@@ -88,7 +88,7 @@ router.put('/update-opportunity/:id', async (req, res) => {
 
 router.get('/get-opportunity', async (req, res) => {
     try {
-        let client = await Client.findOne({ linkedInID: 'MbfgnL4Nx6', isDeleted: false })
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false })
             .populate('opportunitys')
             .exec();
         if (!client) {
@@ -113,7 +113,7 @@ router.get('/get-opportunity', async (req, res) => {
 
 router.delete('/delete-opportunity/:id', async (req, res) => {
     try {
-        let client = await Client.findOne({ linkedInID: 'MbfgnL4Nx6', isDeleted: false })
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false })
             .populate('opportunitys')
             .exec();
         if (!client) {

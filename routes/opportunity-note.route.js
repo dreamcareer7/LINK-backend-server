@@ -13,7 +13,7 @@ router.post('/add-opportunity-note/:opportunityId', async (req, res) => {
                 message: 'Note is not Found!',
             });
         }
-        let client = await Client.findOne({ linkedInID: 'MbfgnL4Nx6', isDeleted: false })
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false })
             .populate('opportunitys')
             .exec();
         if (!client) {
@@ -60,7 +60,7 @@ router.post('/add-opportunity-note/:opportunityId', async (req, res) => {
 });
 router.get('/get-opportunity-note/:opportunityId', async (req, res) => {
     try {
-        let client = await Client.findOne({ linkedInID: 'MbfgnL4Nx6', isDeleted: false })
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false })
             .populate('opportunitys')
             .exec();
         if (!client) {
@@ -108,7 +108,7 @@ router.put('/update-opportunity-note/:opportunityId/:noteId', async (req, res) =
                 message: 'Note is not Found!',
             });
         }
-        let client = await Client.findOne({ linkedInID: 'MbfgnL4Nx6', isDeleted: false })
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false })
             .populate('opportunitys')
             .exec();
         if (!client) {
@@ -153,7 +153,7 @@ router.put('/update-opportunity-note/:opportunityId/:noteId', async (req, res) =
 });
 router.delete('/delete-opportunity-note/:opportunityId/:noteId', async (req, res) => {
     try {
-        let client = await Client.findOne({ linkedInID: 'MbfgnL4Nx6', isDeleted: false })
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false })
             .populate('opportunitys')
             .exec();
         if (!client) {

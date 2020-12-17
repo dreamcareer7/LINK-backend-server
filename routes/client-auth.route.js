@@ -40,7 +40,6 @@ router.get('/sign-up', async (req, res) => {
         client.lastName = user.localizedLastName;
         client.linkedInID = user.id;
         client.profilePicUrl = user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier;
-        client.isSubscribed = true;
         await client.save();
         if (!client.isSubscribed) {
             Logger.log.info('Client still not Subscribed.');
@@ -54,12 +53,10 @@ router.get('/sign-up', async (req, res) => {
             await client.save();
             console.log('Client Token ::', token);
             Logger.log.info('Login sucessfully to Client Deshbord.');
-            // setTimeout(() => {
-            console.log('Calling the internal route at::', new Date());
-            // res.sendFile('linkedin-signin.html', {root: __dirname })
-
-            return res.redirect(`https://87725e3c6dd4.ngrok.io/linkedin-signin.html?linkedInId=${client.linkedInID}`);
-            // }, 3000);
+            return res.status(200).send({
+                message: 'Welcome to Dashbord.',
+                status: 'SUCESS',
+            });
         }
     } catch (e) {
         Logger.log.error('Error in SignUp API call.', e.message || e);
@@ -70,12 +67,42 @@ router.get('/sign-up', async (req, res) => {
     }
 });
 
-router.get('/server', async (req, res) => {
-    console.log('In the internal route at::', new Date());
-    setTimeout(() => {
-        console.log('Redirecting to LinkedIn at::', new Date());
-        return res.redirect('https://www.linkedin.com/');
-    }, 3000);
+/**
+ * get sign-up from LinkedIn
+ *
+ */
+router.get('/sign-up-extension', async (req, res) => {
+    try {
+        if (!req.query.code) {
+            return res.status(400).send({
+                status: 'CODE_NOT_FOUND',
+                message: 'Code is not Found',
+            });
+        }
+        let token = await linkedInHelper.genLinkedInAccessToken(req.query.code);
+        let user = await linkedInHelper.getLinkedInUserData(token);
+        let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
+
+        if (client) {
+            if (client.isSubscribed) {
+                let token = client.getAuthToken();
+                client.jwtToken.push(token);
+                await client.save();
+
+                return res.redirect(`https://www.linkedin.com/?token=${token}`);
+            } else {
+                return res.redirect(`https://www.linkedin.com/`);
+            }
+        } else {
+            return res.redirect(`https://www.linkedin.com/`);
+        }
+    } catch (e) {
+        Logger.log.error('Error in SignUp API call.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
 });
 
 /**
