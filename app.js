@@ -40,6 +40,7 @@ let authMiddleWare = require('./middleware/authenticate');
  */
 let index = require('./routes/index');
 let admin = require('./routes/admin.route');
+let authAdmin = require('./routes/auth-admin.route');
 let quote = require('./routes/quote.route');
 let errorMessage = require('./routes/error-messages.route');
 let clientAuth = require('./routes/client-auth.route');
@@ -52,6 +53,7 @@ app.use('/admin', admin);
 app.use('/quote', quote);
 app.use('/error-message', authMiddleWare.adminAuthMiddleWare, errorMessage);
 app.use('/client-auth', clientAuth);
+app.use('/authAdmin', authAdmin);
 app.use('/opportunity', opportunity);
 app.use('/opportunity-note', opportunityNote);
 app.use('/subscribers', subscribers);

@@ -28,6 +28,8 @@ const adminSchema = new Schema(
             expiredTime: Schema.Types.Number,
             token: Schema.Types.String,
         },
+        isTwoFAEnabled: { type: Schema.Types.Boolean, default: false },
+        twoFASecretKey: { type: Schema.Types.String },
     },
     { timestamps: true },
 );
