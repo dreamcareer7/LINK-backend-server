@@ -36,6 +36,5 @@ module.exports = {
     linkedIn: {
         clientId: process.env.LINKEDIN_CLIENT_ID,
         clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-        redirectUri: process.env.BACKEND_BASE_URL + 'client-auth/sign-up',
     },
 };

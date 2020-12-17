@@ -19,7 +19,10 @@ router.get('/sign-up', async (req, res) => {
                 message: 'Code is not Found',
             });
         }
-        let token = await linkedInHelper.genLinkedInAccessToken(req.query.code);
+        let token = await linkedInHelper.genLinkedInAccessToken(
+            req.query.code,
+            config.backEndBaseUrl + 'client-auth/sign-up',
+        );
         let user = await linkedInHelper.getLinkedInUserData(token);
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
         if (!client) {
@@ -79,7 +82,10 @@ router.get('/sign-up-extension', async (req, res) => {
                 message: 'Code is not Found',
             });
         }
-        let token = await linkedInHelper.genLinkedInAccessToken(req.query.code);
+        let token = await linkedInHelper.genLinkedInAccessToken(
+            req.query.code,
+            config.backEndBaseUrl + 'client-auth/sign-up-extension',
+        );
         let user = await linkedInHelper.getLinkedInUserData(token);
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
 

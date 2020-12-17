@@ -2,11 +2,11 @@ const axios = require('axios');
 const config = require('../config');
 const Logger = require('../services/logger');
 
-const genLinkedInAccessToken = async (code) => {
+const genLinkedInAccessToken = async (code, redirectUri) => {
     try {
         let data = {
             method: 'POST',
-            url: `https://www.linkedin.com/oauth/v2/accessToken?grant_type=authorization_code&code=${code}&redirect_uri=${config.linkedIn.redirectUri}&client_id=${config.linkedIn.clientId}&client_secret=${config.linkedIn.clientSecret}`,
+            url: `https://www.linkedin.com/oauth/v2/accessToken?grant_type=authorization_code&code=${code}&redirect_uri=${redirectUri}&client_id=${config.linkedIn.clientId}&client_secret=${config.linkedIn.clientSecret}`,
 
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
