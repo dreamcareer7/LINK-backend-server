@@ -27,7 +27,7 @@ router.get('/sign-up', async (req, res) => {
                 firstName: user.localizedFirstName,
                 lastName: user.localizedLastName,
                 linkedInID: user.id,
-                profileUrl: user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier,
+                profilePicUrl: user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier,
             });
             await newClient.save();
             Logger.log.info('New Client is Created...');
@@ -39,7 +39,7 @@ router.get('/sign-up', async (req, res) => {
         client.firstName = user.localizedFirstName;
         client.lastName = user.localizedLastName;
         client.linkedInID = user.id;
-        client.profileUrl = user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier;
+        client.profilePicUrl = user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier;
         client.isSubscribed = true;
         await client.save();
         if (!client.isSubscribed) {
@@ -50,11 +50,7 @@ router.get('/sign-up', async (req, res) => {
             });
         } else {
             let token = client.getAuthToken();
-            let d = new Date();
-            client.jwtToken.push({
-                expiredTime: parseInt(config.expireTime) * 3600000 + d.getTime(),
-                token: token,
-            });
+            client.jwtToken.push(token);
             await client.save();
             console.log('Client Token ::', token);
             Logger.log.info('Login sucessfully to Client Deshbord.');
@@ -62,7 +58,7 @@ router.get('/sign-up', async (req, res) => {
             console.log('Calling the internal route at::', new Date());
             // res.sendFile('linkedin-signin.html', {root: __dirname })
 
-            return res.redirect(`https://ec31b11c5d51.ngrok.io/linkedin-signin.html?linkedInId=${client.linkedInID}`);
+            return res.redirect(`https://87725e3c6dd4.ngrok.io/linkedin-signin.html?linkedInId=${client.linkedInID}`);
             // }, 3000);
         }
     } catch (e) {
@@ -90,7 +86,7 @@ router.get('/server', async (req, res) => {
 router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
-            'firstName lastName email phone title profileUrl industry companyName companySize companyLocation',
+            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation',
         );
 
         if (!client) {
@@ -122,7 +118,9 @@ router.post('/update/:id', authMiddleWare.clientAuthMiddleWare, async (req, res)
                 message: `ClientId is require in params`,
             });
         }
-        let client = await Client.findOne({ _id: req.params.id, isDeleted: false });
+        let client = await Client.findOne({ _id: req.params.id, isDeleted: false }).select(
+            'industry companyName companySize companyLocation notificationType notificationPeriod',
+        );
         if (!client) {
             return res.status(400).send({
                 status: 'CLIENT_NOT_FOUND',
@@ -141,20 +139,7 @@ router.post('/update/:id', authMiddleWare.clientAuthMiddleWare, async (req, res)
         await client.save();
         return res.status(200).send({
             status: 'SUCCESS',
-            data: {
-                industry: client.industry,
-                companyName: client.companyName,
-                companySize: client.companySize,
-                companyLocation: client.companyLocation,
-                notificationType: {
-                    email: client.notificationType.email,
-                    browser: client.notificationType.browser,
-                },
-                notificationPeriod: {
-                    interval: client.notificationPeriod.interval,
-                    customDate: client.notificationPeriod.customDate,
-                },
-            },
+            data: client,
         });
     } catch (e) {
         Logger.log.error('Error in update Client API call', e.message || e);
@@ -216,12 +201,9 @@ router.post('/logout', authMiddleWare.clientAuthMiddleWare, async (req, res) => 
                 message: 'client is not found.',
             });
         }
-        for (let i = 0; i < client.jwtToken.length; i++) {
-            if (client.jwtToken[i].token === req.client.token) {
-                client.jwtToken.splice(i, 1);
-                break;
-            }
-        }
+
+        client.jwtToken.splice(client.jwtToken.indexOf(req.client.token), 1);
+
         client.save();
         res.status(200).json({
             status: 'SUCESS',

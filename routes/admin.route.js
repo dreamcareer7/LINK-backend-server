@@ -74,11 +74,7 @@ router.post('/login', async (req, res) => {
             });
         }
         let token = admin.getAuthToken();
-        let d = new Date();
-        admin.jwtToken.push({
-            expiredTime: parseInt(config.expireTime) * 3600000 + d.getTime(),
-            token: token,
-        });
+        admin.jwtToken.push(token);
         await admin.save();
         res.status(200).json({
             status: 'SUCCESS',
@@ -141,7 +137,9 @@ router.post('/update/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) 
                 message: `Can not update Admin by other Admins`,
             });
         }
-        let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false });
+        let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false }).select(
+            '-forgotOrSetPassword -jwtToken',
+        );
         if (!admin) {
             return res.status(400).send({
                 status: 'ADMIN_NOT_FOUND',
@@ -180,7 +178,9 @@ router.delete('/delete/:id', authMiddleWare.adminAuthMiddleWare, async (req, res
                 message: `Can not delete Admin by it's Self`,
             });
         } else {
-            let admin = await Admin.findOne({ _id: req.params.id, isDeleted: false });
+            let admin = await Admin.findOne({ _id: req.params.id, isDeleted: false }).select(
+                '-forgotOrSetPassword -jwtToken',
+            );
             if (!admin) {
                 return res.status(400).send({
                     status: 'ADMIN_NOT_FOUND',
@@ -249,7 +249,7 @@ get all admin
 
 router.get('/all-admin', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
-        let admins = await Admin.find({});
+        let admins = await Admin.find({}).select('-forgotOrSetPassword -jwtToken');
 
         admins.forEach((admin) => {
             admin.jwtToken = undefined;
@@ -281,12 +281,8 @@ router.post('/logout', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
                 message: 'admin is not found.',
             });
         }
-        for (let i = 0; i < admin.jwtToken.length; i++) {
-            if (admin.jwtToken[i].token === req.admin.token) {
-                admin.jwtToken.splice(i, 1);
-                break;
-            }
-        }
+
+        admin.jwtToken.splice(admin.jwtToken.indexOf(req.admin.token), 1);
         admin.save();
         res.status(200).json({
             status: 'SUCESS',

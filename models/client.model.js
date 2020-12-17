@@ -35,12 +35,7 @@ const clientSchema = new Schema(
                 ref: 'opportunity',
             },
         ],
-        jwtToken: [
-            {
-                expiredTime: Schema.Types.Number,
-                token: Schema.Types.String,
-            },
-        ],
+        jwtToken: [Schema.Types.String],
         notificationType: {
             email: { type: Schema.Types.Boolean, default: false },
             browser: { type: Schema.Types.Boolean, default: false },
@@ -80,29 +75,17 @@ clientSchema.statics.findByToken = async function(token) {
     let decoded;
     let jwtSecret = config.jwtSecret;
     let d = new Date();
-    let flag = false;
-    let counter;
     let clientData;
-
     try {
         decoded = jwt.verify(token, jwtSecret);
         clientData = await client.findOne({
             _id: decoded._id,
         });
-        for (let i = 0; i < clientData.jwtToken.length; i++) {
-            if (clientData.jwtToken[i].token === token) {
-                flag = true;
-                counter = i;
-                break;
-            }
-        }
-
-        if (flag) {
-            if (clientData.jwtToken[counter].expiredTime > d.getTime()) {
-                decoded = jwt.verify(token, jwtSecret);
+        if (clientData.jwtToken.indexOf(token) !== -1) {
+            if (decoded.expiredTime > d.getTime()) {
                 return clientData;
             } else {
-                clientData.jwtToken.splice(counter, 1);
+                clientData.jwtToken.splice(clientData.jwtToken.indexOf(token), 1);
                 await clientData.save();
                 return Promise.reject({ status: 'TOKEN_EXPIRED', message: 'JwtToken is expired' });
             }
@@ -119,9 +102,15 @@ clientSchema.statics.findByToken = async function(token) {
  */
 clientSchema.methods.getAuthToken = function() {
     let c = this;
+    let d = new Date();
     let jwtSecret = config.jwtSecret;
     let access = 'auth';
-    let token = jwt.sign({ _id: c._id.toHexString(), access }, jwtSecret).toString();
+    let token = jwt
+        .sign(
+            { _id: c._id.toHexString(), expiredTime: parseInt(config.expireTime) * 3600000 + d.getTime(), access },
+            jwtSecret,
+        )
+        .toString();
     return token;
 };
 
