@@ -131,44 +131,52 @@ router.get('/sign-up-invitation', async (req, res) => {
             config.backEndBaseUrl + `client-auth/sign-up-invitation?requestedToken=${req.query.requestedToken}`,
         );
         let user = await linkedInHelper.getLinkedInUserData(token);
-        decoded = jwt.verify(token, config.jwtSecret);
-
-        let client = await Client.findOne({ linkedInID: user.id, _id: decoded._id, isDeleted: false });
+        decoded = jwt.verify(req.query.requestedToken, config.jwtSecret);
+        let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
         if (!client) {
-            let newClient = new Client({
-                firstName: user.localizedFirstName,
-                lastName: user.localizedLastName,
-                linkedInID: user.id,
-                profilePicUrl: user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier,
-            });
-            await newClient.save();
-            Logger.log.info('New Client is Created...');
-            return res.status(200).send({
-                message: 'New Client is created.',
-                status: 'SUCESS',
-            });
-        }
-        client.firstName = user.localizedFirstName;
-        client.lastName = user.localizedLastName;
-        client.linkedInID = user.id;
-        client.profilePicUrl = user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier;
-        await client.save();
-        if (!client.isSubscribed) {
-            Logger.log.info('Client still not Subscribed.');
-            return res.status(200).send({
-                message: 'Client still not Subscribed.',
-                status: 'SUCESS',
-            });
+            let c = await Client.findOne({ _id: decoded._id, isDeleted: false });
+            if (c) {
+                if (c.invitedToken == req.query.requestedToken) {
+                    c.firstName = user.localizedFirstName;
+                    c.lastName = user.localizedLastName;
+                    c.linkedInID = user.id;
+                    c.profilePicUrl = user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier;
+                    c.invitedToken = null;
+                    await c.save();
+                    return res.status(200).send({
+                        message: 'Client still not Subscribed.',
+                        status: 'SUCESS',
+                    });
+                } else {
+                    return res.status(400).send({
+                        status: 'NOT_FOUND',
+                        message: 'Client Invitation token is not found.',
+                    });
+                }
+            } else {
+                return res.status(400).send({
+                    status: 'NOT_FOUND',
+                    message: 'Client is not found.',
+                });
+            }
         } else {
-            let token = client.getAuthToken();
-            client.jwtToken.push(token);
-            await client.save();
-            console.log('Client Token ::', token);
-            Logger.log.info('Login sucessfully to Client Deshbord.');
-            return res.status(200).send({
-                message: 'Welcome to Dashbord.',
-                status: 'SUCESS',
-            });
+            if (!client.isSubscribed) {
+                Logger.log.info('Client still not Subscribed.');
+                return res.status(200).send({
+                    message: 'Client still not Subscribed.',
+                    status: 'SUCESS',
+                });
+            } else {
+                let token = client.getAuthToken();
+                client.jwtToken.push(token);
+                await client.save();
+                console.log('Client Token ::', token);
+                Logger.log.info('Login sucessfully to Client Deshbord.');
+                return res.status(200).send({
+                    message: 'Welcome to Dashbord.',
+                    status: 'SUCESS',
+                });
+            }
         }
     } catch (e) {
         Logger.log.error('Error in SignUp API call.', e.message || e);
