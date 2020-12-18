@@ -9,10 +9,15 @@ const opportunityHelper = require('../helper/opportunity.helper');
 router.post('/add-opportunity', async (req, res) => {
     try {
         if (req.body.publicIdentifier) {
-            let opportunity = await opportunityHelper.getProfile(req.body.publicIdentifier);
             let client = await Client.findOne({ _id: req.client._id, isDeleted: false })
                 .populate('opportunitys')
                 .exec();
+            let opportunity = await opportunityHelper.getProfile(
+                opportunity.publicIdentifier,
+                client.cookie,
+                client.ajaxToken,
+            );
+
             if (!client) {
                 return res.status(400).json({
                     status: 'Error',
@@ -161,7 +166,8 @@ router.post('/sync-with-linkedIn/:id', async (req, res) => {
                 message: 'opportunitys is not Found!',
             });
         }
-        opportunity = await opportunityHelper.getProfile(opportunity.publicIdentifier);
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false });
+        opportunity = await opportunityHelper.getProfile(opportunity.publicIdentifier, client.cookie, client.ajaxToken);
 
         opportunity = await Opportunity.findOneAndUpdate({ _id: req.params.id }, opportunity, { new: true });
         return res.status(200).json({

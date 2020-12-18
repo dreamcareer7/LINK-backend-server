@@ -7,6 +7,7 @@ const authMiddleWare = require('../middleware/authenticate');
 const linkedInHelper = require('../helper/linkedin.helper');
 const Logger = require('../services/logger');
 const jwt = require('jsonwebtoken');
+const { addListener } = require('../app');
 
 /**
  *  sign-up from LinkedIn
@@ -97,7 +98,7 @@ router.get('/sign-up-extension', async (req, res) => {
                 client.jwtToken.push(token);
                 await client.save();
 
-                return res.render(`https://www.linkedin.com/?token=${token}`);
+                return res.redirect(`${config.backEndBaseUrl}linkedin-signin.html?token=${token}`);
             } else {
                 return res.redirect(`https://www.linkedin.com/`);
             }
@@ -106,6 +107,37 @@ router.get('/sign-up-extension', async (req, res) => {
         }
     } catch (e) {
         Logger.log.error('Error in SignUp API call.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+router.post('/get-cookie', async (req, res) => {
+    try {
+        if (!req.body.cookie || !req.body.ajaxToken) {
+            return res.status(400).send({
+                status: 'NOT_FOUND',
+                message: 'require field is missing.',
+            });
+        }
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false });
+        if (!client) {
+            return res.status(400).send({
+                status: 'NOT_FOUND',
+                message: 'client is not Found',
+            });
+        }
+        client.cookie = req.body.cookie;
+        client.ajaxToken = req.body.ajaxToken;
+        await client.save();
+        return res.status(400).send({
+            status: 'NOT_FOUND',
+            message: 'Cookie sucessfully saved.',
+        });
+    } catch {
+        Logger.log.error('Error in get cookie and token call.', e.message || e);
         res.status(500).json({
             status: e.status || 'ERROR',
             message: e.message,

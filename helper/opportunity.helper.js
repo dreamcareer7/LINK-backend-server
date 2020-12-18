@@ -1,10 +1,8 @@
 const axios = require('axios');
 const config = require('../config');
 const Logger = require('../services/logger');
-let token = 'ajax:8109392671226615305';
-let cookie =
-    'li_sugr=4360e205-af8e-476e-a4bf-a66d0ad0104e; lissc=1; bcookie="v=2&fe1ff459-e6b2-4809-8126-80713b628fa6"; bscookie="v=1&202007081901359d0b1b3e-ba88-4bfe-87ec-8b1c017ed79bAQFrY-n5yBzm_kdMJxGhyUYdWlVdMV-M"; _ga=GA1.2.927278425.1602579754; G_ENABLED_IDPS=google; JSESSIONID="ajax:8109392671226615305"; aam_uuid=46765176673855918082776637391170156299; VID=V_2020_11_23_07_768; _gac_UA-62256447-1=1.1606116171.CjwKCAiAtej9BRAvEiwA0UAWXn_ULBNJqHtQEaWRiTg4MWkMTADl9vcFgyIESXAizWsNVx6doOGlFhoCv1wQAvD_BwE; mbox=session#adc90bdf5e2d48a4b2bf6e27c7001554#1606118028|PC#adc90bdf5e2d48a4b2bf6e27c7001554.31_0#1621668172; li_rm=AQE2S3vmogex7gAAAXZLPYX0ER8AozslXVDO8rip6eOraMG1yUqNTz0fgjxu6Jwm4m5Ud4lhhJgxj7nL0OOxdD8xY6eswaHlwQhhzLM0U2GK5ed8vzs4YTwP; g_state={"i_p":1607671653393,"i_l":1}; li_at=AQEDASyE6I4EIeMdAAABdlE326EAAAF2dURfoU0AygSZ12KC68Dtp56YHsLtP_UENzLSTOwrHFY1MXYABkU1Klh1XvPlH3_CNcXRI9q3NmSoBPxqa23VltoPbNiWRQzaX5x-0Tyfrr4z5fiKfnwq3h5H; liap=true; _gid=GA1.2.859846728.1607919814; AMCV_14215E3D5995C57C0A495C55%40AdobeOrg=-637568504%7CMCIDTS%7C18611%7CMCMID%7C46233619651809596912758375341816890560%7CMCAAMLH-1608534376%7C12%7CMCAAMB-1608534376%7CRKhpRz8krg2tLO6pguXWp5olkAcUniQYPHaMWWgdJ3xzPWQmdj0y%7CMCOPTOUT-1607936776s%7CNONE%7CvVersion%7C5.1.1%7CMCCIDH%7C1792547547; li_oatml=AQHaJ3x1UK0YuwAAAXZgEkRyriFDo3wu60RwTWVObXYi4ch0uwHuuyOGI4d52z9M_A28vefTgZBqwNsIP7bwRGOQsE2Q8s96; lang=v=2&lang=en-us; spectroscopyId=1388f39a-92b4-4b45-b916-b3456e6def8b; UserMatchHistory=AQI6-g21DNcB8QAAAXZkm9NhQjmZHRGIiGYusw_ZDxs7cplfBfaVA68svE4Wmt2qjWJyBYzRlPdHO0E1QHwulk7Ic6wcJLSkp1u4vFj3ouufOtjFaAwwsiZiQc6hrDTrUCIaHOozkKYfu3G0E08WdkRoHxg0WzqmrfH6dnfNRzhsePFd21b42wGFSgr3sNR1TOM0wwopU1XXi07pu-9Ha7ySgi8q8pcuAcW-29gWt24JNY6RZ9hudZniylbPz17BHMID4flGO_3afQ1scd2JWPIxL6jWjjq3dGzk; lidc="b=VB90:s=V:r=V:g=2853:u=52:i=1608005706:t=1608013209:v=1:sig=AQEi5ftXDDyGXHrVmbf_VBjHZqVCbP7O"';
-const getProfile = async (publicIdentifier) => {
+
+const getProfile = async (publicIdentifier, cookie, ajaxToken) => {
     try {
         let data = {
             method: 'GET',
@@ -14,7 +12,7 @@ const getProfile = async (publicIdentifier) => {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 authority: 'www.linkedin.com',
                 accept: 'application/vnd.linkedin.normalized+json+2.1',
-                'csrf-token': token,
+                'csrf-token': ajaxToken,
                 'x-restli-protocol-version': '2.0.0',
                 'x-li-lang': 'en_US',
                 'user-agent':
