@@ -7,6 +7,7 @@ let cookieParser = require('cookie-parser');
 let bodyParser = require('body-parser');
 const fs = require('fs');
 let mongoose = require('mongoose');
+const cors = require('cors');
 
 /**
  * Required Services
@@ -33,6 +34,15 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'upload')));
+
+app.use(
+    cors({
+        origin: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+        credentials: true,
+    }),
+);
 
 let authMiddleWare = require('./middleware/authenticate');
 /**

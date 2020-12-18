@@ -7,7 +7,6 @@ const authMiddleWare = require('../middleware/authenticate');
 const linkedInHelper = require('../helper/linkedin.helper');
 const Logger = require('../services/logger');
 const jwt = require('jsonwebtoken');
-const { addListener } = require('../app');
 
 /**
  *  sign-up from LinkedIn
@@ -114,7 +113,7 @@ router.get('/sign-up-extension', async (req, res) => {
     }
 });
 
-router.post('/get-cookie', async (req, res) => {
+router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
         if (!req.body.cookie || !req.body.ajaxToken) {
             return res.status(400).send({
@@ -132,8 +131,8 @@ router.post('/get-cookie', async (req, res) => {
         client.cookie = req.body.cookie;
         client.ajaxToken = req.body.ajaxToken;
         await client.save();
-        return res.status(400).send({
-            status: 'NOT_FOUND',
+        return res.status(200).send({
+            status: 'SUCESS',
             message: 'Cookie sucessfully saved.',
         });
     } catch {

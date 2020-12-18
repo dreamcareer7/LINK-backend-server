@@ -12,8 +12,9 @@ router.post('/add-opportunity', async (req, res) => {
             let client = await Client.findOne({ _id: req.client._id, isDeleted: false })
                 .populate('opportunitys')
                 .exec();
+
             let opportunity = await opportunityHelper.getProfile(
-                opportunity.publicIdentifier,
+                req.body.publicIdentifier,
                 client.cookie,
                 client.ajaxToken,
             );

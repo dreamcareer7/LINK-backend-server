@@ -28,7 +28,6 @@ const getProfile = async (publicIdentifier, cookie, ajaxToken) => {
                 cookie: cookie,
             },
         };
-
         let response = await axios(data);
         let p;
         let companyArr = [];
@@ -40,7 +39,6 @@ const getProfile = async (publicIdentifier, cookie, ajaxToken) => {
                 companyArr.push(response.data.included[i]);
             }
         }
-
         let months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
         companyArr.sort((a, b) => {
             if (a.dateRange.start.year !== b.dateRange.start.year) {
@@ -65,7 +63,7 @@ const getProfile = async (publicIdentifier, cookie, ajaxToken) => {
 
         return response;
     } catch (e) {
-        Logger.log.error('Error in Get Profile from linkedin', e.message || e);
+        Logger.log.error('Error in Get Profile from linkedin', e || e);
         return Promise.reject({ message: 'Error in Get Profile from linkedin' });
     }
 };
