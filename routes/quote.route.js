@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const config = require('../config');
-const authMiddleWare = require('../middleware/authenticate');
 const Quote = mongoose.model('quote');
 const Tag = mongoose.model('tag');
 const Logger = require('../services/logger');
@@ -11,7 +9,7 @@ const Logger = require('../services/logger');
 add Quote
 */
 
-router.post('/add-quote', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.post('/add-quote', async (req, res) => {
     try {
         if (!req.body.quote || !req.body.quoteBy || !req.body.tag) {
             return res.status(400).json({
@@ -67,7 +65,7 @@ router.post('/add-quote', authMiddleWare.adminAuthMiddleWare, async (req, res) =
 /*
 update quotes
 */
-router.put('/update-quote/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.put('/update-quote/:id', async (req, res) => {
     try {
         if (!req.body.quote || !req.body.quoteBy || !req.body.tag || !req.params.id) {
             return res.status(400).json({
@@ -134,7 +132,7 @@ router.put('/update-quote/:id', authMiddleWare.adminAuthMiddleWare, async (req, 
 Delete Quote
 */
 
-router.delete('/delete-quote/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.delete('/delete-quote/:id', async (req, res) => {
     try {
         if (!req.params.id) {
             return res.status(400).json({
@@ -168,7 +166,7 @@ get all  quotes
 
 */
 
-router.get('/all-quote', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.get('/all-quote', async (req, res) => {
     try {
         let quote = await Quote.find({})
             .populate('tags')
@@ -196,7 +194,7 @@ router.get('/all-quote', authMiddleWare.adminAuthMiddleWare, async (req, res) =>
 get all tags
 */
 
-router.get('/all-tags', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.get('/all-tags', async (req, res) => {
     try {
         let tags = await Tag.find({});
 

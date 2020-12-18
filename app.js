@@ -47,16 +47,18 @@ let clientAuth = require('./routes/client-auth.route');
 let opportunity = require('./routes/opportunity.route');
 let opportunityNote = require('./routes/opportunity-note.route');
 let subscribers = require('./routes/subscribers.route');
+let clientInvitation = require('./routes/client-invitation.route');
 
 app.use('/', index);
-app.use('/admin', admin);
-app.use('/quote', quote);
+app.use('/admin', authMiddleWare.adminAuthMiddleWare, admin);
+app.use('/quote', authMiddleWare.adminAuthMiddleWare, quote);
 app.use('/error-message', authMiddleWare.adminAuthMiddleWare, errorMessage);
 app.use('/client-auth', clientAuth);
 app.use('/authAdmin', authAdmin);
 app.use('/opportunity', authMiddleWare.clientAuthMiddleWare, opportunity);
 app.use('/opportunity-note', authMiddleWare.clientAuthMiddleWare, opportunityNote);
-app.use('/subscribers', subscribers);
+app.use('/subscribers', authMiddleWare.adminAuthMiddleWare, subscribers);
+app.use('/client-invitation', authMiddleWare.adminAuthMiddleWare, clientInvitation);
 /**
  * Create Admin
  */

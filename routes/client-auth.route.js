@@ -6,9 +6,10 @@ const config = require('../config');
 const authMiddleWare = require('../middleware/authenticate');
 const linkedInHelper = require('../helper/linkedin.helper');
 const Logger = require('../services/logger');
+const jwt = require('jsonwebtoken');
 
 /**
- * get sign-up from LinkedIn
+ *  sign-up from LinkedIn
  *
  */
 router.get('/sign-up', async (req, res) => {
@@ -71,7 +72,7 @@ router.get('/sign-up', async (req, res) => {
 });
 
 /**
- * get sign-up from LinkedIn
+ *  sign-up from LinkedIn
  *
  */
 router.get('/sign-up-extension', async (req, res) => {
@@ -82,6 +83,7 @@ router.get('/sign-up-extension', async (req, res) => {
                 message: 'Code is not Found',
             });
         }
+        console.log(req.query.code);
         let token = await linkedInHelper.genLinkedInAccessToken(
             req.query.code,
             config.backEndBaseUrl + 'client-auth/sign-up-extension',
@@ -95,12 +97,78 @@ router.get('/sign-up-extension', async (req, res) => {
                 client.jwtToken.push(token);
                 await client.save();
 
-                return res.redirect(`https://www.linkedin.com/?token=${token}`);
+                return res.render(`https://www.linkedin.com/?token=${token}`);
             } else {
                 return res.redirect(`https://www.linkedin.com/`);
             }
         } else {
             return res.redirect(`https://www.linkedin.com/`);
+        }
+    } catch (e) {
+        Logger.log.error('Error in SignUp API call.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+/**
+ * sign-up from LinkedIn
+ *
+ */
+router.get('/sign-up-invitation', async (req, res) => {
+    try {
+        if (!req.query.code) {
+            return res.status(400).send({
+                status: 'CODE_NOT_FOUND',
+                message: 'Code is not Found',
+            });
+        }
+        console.log(req.query.code);
+        let token = await linkedInHelper.genLinkedInAccessToken(
+            req.query.code,
+            config.backEndBaseUrl + `client-auth/sign-up-invitation?requestedToken=${req.query.requestedToken}`,
+        );
+        let user = await linkedInHelper.getLinkedInUserData(token);
+        decoded = jwt.verify(token, config.jwtSecret);
+
+        let client = await Client.findOne({ linkedInID: user.id, _id: decoded._id, isDeleted: false });
+        if (!client) {
+            let newClient = new Client({
+                firstName: user.localizedFirstName,
+                lastName: user.localizedLastName,
+                linkedInID: user.id,
+                profilePicUrl: user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier,
+            });
+            await newClient.save();
+            Logger.log.info('New Client is Created...');
+            return res.status(200).send({
+                message: 'New Client is created.',
+                status: 'SUCESS',
+            });
+        }
+        client.firstName = user.localizedFirstName;
+        client.lastName = user.localizedLastName;
+        client.linkedInID = user.id;
+        client.profilePicUrl = user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier;
+        await client.save();
+        if (!client.isSubscribed) {
+            Logger.log.info('Client still not Subscribed.');
+            return res.status(200).send({
+                message: 'Client still not Subscribed.',
+                status: 'SUCESS',
+            });
+        } else {
+            let token = client.getAuthToken();
+            client.jwtToken.push(token);
+            await client.save();
+            console.log('Client Token ::', token);
+            Logger.log.info('Login sucessfully to Client Deshbord.');
+            return res.status(200).send({
+                message: 'Welcome to Dashbord.',
+                status: 'SUCESS',
+            });
         }
     } catch (e) {
         Logger.log.error('Error in SignUp API call.', e.message || e);

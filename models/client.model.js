@@ -21,7 +21,6 @@ const clientSchema = new Schema(
         email: Schema.Types.String,
         phone: Schema.Types.String,
         title: Schema.Types.String,
-        //password: Schema.Types.String,
         profilePicUrl: Schema.Types.String,
         industry: Schema.Types.String,
         companyName: Schema.Types.String,
@@ -29,6 +28,8 @@ const clientSchema = new Schema(
         linkedInID: Schema.Types.String,
         publicIdentifier: Schema.Types.String,
         companyLocation: Schema.Types.String,
+        isInvited: { type: Schema.Types.Boolean, default: false },
+        invitedToken: { type: Schema.Types.String, default: null },
         opportunitys: [
             {
                 type: mongoose.Schema.Types.ObjectId,

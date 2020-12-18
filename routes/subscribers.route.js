@@ -3,12 +3,11 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const Client = mongoose.model('client');
 const Logger = require('../services/logger');
-const authMiddleWare = require('../middleware/authenticate');
 
-router.get('/get-subscribers', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.get('/get-subscribers', async (req, res) => {
     try {
         let client = await Client.find({ isDeleted: false }).select(
-            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken',
+            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
         );
         if (!client) {
             return res.status(400).json({
@@ -28,10 +27,10 @@ router.get('/get-subscribers', authMiddleWare.adminAuthMiddleWare, async (req, r
         });
     }
 });
-router.put('/paused-subscription/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.put('/paused-subscription/:id', async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.params.id, isDeleted: false }).select(
-            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken',
+            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
         );
         if (!client) {
             return res.status(400).json({
@@ -54,10 +53,10 @@ router.put('/paused-subscription/:id', authMiddleWare.adminAuthMiddleWare, async
         });
     }
 });
-router.put('/cancel-subscription/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.put('/cancel-subscription/:id', async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.params.id, isDeleted: false }).select(
-            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken',
+            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
         );
         if (!client) {
             return res.status(400).json({
@@ -79,7 +78,7 @@ router.put('/cancel-subscription/:id', authMiddleWare.adminAuthMiddleWare, async
         });
     }
 });
-router.put('/delete-subscription/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.put('/delete-subscription/:id', async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.params.id, isDeleted: false }).select(
             '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken',

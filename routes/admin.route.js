@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Admin = mongoose.model('admin');
-const passwordHash = require('password-hash');
 const config = require('../config');
 const authMiddleWare = require('../middleware/authenticate');
 const mailHelper = require('../helper/mailer.helper');
@@ -13,7 +12,7 @@ const Logger = require('../services/logger');
 /**
  * Creates Admin - Sign-up Call
  */
-router.post('/sign-up', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.post('/sign-up', async (req, res) => {
     if (!req.body.email) {
         return res.status(400).json({
             status: 'EMAIL_NOT_FOUND',
@@ -65,7 +64,7 @@ router.post('/sign-up', authMiddleWare.adminAuthMiddleWare, async (req, res) => 
  *
  */
 
-router.get('/get-admin', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.get('/get-admin', async (req, res) => {
     try {
         let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false }).select(
             'firstName lastName email phone profileUrl',
@@ -93,7 +92,7 @@ router.get('/get-admin', authMiddleWare.adminAuthMiddleWare, async (req, res) =>
 /*
  update admin data
  */
-router.post('/update/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.post('/update/:id', async (req, res) => {
     try {
         if (req.admin._id != req.params.id) {
             return res.status(400).send({
@@ -134,7 +133,7 @@ router.post('/update/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) 
 /*
  inactive admin 
  */
-router.delete('/delete/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.delete('/delete/:id', async (req, res) => {
     try {
         if (req.admin._id == req.params.id) {
             return res.status(400).send({
@@ -173,7 +172,7 @@ router.delete('/delete/:id', authMiddleWare.adminAuthMiddleWare, async (req, res
 /*
 active admin
 */
-router.put('/active/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.put('/active/:id', async (req, res) => {
     try {
         if (req.admin._id == req.params.id) {
             return res.status(400).send({

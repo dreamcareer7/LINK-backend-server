@@ -17,7 +17,7 @@ const genLinkedInAccessToken = async (code, redirectUri) => {
 
         return response.data.access_token;
     } catch (e) {
-        Logger.log.error('Error in Generate access token from linkedin', e.message || e);
+        Logger.log.error('Error in Generate access token from linkedin', e || e);
         return Promise.reject({ message: 'Error in Generate access token from linkedin' });
     }
 };
