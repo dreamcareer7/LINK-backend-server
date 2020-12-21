@@ -104,11 +104,8 @@ router.post('/verify-2fa', async (req, res) => {
             });
         }
         token = admin.getAuthToken();
-        let d = new Date();
-        admin.jwtToken.push({
-            expiredTime: parseInt(config.jwtExpireTime.authToken) * 3600 * 1000 + d.getTime(),
-            token: token,
-        });
+
+        admin.jwtToken.push(token);
         await admin.save();
         res.status(200).json({
             status: 'SUCCESS',
@@ -225,9 +222,6 @@ admin forgot password
 */
 router.post('/forgot-password', async (req, res) => {
     try {
-        let jwtSecret = config.jwtSecret;
-        let access = 'auth';
-
         if (!req.body.email) {
             return res.status(400).send({
                 status: 'EMIALID_REQUIRED',
@@ -241,11 +235,9 @@ router.post('/forgot-password', async (req, res) => {
                 message: 'Email Id is not found',
             });
         }
-        let token = jwt.sign({ _id: admin._id.toHexString(), access }, jwtSecret).toString();
+        let token = admin.getTokenForPassword();
         let link = config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.forgotPasswordPage + `?token=${token}`;
-        let d = new Date();
-        admin.forgotOrSetPassword.expiredTime = parseInt(config.forgotOrSetPasswordExpTime) * 60000 + d.getTime();
-        admin.forgotOrSetPassword.token = token;
+        admin.forgotOrSetPasswordToken = token;
         await admin.save();
         let mailObj = { toAddress: [admin.email], subject: 'Reset Password Link', text: link };
         mailHelper.sendMail(mailObj);
@@ -283,19 +275,17 @@ router.put('/reset-password', async (req, res) => {
         decoded = jwt.verify(req.query.token, config.jwtSecret);
         let admin = await Admin.findOne({ _id: decoded._id, isDeleted: false });
         if (admin && decoded) {
-            if (admin.forgotOrSetPassword.token === req.query.token) {
-                if (admin.forgotOrSetPassword.expiredTime > d.getTime()) {
+            if (admin.forgotOrSetPasswordToken === req.query.token) {
+                if (decoded.expiredTime > d.getTime()) {
                     admin.password = req.body.password;
-                    admin.forgotOrSetPassword.token = null;
-                    admin.forgotOrSetPassword.expiredTime = null;
+                    admin.forgotOrSetPasswordToken = null;
                     await admin.save();
                     return res.status(200).send({
                         status: 'SUCESS',
                         message: 'Your Password is sucessfully reset.',
                     });
                 } else {
-                    admin.forgotOrSetPassword.token = null;
-                    admin.forgotOrSetPassword.expiredTime = null;
+                    admin.forgotOrSetPasswordToken = null;
                     await admin.save();
                     return res.status(400).send({
                         status: 'EXPIRED_LINK',
@@ -303,8 +293,8 @@ router.put('/reset-password', async (req, res) => {
                     });
                 }
             } else {
-                admin.forgotOrSetPassword.token = null;
-                admin.forgotOrSetPassword.expiredTime = null;
+                admin.forgotOrSetPasswordToken = null;
+
                 await admin.save();
                 return res.status(400).send({
                     status: 'TOKEN_NOT_FOUND',
@@ -442,21 +432,20 @@ router.put('/set-password', async (req, res) => {
         }
         decoded = jwt.verify(req.query.token, config.jwtSecret);
         let admin = await Admin.findOne({ _id: decoded._id, isDeleted: false });
-        console.log(decoded, admin);
         if (admin && decoded) {
-            if (admin.forgotOrSetPassword.token === req.query.token) {
-                if (admin.forgotOrSetPassword.expiredTime > d.getTime()) {
+            if (admin.forgotOrSetPasswordToken === req.query.token) {
+                if (decoded.expiredTime > d.getTime()) {
                     admin.password = req.body.password;
-                    admin.forgotOrSetPassword.token = null;
-                    admin.forgotOrSetPassword.expiredTime = null;
+                    admin.forgotOrSetPasswordToken = null;
+
                     await admin.save();
                     return res.status(200).send({
                         status: 'SUCESS',
                         message: 'Your Password is sucessfully set.',
                     });
                 } else {
-                    admin.forgotOrSetPassword.token = null;
-                    admin.forgotOrSetPassword.expiredTime = null;
+                    admin.forgotOrSetPasswordToken = null;
+
                     await admin.save();
                     return res.status(400).send({
                         status: 'EXPIRED_LINK',
@@ -464,8 +453,8 @@ router.put('/set-password', async (req, res) => {
                     });
                 }
             } else {
-                admin.forgotOrSetPassword.token = null;
-                admin.forgotOrSetPassword.expiredTime = null;
+                admin.forgotOrSetPasswordToken = null;
+
                 await admin.save();
                 return res.status(400).send({
                     status: 'TOKEN_NOT_FOUND',

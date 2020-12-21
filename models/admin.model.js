@@ -24,10 +24,7 @@ const adminSchema = new Schema(
         profilePicUrl: Schema.Types.String,
         isDeleted: { type: Schema.Types.Boolean, default: false },
         jwtToken: [Schema.Types.String],
-        forgotOrSetPassword: {
-            expiredTime: Schema.Types.Number,
-            token: Schema.Types.String,
-        },
+        forgotOrSetPasswordToken: Schema.Types.String,
         isTwoFAEnabled: { type: Schema.Types.Boolean, default: false },
         twoFASecretKey: { type: Schema.Types.String },
     },
@@ -117,6 +114,27 @@ adminSchema.methods.getAuthToken = function() {
     let token = jwt
         .sign(
             { _id: a._id.toHexString(), expiredTime: parseInt(config.expireTime) * 3600000 + d.getTime(), access },
+            jwtSecret,
+        )
+        .toString();
+    return token;
+};
+
+/**
+ * Generates token For set password or reset password
+ */
+adminSchema.methods.getTokenForPassword = function() {
+    let a = this;
+    let d = new Date();
+    let jwtSecret = config.jwtSecret;
+    let access = 'auth';
+    let token = jwt
+        .sign(
+            {
+                _id: a._id.toHexString(),
+                expiredTime: parseInt(config.forgotOrSetPasswordExpTime) * 3600000 + d.getTime(),
+                access,
+            },
             jwtSecret,
         )
         .toString();

@@ -5,8 +5,6 @@ const Admin = mongoose.model('admin');
 const config = require('../config');
 const authMiddleWare = require('../middleware/authenticate');
 const mailHelper = require('../helper/mailer.helper');
-const jwt = require('jsonwebtoken');
-
 const Logger = require('../services/logger');
 
 /**
@@ -20,7 +18,6 @@ router.post('/sign-up', async (req, res) => {
         });
     }
     try {
-        let access = 'auth';
         let existingAdmin = await Admin.findOne({ email: req.body.email, isDeleted: false });
         if (existingAdmin) {
             return res.status(400).json({
@@ -37,12 +34,9 @@ router.post('/sign-up', async (req, res) => {
 
         await newAdmin.save();
         let admin = await Admin.findOne({ email: req.body.email, isDeleted: false });
-
-        let token = jwt.sign({ _id: admin._id.toHexString(), access }, config.jwtSecret).toString();
+        let token = admin.getTokenForPassword();
         let link = config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.setPasswordPage + `?token=${token}`;
-        let d = new Date();
-        admin.forgotOrSetPassword.expiredTime = parseInt(config.forgotOrSetPasswordExpTime) * 60000 + d.getTime();
-        admin.forgotOrSetPassword.token = token;
+        admin.forgotOrSetPasswordToken = token;
         await admin.save();
         let mailObj = { toAddress: [admin.email], subject: 'Set Password Link', text: link };
         mailHelper.sendMail(mailObj);
@@ -101,7 +95,7 @@ router.post('/update/:id', async (req, res) => {
             });
         }
         let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false }).select(
-            '-forgotOrSetPassword -jwtToken',
+            '-forgotOrSetPasswordToken -jwtToken -password',
         );
         if (!admin) {
             return res.status(400).send({
@@ -116,7 +110,6 @@ router.post('/update/:id', async (req, res) => {
         admin.phone = req.body.phone;
         admin.profileUrl = req.body.profileUrl;
         await admin.save();
-        admin.password = undefined;
         return res.status(200).send({
             status: 'SUCCESS',
             data: admin,
@@ -142,7 +135,7 @@ router.delete('/delete/:id', async (req, res) => {
             });
         } else {
             let admin = await Admin.findOne({ _id: req.params.id, isDeleted: false }).select(
-                '-forgotOrSetPassword -jwtToken',
+                '-forgotOrSetPasswordToken -jwtToken',
             );
             if (!admin) {
                 return res.status(400).send({
@@ -212,12 +205,8 @@ get all admin
 
 router.get('/all-admin', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
-        let admins = await Admin.find({}).select('-forgotOrSetPassword -jwtToken');
+        let admins = await Admin.find({}).select('-forgotOrSetPasswordToken -jwtToken -password');
 
-        admins.forEach((admin) => {
-            admin.jwtToken = undefined;
-            admin.password = undefined;
-        });
         res.status(200).json({
             status: 'SUCESS',
             data: admins,

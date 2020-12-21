@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Admin = mongoose.model('admin');
-const jwt = require('jsonwebtoken');
 const mailHelper = require('./mailer.helper');
 const Organization = mongoose.model('organization');
 const org = require('../upload/organization.json');
@@ -29,13 +28,12 @@ let createAdmin = () => {
             await newAdmin.save();
             let admin = await Admin.findOne({ email: config.organization.adminEmail });
             Logger.log.trace('Admin did not existed, created one with email:', config.organization.adminEmail);
-            let token = jwt.sign({ _id: admin._id.toHexString(), access }, config.jwtSecret).toString();
+            let token = admin.getTokenForPassword();
             let link = config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.setPasswordPage + `?token=${token}`;
-            let d = new Date();
-            admin.forgotOrSetPassword.expiredTime = parseInt(config.forgotOrSetPasswordExpTime) * 60000 + d.getTime();
-            admin.forgotOrSetPassword.token = token;
+            admin.forgotOrSetPasswordToken = token;
+
             await admin.save();
-            let mailObj = { toAddress: [admin.email], subject: 'set Password Link', text: link };
+            let mailObj = { toAddress: [admin.email], subject: 'Set Password Link', text: link };
             mailHelper.sendMail(mailObj);
         } catch (e) {
             Logger.log.error('Error creating new Admin', e.message || e);
