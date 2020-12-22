@@ -38,11 +38,13 @@ const getProfile = async (publicIdentifier, cookie, ajaxToken) => {
             }
             if (
                 response.data.included[i].hasOwnProperty('multiLocaleTitle') &&
-                response.data.included[i].hasOwnProperty('dateRange')
+                response.data.included[i].hasOwnProperty('dateRange') &&
+                response.data.included[i].dateRange != null
             ) {
                 companyArr.push(response.data.included[i]);
             }
         }
+
         let months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
         companyArr.sort((a, b) => {
             if (a.dateRange.start.year !== b.dateRange.start.year) {
