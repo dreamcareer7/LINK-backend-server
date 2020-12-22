@@ -28,6 +28,7 @@ const getProfile = async (publicIdentifier, cookie, ajaxToken) => {
                 cookie: cookie,
             },
         };
+
         let response = await axios(data);
         let p;
         let companyArr = [];
@@ -35,7 +36,10 @@ const getProfile = async (publicIdentifier, cookie, ajaxToken) => {
             if (response.data.included[i].hasOwnProperty('firstName')) {
                 p = i;
             }
-            if (response.data.included[i].hasOwnProperty('multiLocaleTitle')) {
+            if (
+                response.data.included[i].hasOwnProperty('multiLocaleTitle') &&
+                response.data.included[i].hasOwnProperty('dateRange')
+            ) {
                 companyArr.push(response.data.included[i]);
             }
         }
@@ -50,20 +54,21 @@ const getProfile = async (publicIdentifier, cookie, ajaxToken) => {
         response = {
             firstName: response.data.included[p].firstName,
             lastName: response.data.included[p].lastName,
-            title: response.data.included[p].headline,
-            companyName: companyArr[0].companyName,
+            title: response.data.included[p].headline ? response.data.included[p].headline : null,
+            companyName: companyArr.length > 0 ? companyArr[0].companyName : null,
             linkedInUrl: 'https://www.linkedin.com/in/' + response.data.included[p].publicIdentifier,
-            email: '',
-            profilePicUrl:
-                response.data.included[p].profilePicture.displayImageReference.vectorImage.rootUrl +
-                response.data.included[p].profilePicture.displayImageReference.vectorImage.artifacts[3]
-                    .fileIdentifyingUrlPathSegment,
+            email: null,
+            profilePicUrl: response.data.included[p].profilePicture
+                ? response.data.included[p].profilePicture.displayImageReference.vectorImage.rootUrl +
+                  response.data.included[p].profilePicture.displayImageReference.vectorImage.artifacts[3]
+                      .fileIdentifyingUrlPathSegment
+                : null,
             publicIdentifier: response.data.included[p].publicIdentifier,
         };
 
         return response;
     } catch (e) {
-        Logger.log.error('Error in Get Profile from linkedin', e || e);
+        Logger.log.error('Error in Get Profile from linkedin', e.message || e);
         return Promise.reject({ message: 'Error in Get Profile from linkedin' });
     }
 };

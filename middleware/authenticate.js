@@ -27,7 +27,7 @@ let adminAuthMiddleWare = async (req, res, next) => {
 };
 let clientAuthMiddleWare = async (req, res, next) => {
     let token = req.header('authorization');
-    console.log('----', token);
+    //console.log('----', token);
     if (token) {
         try {
             let client = await Client.findByToken(token);
