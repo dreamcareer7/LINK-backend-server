@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Admin = mongoose.model('admin');
 const mailHelper = require('./mailer.helper');
 const Organization = mongoose.model('organization');
-const org = require('../upload/organization.json');
+const org = require('../staticfiles/organization.json');
 
 /**
  * config
@@ -16,7 +16,6 @@ const Logger = require('./../services/logger');
 let createAdmin = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            let access = 'auth';
             let existingAdmin = await Admin.findOne({ email: config.organization.adminEmail });
             if (existingAdmin) {
                 Logger.log.trace('Admin already exists');
