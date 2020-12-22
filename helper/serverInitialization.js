@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Admin = mongoose.model('admin');
 const mailHelper = require('./mailer.helper');
 const Organization = mongoose.model('organization');
-const org = require('../staticfiles/organization.json');
+const org = require('../static-files/organization.json');
 
 /**
  * config
