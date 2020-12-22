@@ -7,7 +7,6 @@ const authMiddleWare = require('../middleware/authenticate');
 const linkedInHelper = require('../helper/linkedin.helper');
 const Logger = require('../services/logger');
 const jwt = require('jsonwebtoken');
-const opportunityHelper = require('../helper/opportunity.helper');
 
 /**
  *  sign-up from LinkedIn
@@ -134,7 +133,7 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
                 message: 'client is not Found',
             });
         }
-        client.cookie = await opportunityHelper.getModifyCookie(req.body.cookie);
+        client.cookie = req.body.cookie;
         client.ajaxToken = req.body.ajaxToken;
         await client.save();
         return res.status(200).send({

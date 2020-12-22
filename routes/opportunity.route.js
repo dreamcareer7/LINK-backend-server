@@ -4,13 +4,15 @@ const mongoose = require('mongoose');
 const Opportunity = mongoose.model('opportunity');
 const Logger = require('../services/logger');
 const opportunityHelper = require('../helper/opportunity.helper');
+const cookieHelper = require('../helper/cookie.helper');
 
 router.post('/add-opportunity', async (req, res) => {
     try {
         if (req.body.publicIdentifier) {
+            let cookie = await cookieHelper.getModifyCookie(req.client.cookie);
             let opportunityData = await opportunityHelper.getProfile(
                 req.body.publicIdentifier,
-                req.client.cookie,
+                cookie,
                 req.client.ajaxToken,
             );
             opportunityData.clientId = req.client._id;
@@ -146,9 +148,10 @@ router.post('/sync-with-linkedIn/:id', async (req, res) => {
                 message: 'opportunitys is not Found!',
             });
         }
+        let cookie = await cookieHelper.getModifyCookie(req.client.cookie);
         opportunityData = await opportunityHelper.getProfile(
             opportunity.publicIdentifier,
-            req.client.cookie,
+            cookie,
             req.client.ajaxToken,
         );
 
