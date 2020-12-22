@@ -21,7 +21,8 @@ const opportunitySchema = new Schema(
         email: Schema.Types.String,
         profilePicUrl: Schema.Types.String,
         publicIdentifier: Schema.Types.String,
-
+        isDeleted: { type: Schema.Types.Boolean, default: false },
+        clientId: mongoose.Schema.Types.ObjectId,
         stage: {
             type: Schema.Types.String,
             enum: ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED', 'LOST'],

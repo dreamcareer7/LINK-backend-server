@@ -30,12 +30,6 @@ const clientSchema = new Schema(
         companyLocation: Schema.Types.String,
         isInvited: { type: Schema.Types.Boolean, default: false },
         invitedToken: { type: Schema.Types.String, default: null },
-        opportunitys: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'opportunity',
-            },
-        ],
         jwtToken: [Schema.Types.String],
         notificationType: {
             email: { type: Schema.Types.Boolean, default: false },

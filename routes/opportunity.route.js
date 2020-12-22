@@ -2,54 +2,36 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Opportunity = mongoose.model('opportunity');
-const Client = mongoose.model('client');
 const Logger = require('../services/logger');
 const opportunityHelper = require('../helper/opportunity.helper');
 
 router.post('/add-opportunity', async (req, res) => {
     try {
         if (req.body.publicIdentifier) {
-            let client = await Client.findOne({ _id: req.client._id, isDeleted: false })
-                .populate('opportunitys')
-                .exec();
-
-            let opportunity = await opportunityHelper.getProfile(
+            let opportunityData = await opportunityHelper.getProfile(
                 req.body.publicIdentifier,
-                client.cookie,
-                client.ajaxToken,
+                req.client.cookie,
+                req.client.ajaxToken,
             );
+            opportunityData.clientId = req.client._id;
+            let opportunity = await Opportunity.findOne({
+                clientId: req.client._id,
+                isDeleted: false,
+                publicIdentifier: req.body.publicIdentifier,
+            });
 
-            if (!client) {
-                return res.status(400).json({
-                    status: 'Error',
-                    message: 'Client is Not Found !',
-                });
+            if (opportunity) {
+                opportunity = await Opportunity.findOneAndUpdate(
+                    { clientId: req.client._id, isDeleted: false, publicIdentifier: req.body.publicIdentifier },
+                    opportunityData,
+                    { new: true },
+                );
+                Logger.log.info('Opportunity updated.');
             } else {
-                let flag = false;
-                for (let i = 0; i < client.opportunitys.length; i++) {
-                    if (opportunity.publicIdentifier === client.opportunitys[i].publicIdentifier) {
-                        flag = true;
-                    }
-                }
-
-                if (flag) {
-                    opportunity = await Opportunity.findOneAndUpdate(
-                        { publicIdentifier: opportunity.publicIdentifier },
-                        opportunity,
-                        { new: true },
-                    );
-
-                    Logger.log.info('Opportunity updated.');
-                } else {
-                    opportunity = new Opportunity(opportunity);
-                    await opportunity.save();
-
-                    client.opportunitys.push(opportunity._id);
-                    await client.save();
-                    Logger.log.info('New Opportunity added.');
-                }
+                opportunity = new Opportunity(opportunityData);
+                await opportunity.save();
+                Logger.log.info('New Opportunity added.');
             }
-
             return res.status(200).send({
                 status: 'SUCCESS',
                 data: opportunity,
@@ -77,12 +59,22 @@ router.put('/update-opportunity/:id', async (req, res) => {
                 message: 'Require field is Missing.',
             });
         }
-
-        let opportunity = await Opportunity.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true });
-        return res.status(200).send({
-            status: 'SUCCESS',
-            data: opportunity,
-        });
+        let opportunity = await Opportunity.findOneAndUpdate(
+            { _id: req.params.id, clientId: req.client._id, isDeleted: false },
+            req.body,
+            { new: true },
+        );
+        if (opportunity) {
+            return res.status(200).send({
+                status: 'SUCCESS',
+                data: opportunity,
+            });
+        } else {
+            return res.status(400).send({
+                status: 'NOT_FOUND',
+                data: 'Opportunity is not found.',
+            });
+        }
     } catch (e) {
         Logger.log.error('Error in update opportunity API call.', e.message || e);
         res.status(500).json({
@@ -94,18 +86,19 @@ router.put('/update-opportunity/:id', async (req, res) => {
 
 router.get('/get-opportunity', async (req, res) => {
     try {
-        let client = await Client.findOne({ _id: req.client._id, isDeleted: false })
-            .populate('opportunitys')
-            .exec();
-        if (!client) {
-            res.status(400).json({
-                status: 'ERROR',
-                message: 'Client is not Found!',
-            });
-        } else {
+        let opportunitys = await Opportunity.find({ clientId: req.client._id, isDeleted: false }, req.body, {
+            new: true,
+        });
+
+        if (opportunitys) {
             return res.status(200).send({
                 status: 'SUCCESS',
-                data: client.opportunitys,
+                data: opportunitys,
+            });
+        } else {
+            return res.status(400).send({
+                status: 'NOT_FOUND',
+                message: 'Opportunitys  is Not found..',
             });
         }
     } catch (e) {
@@ -119,35 +112,21 @@ router.get('/get-opportunity', async (req, res) => {
 
 router.delete('/delete-opportunity/:id', async (req, res) => {
     try {
-        let client = await Client.findOne({ _id: req.client._id, isDeleted: false })
-            .populate('opportunitys')
-            .exec();
-        if (!client) {
-            return res.status(400).json({
-                status: 'ERROR',
-                message: 'Client is not Found!',
+        let opportunity = await Opportunity.findOneAndUpdate(
+            { _id: req.params.id, clientId: req.client._id, isDeleted: false },
+            { isDeleted: true },
+            { new: true },
+        );
+        if (opportunity) {
+            return res.status(200).json({
+                status: 'SUCESS',
+                message: 'opportunitys is Deleted sucessfully.',
             });
         } else {
-            let flag = false;
-            for (let i = 0; i < client.opportunitys.length; i++) {
-                if (req.params.id == client.opportunitys[i]._id) {
-                    client.opportunitys.splice(i, 1);
-                    await client.save();
-                    flag = true;
-                    break;
-                }
-            }
-            if (flag) {
-                return res.status(200).json({
-                    status: 'SUCESS',
-                    message: 'opportunitys is Deleted sucessfully.',
-                });
-            } else {
-                return res.status(400).json({
-                    status: 'ERROR',
-                    message: 'opportunitys is not Found!',
-                });
-            }
+            return res.status(400).json({
+                status: 'ERROR',
+                message: 'opportunitys is not Found!',
+            });
         }
     } catch (e) {
         Logger.log.error('Error in delete Opportunity API call.', e.message || e);
@@ -160,17 +139,24 @@ router.delete('/delete-opportunity/:id', async (req, res) => {
 
 router.post('/sync-with-linkedIn/:id', async (req, res) => {
     try {
-        let opportunity = await Opportunity.findOne({ _id: req.params.id });
+        let opportunity = await Opportunity.findOne({ _id: req.params.id, clientId: req.client._id, isDeleted: false });
         if (!opportunity) {
             return res.status(400).json({
                 status: 'ERROR',
                 message: 'opportunitys is not Found!',
             });
         }
-        let client = await Client.findOne({ _id: req.client._id, isDeleted: false });
-        opportunity = await opportunityHelper.getProfile(opportunity.publicIdentifier, client.cookie, client.ajaxToken);
+        opportunityData = await opportunityHelper.getProfile(
+            opportunity.publicIdentifier,
+            req.client.cookie,
+            req.client.ajaxToken,
+        );
 
-        opportunity = await Opportunity.findOneAndUpdate({ _id: req.params.id }, opportunity, { new: true });
+        opportunity = await Opportunity.findOneAndUpdate(
+            { _id: req.params.id, clientId: req.client._id, isDeleted: false },
+            opportunityData,
+            { new: true },
+        );
         return res.status(200).json({
             status: 'SUCESS',
             data: opportunity,
