@@ -26,13 +26,16 @@ router.get('/sign-up', async (req, res) => {
             config.backEndBaseUrl + 'client-auth/sign-up',
         );
         let user = await linkedInHelper.getLinkedInUserData(token);
+        console.log(token);
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
         if (!client) {
             let newClient = new Client({
                 firstName: user.localizedFirstName,
                 lastName: user.localizedLastName,
                 linkedInID: user.id,
-                profilePicUrl: user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier,
+                profilePicUrl: user.hasOwnProperty('profilePicture')
+                    ? user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier
+                    : null,
             });
             await newClient.save();
             Logger.log.info('New Client is Created...');
@@ -44,7 +47,9 @@ router.get('/sign-up', async (req, res) => {
         client.firstName = user.localizedFirstName;
         client.lastName = user.localizedLastName;
         client.linkedInID = user.id;
-        client.profilePicUrl = user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier;
+        client.profilePicUrl = user.hasOwnProperty('profilePicture')
+            ? user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier
+            : null;
         await client.save();
         if (!client.isSubscribed) {
             Logger.log.info('Client still not Subscribed.');
@@ -172,7 +177,9 @@ router.get('/sign-up-invitation', async (req, res) => {
                     c.firstName = user.localizedFirstName;
                     c.lastName = user.localizedLastName;
                     c.linkedInID = user.id;
-                    c.profilePicUrl = user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier;
+                    c.profilePicUrl = user.hasOwnProperty('profilePicture')
+                        ? user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier
+                        : null;
                     c.invitedToken = null;
                     await c.save();
                     return res.status(200).send({
