@@ -48,7 +48,7 @@ const clientSchema = new Schema(
         isDeleted: { type: Schema.Types.Boolean, default: false },
         isSubscriptionPaused: { type: Schema.Types.Boolean, default: false },
         isSubscriptionCancelled: { type: Schema.Types.Boolean, default: false },
-        isSubscribed: { type: Schema.Types.Boolean, default: false },
+        isSubscribed: { type: Schema.Types.Boolean, default: true },
         isFreeTrialUsed: { type: Schema.Types.Boolean, default: false },
         selectedPlan: {
             currentPlan: { type: Schema.Types.String, enum: ['FREE_TRIAL', 'MONTHLY', 'YEARLY'] },
