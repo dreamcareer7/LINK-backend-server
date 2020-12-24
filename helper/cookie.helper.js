@@ -39,7 +39,8 @@ const getModifyCookie = (cookie) => {
                     cookieStr = cookieStr + cookieArr[i];
                     let temp = cookieArr[i].split('=');
                     temp = temp[1].split(';');
-                    ajaxToken = temp[0];
+                    temp = temp[0].split('"');
+                    ajaxToken = temp[1];
                 }
                 continue;
             } else {

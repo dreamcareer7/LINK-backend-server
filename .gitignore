@@ -46,3 +46,4 @@ package-lock.json
 *.save
 
 upload/organization.json
+demo.js
