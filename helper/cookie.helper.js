@@ -37,10 +37,12 @@ const getModifyCookie = (cookie) => {
             if (cookieArr[i].includes('JSESSIONID')) {
                 if (!cookieStr.includes('JSESSIONID')) {
                     cookieStr = cookieStr + cookieArr[i];
-                    let temp = cookieArr[i].split('=');
-                    temp = temp[1].split(';');
-                    temp = temp[0].split('"');
-                    ajaxToken = temp[1];
+                    let temp = cookieArr[i].split('=').pop();
+                    temp = temp.replace(';', '');
+                    temp = temp.replace(/"/g, '');
+                    // temp = temp[1].split(';');
+                    // temp = temp[0].split('"');
+                    ajaxToken = temp;
                 }
                 continue;
             } else {
