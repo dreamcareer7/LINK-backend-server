@@ -122,10 +122,10 @@ router.get('/sign-up-extension', async (req, res) => {
  */
 router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
-        if (!req.body.cookie || !req.body.ajaxToken) {
+        if (!req.body.cookie) {
             return res.status(400).send({
                 status: 'NOT_FOUND',
-                message: 'require field is missing.',
+                message: 'Cookie is Not found.',
             });
         }
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false });
@@ -136,11 +136,11 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
             });
         }
         client.cookie = req.body.cookie;
-        client.ajaxToken = req.body.ajaxToken;
+
         await client.save();
         return res.status(200).send({
             status: 'SUCCESS',
-            message: 'Cookie SUCCESSfully saved.',
+            message: 'Cookie Sucessfully saved.',
         });
     } catch {
         Logger.log.error('Error in get cookie and token call.', e.message || e);

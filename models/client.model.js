@@ -28,6 +28,8 @@ const clientSchema = new Schema(
         linkedInID: Schema.Types.String,
         publicIdentifier: Schema.Types.String,
         companyLocation: Schema.Types.String,
+        gender: Schema.Types.String,
+        subscriberImportance: Schema.Types.String,
         isInvited: { type: Schema.Types.Boolean, default: false },
         invitedToken: { type: Schema.Types.String, default: null },
         jwtToken: [Schema.Types.String],
@@ -56,7 +58,7 @@ const clientSchema = new Schema(
             planEndDate: Schema.Types.Date,
         },
         cookie: Schema.Types.String,
-        ajaxToken: Schema.Types.String,
+        //  ajaxToken: Schema.Types.String,
     },
     { timestamps: true },
 );

@@ -20,7 +20,8 @@
 
 const getModifyCookie = (cookie) => {
     let cookieArr = cookie.split(' ');
-    let str = '';
+    let cookieStr = '';
+    let ajaxToken;
     for (let i = 0; i < cookieArr.length; i++) {
         if (
             cookieArr[i].includes('li_sugr') ||
@@ -33,10 +34,22 @@ const getModifyCookie = (cookie) => {
             cookieArr[i].includes('lang') ||
             cookieArr[i].includes('lissc')
         ) {
-            str = str + cookieArr[i];
+            if (cookieArr[i].includes('JSESSIONID')) {
+                if (!cookieStr.includes('JSESSIONID')) {
+                    cookieStr = cookieStr + cookieArr[i];
+                    let temp = cookieArr[i].split('=');
+                    ajaxToken = temp[1];
+                }
+                continue;
+            } else {
+                cookieStr = cookieStr + cookieArr[i];
+            }
         }
     }
-    return str;
+    return {
+        cookieStr,
+        ajaxToken,
+    };
 };
 
 module.exports = {

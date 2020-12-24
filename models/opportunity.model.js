@@ -25,10 +25,10 @@ const opportunitySchema = new Schema(
         clientId: mongoose.Schema.Types.ObjectId,
         stage: {
             type: Schema.Types.String,
-            enum: ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED', 'LOST'],
+            enum: ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED', 'LOST', 'POTENTIAL'],
         },
         dealSize: Schema.Types.Number,
-        potential: { type: Schema.Types.String, enum: ['LIKELY', 'VERY_LIKELY', 'NOT_LIKELY'] },
+        likelyHood: { type: Schema.Types.String, enum: ['LIKELY', 'VERY_LIKELY', 'NOT_LIKELY'] },
         followUp: Schema.Types.Date,
         notes: [{ text: Schema.Types.String, creationTime: Schema.Types.Date, updationTime: Schema.Types.Date }],
     },

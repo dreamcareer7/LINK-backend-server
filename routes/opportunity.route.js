@@ -12,12 +12,8 @@ const cookieHelper = require('../helper/cookie.helper');
 router.post('/add-opportunity', async (req, res) => {
     try {
         if (req.body.publicIdentifier) {
-            let cookie = await cookieHelper.getModifyCookie(req.client.cookie);
-            let opportunityData = await opportunityHelper.getProfile(
-                req.body.publicIdentifier,
-                cookie,
-                req.client.ajaxToken,
-            );
+            let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
+            let opportunityData = await opportunityHelper.getProfile(req.body.publicIdentifier, cookieStr, ajaxToken);
             opportunityData.clientId = req.client._id;
             let opportunity = await Opportunity.findOne({
                 clientId: req.client._id,
@@ -164,12 +160,8 @@ router.post('/sync-with-linkedIn/:id', async (req, res) => {
                 message: 'opportunitys is not Found!',
             });
         }
-        let cookie = await cookieHelper.getModifyCookie(req.client.cookie);
-        opportunityData = await opportunityHelper.getProfile(
-            opportunity.publicIdentifier,
-            cookie,
-            req.client.ajaxToken,
-        );
+        let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
+        opportunityData = await opportunityHelper.getProfile(opportunity.publicIdentifier, cookieStr, ajaxToken);
 
         opportunity = await Opportunity.findOneAndUpdate(
             { _id: req.params.id, clientId: req.client._id, isDeleted: false },
