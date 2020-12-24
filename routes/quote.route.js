@@ -37,7 +37,7 @@ router.post('/add-quote', async (req, res) => {
         });
         await quote.save();
         res.status(200).send({
-            status: 'SUCESS',
+            status: 'SUCCESS',
             data: quote,
         });
     } catch (e) {
@@ -81,7 +81,7 @@ router.put('/update-quote/:id', async (req, res) => {
         );
 
         res.status(200).send({
-            status: 'SUCESS',
+            status: 'SUCCESS',
             data: quote,
         });
     } catch (e) {
@@ -114,8 +114,8 @@ router.delete('/delete-quote/:id', async (req, res) => {
             });
         }
         return res.status(200).send({
-            status: 'SUCESS',
-            message: 'delete quote sucessfully.',
+            status: 'SUCCESS',
+            message: 'delete quote SUCCESSfully.',
         });
     } catch (e) {
         Logger.log.error('Error in delete quote.', e.message || e);
@@ -143,7 +143,7 @@ router.get('/all-quote', async (req, res) => {
             });
         }
         return res.status(200).send({
-            status: 'SUCESS',
+            status: 'SUCCESS',
             data: quote,
         });
     } catch (e) {
@@ -170,7 +170,7 @@ router.get('/all-tags', async (req, res) => {
             });
         }
         return res.status(200).send({
-            status: 'SUCESS',
+            status: 'SUCCESS',
             data: tags,
         });
     } catch (e) {

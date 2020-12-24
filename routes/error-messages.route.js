@@ -24,13 +24,13 @@ router.post('/add-message', async function(req, res) {
         organization.errorMessages.push({ title: req.body.title, text: req.body.text });
         await organization.save();
         res.status(200).send({
-            status: 'SUCESS',
+            status: 'SUCCESS',
             data: organization.errorMessages,
         });
     } catch (e) {
         Logger.log.error('Error in Add Message API call', e.message || e);
         res.status(500).json({
-            status: 'Error',
+            status: 'ERROR',
             message: error.message,
         });
     }
@@ -58,13 +58,13 @@ router.put('/update-message/:id', async function(req, res) {
             organizationId: config.organization.organizationId,
         });
         res.status(200).send({
-            status: 'SUCESS',
+            status: 'SUCCESS',
             data: org.errorMessages,
         });
     } catch (e) {
         Logger.log.error('Error in Add Message API call', e.message || e);
         res.status(500).json({
-            status: 'Error',
+            status: 'ERROR',
             message: e.message,
         });
     }
@@ -80,13 +80,13 @@ router.get('/get-messages', async function(req, res) {
             organizationId: config.organization.organizationId,
         });
         res.status(200).send({
-            status: 'SUCESS',
+            status: 'SUCCESS',
             data: org.errorMessages,
         });
     } catch (e) {
         Logger.log.error('Error in get all Message API call', e.message || e);
         res.status(500).json({
-            status: 'Error',
+            status: 'ERROR',
             message: e.message,
         });
     }
@@ -114,13 +114,13 @@ router.delete('/delete-message/:id', async function(req, res) {
         );
 
         res.status(200).send({
-            status: 'SUCESS',
+            status: 'SUCCESS',
             data: organization.errorMessages,
         });
     } catch (e) {
         Logger.log.error('Error in delete Message API call', e.message || e);
         res.status(500).json({
-            status: 'Error',
+            status: 'ERROR',
             message: e.message,
         });
     }

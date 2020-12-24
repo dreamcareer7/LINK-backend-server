@@ -4,6 +4,9 @@ const mongoose = require('mongoose');
 const Client = mongoose.model('client');
 const Logger = require('../services/logger');
 
+/**
+ * get subscribers by admin
+ */
 router.get('/get-subscribers', async (req, res) => {
     try {
         let client = await Client.find({ isDeleted: false }).select(
@@ -27,6 +30,9 @@ router.get('/get-subscribers', async (req, res) => {
         });
     }
 });
+/**
+ * paused subscribers by admin
+ */
 router.put('/paused-subscription/:id', async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.params.id, isDeleted: false }).select(
@@ -53,6 +59,9 @@ router.put('/paused-subscription/:id', async (req, res) => {
         });
     }
 });
+/**
+ * cancel subscribers by admin
+ */
 router.put('/cancel-subscription/:id', async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.params.id, isDeleted: false }).select(
@@ -78,6 +87,9 @@ router.put('/cancel-subscription/:id', async (req, res) => {
         });
     }
 });
+/**
+ * delete subscribers by admin
+ */
 router.put('/delete-subscription/:id', async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.params.id, isDeleted: false }).select(
@@ -93,7 +105,7 @@ router.put('/delete-subscription/:id', async (req, res) => {
         await client.save();
         return res.status(200).send({
             status: 'SUCCESS',
-            message: 'subscription deleted sucessfully.',
+            message: 'subscription deleted SUCCESSfully.',
         });
     } catch (e) {
         Logger.log.error('Error in delete-subscription API call', e.message || e);

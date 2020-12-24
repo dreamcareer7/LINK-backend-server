@@ -40,7 +40,7 @@ router.get('/sign-up', async (req, res) => {
             Logger.log.info('New Client is Created...');
             return res.status(200).send({
                 message: 'New Client is created.',
-                status: 'SUCESS',
+                status: 'SUCCESS',
             });
         }
         client.firstName = user.localizedFirstName;
@@ -54,17 +54,17 @@ router.get('/sign-up', async (req, res) => {
             Logger.log.info('Client still not Subscribed.');
             return res.status(200).send({
                 message: 'Client still not Subscribed.',
-                status: 'SUCESS',
+                status: 'SUCCESS',
             });
         } else {
             let token = client.getAuthToken();
             client.jwtToken.push(token);
             await client.save();
             console.log('Client Token ::', token);
-            Logger.log.info('Login sucessfully to Client Deshbord.');
+            Logger.log.info('Login SUCCESSfully to Client Deshbord.');
             return res.status(200).send({
                 message: 'Welcome to Dashbord.',
-                status: 'SUCESS',
+                status: 'SUCCESS',
             });
         }
     } catch (e) {
@@ -117,7 +117,9 @@ router.get('/sign-up-extension', async (req, res) => {
         });
     }
 });
-
+/**
+ * get cookie from LinkedIn
+ */
 router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
         if (!req.body.cookie || !req.body.ajaxToken) {
@@ -137,8 +139,8 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
         client.ajaxToken = req.body.ajaxToken;
         await client.save();
         return res.status(200).send({
-            status: 'SUCESS',
-            message: 'Cookie sucessfully saved.',
+            status: 'SUCCESS',
+            message: 'Cookie SUCCESSfully saved.',
         });
     } catch {
         Logger.log.error('Error in get cookie and token call.', e.message || e);
@@ -183,7 +185,7 @@ router.get('/sign-up-invitation', async (req, res) => {
                     await c.save();
                     return res.status(200).send({
                         message: 'Client still not Subscribed.',
-                        status: 'SUCESS',
+                        status: 'SUCCESS',
                     });
                 } else {
                     return res.status(400).send({
@@ -202,17 +204,17 @@ router.get('/sign-up-invitation', async (req, res) => {
                 Logger.log.info('Client still not Subscribed.');
                 return res.status(200).send({
                     message: 'Client still not Subscribed.',
-                    status: 'SUCESS',
+                    status: 'SUCCESS',
                 });
             } else {
                 let token = client.getAuthToken();
                 client.jwtToken.push(token);
                 await client.save();
                 console.log('Client Token ::', token);
-                Logger.log.info('Login sucessfully to Client Deshbord.');
+                Logger.log.info('Login SUCCESSfully to Client Deshbord.');
                 return res.status(200).send({
                     message: 'Welcome to Dashbord.',
-                    status: 'SUCESS',
+                    status: 'SUCCESS',
                 });
             }
         }
@@ -353,8 +355,8 @@ router.post('/logout', authMiddleWare.clientAuthMiddleWare, async (req, res) => 
 
         client.save();
         res.status(200).json({
-            status: 'SUCESS',
-            message: 'Client is Sucessfully logout.',
+            status: 'SUCCESS',
+            message: 'Client is SUCCESSfully logout.',
         });
     } catch (e) {
         Logger.log.error('Error in logout Client API call', e.message || e);
@@ -380,8 +382,8 @@ router.post('/logout-all-devices', authMiddleWare.clientAuthMiddleWare, async (r
         client.jwtToken = [];
         client.save();
         res.status(200).json({
-            status: 'SUCESS',
-            message: 'Client is Sucessfully logout from all devices.',
+            status: 'SUCCESS',
+            message: 'Client is SUCCESSfully logout from all devices.',
         });
     } catch (e) {
         Logger.log.error('Error in logout Client from all devices API call', e.message || e);

@@ -2,7 +2,9 @@ const Logger = require('../services/logger');
 const mongoose = require('mongoose');
 const Admin = mongoose.model('admin');
 const Client = mongoose.model('client');
-
+/**
+ * this middleware used for authorization of admin
+ */
 let adminAuthMiddleWare = async (req, res, next) => {
     let token = req.header('authorization');
     if (token) {
@@ -25,6 +27,10 @@ let adminAuthMiddleWare = async (req, res, next) => {
         return res.status(401).send({ message: 'Auth-Token not set in header' });
     }
 };
+
+/**
+ * this middleware used for authorization of client
+ */
 let clientAuthMiddleWare = async (req, res, next) => {
     let token = req.header('authorization');
     //console.log('----', token);

@@ -7,6 +7,10 @@ const Logger = require('../services/logger');
 const jwt = require('jsonwebtoken');
 const mailHelper = require('../helper/mailer.helper');
 
+/**
+ * send invitation to client by admin
+ */
+
 router.post('/send-invitation', async (req, res) => {
     try {
         if (!req.body.firstName || !req.body.lastName || !req.body.email || !req.body.phone) {
@@ -39,7 +43,7 @@ router.post('/send-invitation', async (req, res) => {
         mailHelper.sendMail(mailObj);
         return res.status(200).send({
             status: 'SUCCESS',
-            message: `Invitation Sucessfully Sent to ${newClient.email}.`,
+            message: `Invitation SUCCESSfully Sent to ${newClient.email}.`,
         });
     } catch (e) {
         Logger.log.error('Error in Client Invitation API call.', e.message || e);
@@ -49,6 +53,11 @@ router.post('/send-invitation', async (req, res) => {
         });
     }
 });
+
+/**
+ *
+ * delete invitation of unsubscribed users  by admin
+ */
 
 router.delete('/delete-invitation/:id', async (req, res) => {
     try {
@@ -70,7 +79,7 @@ router.delete('/delete-invitation/:id', async (req, res) => {
             await Client.findByIdAndDelete(req.params.id);
             return res.status(400).send({
                 status: 'SUCCESS',
-                message: 'Client deleted sucessfully.',
+                message: 'Client deleted SUCCESSfully.',
             });
         }
     } catch (e) {
@@ -81,6 +90,10 @@ router.delete('/delete-invitation/:id', async (req, res) => {
         });
     }
 });
+
+/**
+ * get invitations of client
+ */
 
 router.get('/get-invitations', async (req, res) => {
     try {

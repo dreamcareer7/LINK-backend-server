@@ -208,7 +208,7 @@ router.get('/all-admin', authMiddleWare.adminAuthMiddleWare, async (req, res) =>
         let admins = await Admin.find({}).select('-forgotOrSetPasswordToken -jwtToken -password');
 
         res.status(200).json({
-            status: 'SUCESS',
+            status: 'SUCCESS',
             data: admins,
         });
     } catch (e) {

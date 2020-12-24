@@ -2,6 +2,10 @@ const axios = require('axios');
 const config = require('../config');
 const Logger = require('../services/logger');
 
+/**
+ * get linkedIn profile for adding opportunity
+ */
+
 const getProfile = async (publicIdentifier, cookie, ajaxToken) => {
     try {
         let data = {

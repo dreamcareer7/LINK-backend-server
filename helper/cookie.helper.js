@@ -13,6 +13,11 @@
 //     return str;
 // };
 
+/**
+ *
+ * extract only required fields of cookie
+ */
+
 const getModifyCookie = (cookie) => {
     let cookieArr = cookie.split(' ');
     let str = '';

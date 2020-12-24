@@ -2,6 +2,9 @@ const axios = require('axios');
 const config = require('../config');
 const Logger = require('../services/logger');
 
+/**
+ * generate linkedIn access token when clien is logged in with linnkedIn
+ */
 const genLinkedInAccessToken = async (code, redirectUri) => {
     try {
         let data = {
@@ -21,6 +24,9 @@ const genLinkedInAccessToken = async (code, redirectUri) => {
         return Promise.reject({ message: 'Error in Generate access token from linkedin' });
     }
 };
+/**
+ * get linkedIn User data
+ */
 const getLinkedInUserData = async (token) => {
     try {
         let data = {

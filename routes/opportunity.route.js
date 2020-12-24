@@ -6,6 +6,9 @@ const Logger = require('../services/logger');
 const opportunityHelper = require('../helper/opportunity.helper');
 const cookieHelper = require('../helper/cookie.helper');
 
+/**
+ * add opportunity
+ */
 router.post('/add-opportunity', async (req, res) => {
     try {
         if (req.body.publicIdentifier) {
@@ -53,6 +56,9 @@ router.post('/add-opportunity', async (req, res) => {
     }
 });
 
+/**
+ * update opportunity
+ */
 router.put('/update-opportunity/:id', async (req, res) => {
     try {
         if (!req.body) {
@@ -86,6 +92,9 @@ router.put('/update-opportunity/:id', async (req, res) => {
     }
 });
 
+/**
+ * get opportunity
+ */
 router.get('/get-opportunity', async (req, res) => {
     try {
         let opportunitys = await Opportunity.find({ clientId: req.client._id, isDeleted: false }, req.body, {
@@ -112,6 +121,9 @@ router.get('/get-opportunity', async (req, res) => {
     }
 });
 
+/**
+ * delete opportunity
+ */
 router.delete('/delete-opportunity/:id', async (req, res) => {
     try {
         let opportunity = await Opportunity.findOneAndUpdate(
@@ -121,8 +133,8 @@ router.delete('/delete-opportunity/:id', async (req, res) => {
         );
         if (opportunity) {
             return res.status(200).json({
-                status: 'SUCESS',
-                message: 'opportunitys is Deleted sucessfully.',
+                status: 'SUCCESS',
+                message: 'opportunitys is Deleted SUCCESSfully.',
             });
         } else {
             return res.status(400).json({
@@ -138,6 +150,10 @@ router.delete('/delete-opportunity/:id', async (req, res) => {
         });
     }
 });
+
+/**
+ * sync with linkedIn opportunity by jayla app
+ */
 
 router.post('/sync-with-linkedIn/:id', async (req, res) => {
     try {
@@ -161,7 +177,7 @@ router.post('/sync-with-linkedIn/:id', async (req, res) => {
             { new: true },
         );
         return res.status(200).json({
-            status: 'SUCESS',
+            status: 'SUCCESS',
             data: opportunity,
         });
     } catch (e) {

@@ -144,8 +144,8 @@ router.post('/logout', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
         admin.jwtToken.splice(admin.jwtToken.indexOf(req.admin.token), 1);
         admin.save();
         res.status(200).json({
-            status: 'SUCESS',
-            message: 'Admin is Sucessfully logout.',
+            status: 'SUCCESS',
+            message: 'Admin is SUCCESSfully logout.',
         });
     } catch (e) {
         Logger.log.error('Error in logout Admin API call', e.message || e);
@@ -171,8 +171,8 @@ router.post('/logout-all-devices', authMiddleWare.adminAuthMiddleWare, async (re
         admin.jwtToken = [];
         admin.save();
         res.status(200).json({
-            status: 'SUCESS',
-            message: 'Admin is Sucessfully logout from all devices.',
+            status: 'SUCCESS',
+            message: 'Admin is SUCCESSfully logout from all devices.',
         });
     } catch (e) {
         Logger.log.error('Error in logout Admin from all devices API call', e.message || e);
@@ -200,8 +200,8 @@ router.post('/change-password', authMiddleWare.adminAuthMiddleWare, async (req, 
             admin.password = req.body.newPassword;
             await admin.save();
             return res.status(200).send({
-                status: 'SUCESS',
-                message: 'Password is sucessfully updated.',
+                status: 'SUCCESS',
+                message: 'Password is SUCCESSfully updated.',
             });
         } else {
             return res.status(400).send({
@@ -242,7 +242,7 @@ router.post('/forgot-password', async (req, res) => {
         let mailObj = { toAddress: [admin.email], subject: 'Reset Password Link', text: link };
         mailHelper.sendMail(mailObj);
         res.status(200).send({
-            status: 'SUCESS',
+            status: 'SUCCESS',
             message: `Reset password link is sent in your registerd Email and This link is expired in ${config.forgotOrSetPasswordExpTime} Minutes.`,
         });
     } catch (e) {
@@ -281,8 +281,8 @@ router.put('/reset-password', async (req, res) => {
                     admin.forgotOrSetPasswordToken = null;
                     await admin.save();
                     return res.status(200).send({
-                        status: 'SUCESS',
-                        message: 'Your Password is sucessfully reset.',
+                        status: 'SUCCESS',
+                        message: 'Your Password is SUCCESSfully reset.',
                     });
                 } else {
                     admin.forgotOrSetPasswordToken = null;
@@ -440,8 +440,8 @@ router.put('/set-password', async (req, res) => {
 
                     await admin.save();
                     return res.status(200).send({
-                        status: 'SUCESS',
-                        message: 'Your Password is sucessfully set.',
+                        status: 'SUCCESS',
+                        message: 'Your Password is SUCCESSfully set.',
                     });
                 } else {
                     admin.forgotOrSetPasswordToken = null;

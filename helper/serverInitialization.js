@@ -13,6 +13,10 @@ const config = require('./../config');
  * */
 const Logger = require('./../services/logger');
 
+/**
+ * admin created by system
+ */
+
 let createAdmin = () => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -40,6 +44,9 @@ let createAdmin = () => {
         }
     });
 };
+/**
+ * organization created by system
+ */
 
 let createOrganization = () => {
     return new Promise(async (resolve, reject) => {

@@ -4,6 +4,10 @@ const mongoose = require('mongoose');
 const Opportunity = mongoose.model('opportunity');
 const Logger = require('../services/logger');
 
+/**
+ * add opportunity-note in opportunity
+ */
+
 router.post('/add-opportunity-note/:opportunityId', async (req, res) => {
     try {
         if (!req.body.note) {
@@ -26,7 +30,7 @@ router.post('/add-opportunity-note/:opportunityId', async (req, res) => {
             });
             await opportunity.save();
             return res.status(200).json({
-                status: 'SUCESS',
+                status: 'SUCCESS',
                 data: opportunity.notes,
             });
         } else {
@@ -43,6 +47,9 @@ router.post('/add-opportunity-note/:opportunityId', async (req, res) => {
         });
     }
 });
+/**
+ * get opportunity-note for opportunity
+ */
 router.get('/get-opportunity-note/:opportunityId', async (req, res) => {
     try {
         let opportunity = await Opportunity.findOne({
@@ -52,7 +59,7 @@ router.get('/get-opportunity-note/:opportunityId', async (req, res) => {
         });
         if (opportunity) {
             return res.status(200).json({
-                status: 'SUCESS',
+                status: 'SUCCESS',
                 data: opportunity.notes,
             });
         } else {
@@ -69,6 +76,9 @@ router.get('/get-opportunity-note/:opportunityId', async (req, res) => {
         });
     }
 });
+/**
+ * update opportunity-note for opportunity
+ */
 router.put('/update-opportunity-note/:opportunityId/:noteId', async (req, res) => {
     try {
         if (!req.body.note) {
@@ -91,7 +101,7 @@ router.put('/update-opportunity-note/:opportunityId/:noteId', async (req, res) =
 
         if (opportunity) {
             return res.status(200).json({
-                status: 'SUCESS',
+                status: 'SUCCESS',
                 data: opportunity.notes,
             });
         } else {
@@ -108,6 +118,9 @@ router.put('/update-opportunity-note/:opportunityId/:noteId', async (req, res) =
         });
     }
 });
+/**
+ * delete opportunity-note for opportunity
+ */
 router.delete('/delete-opportunity-note/:opportunityId/:noteId', async (req, res) => {
     try {
         let opportunity = await Opportunity.findOneAndUpdate(
@@ -124,7 +137,7 @@ router.delete('/delete-opportunity-note/:opportunityId/:noteId', async (req, res
         );
         if (opportunity) {
             return res.status(200).json({
-                status: 'SUCESS',
+                status: 'SUCCESS',
                 data: opportunity.notes,
             });
         } else {
