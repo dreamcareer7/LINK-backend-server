@@ -5,6 +5,7 @@ const Opportunity = mongoose.model('opportunity');
 const Logger = require('../services/logger');
 const opportunityHelper = require('../helper/opportunity.helper');
 const cookieHelper = require('../helper/cookie.helper');
+const firebaseHelper = require('../helper/firebase-notification');
 
 /**
  * add opportunity
@@ -168,6 +169,36 @@ router.post('/sync-with-linkedIn/:id', async (req, res) => {
             opportunityData,
             { new: true },
         );
+        return res.status(200).json({
+            status: 'SUCCESS',
+            data: opportunity,
+        });
+    } catch (e) {
+        Logger.log.error('Error in sync with linkedIn API call.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+/**
+ * Send Opportunity Notifications
+ */
+
+router.post('/send-notifications/:id', async (req, res) => {
+    try {
+        let opportunity = await Opportunity.findOne({ _id: req.params.id, clientId: req.client._id, isDeleted: false });
+        if (!opportunity) {
+            return res.status(400).json({
+                status: 'ERROR',
+                message: 'opportunitys is not Found!',
+            });
+        }
+        firebaseHelper.sendNotification({
+            tokens: req.client.fcmToken,
+            data: { notificationFor: 'OPPORTUNITY_FOLLOWUP', data: opportunity },
+        });
         return res.status(200).json({
             status: 'SUCCESS',
             data: opportunity,
