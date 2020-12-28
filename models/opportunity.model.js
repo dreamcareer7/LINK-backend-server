@@ -13,18 +13,22 @@ const Schema = mongoose.Schema;
  */
 const opportunitySchema = new Schema(
     {
-        name: Schema.Types.String,
+        firstName: Schema.Types.String,
+        lastName: Schema.Types.String,
         title: Schema.Types.String,
         companyName: Schema.Types.String,
         linkedInUrl: Schema.Types.String,
         email: Schema.Types.String,
-        profile: Schema.Types.String,
+        profilePicUrl: Schema.Types.String,
+        publicIdentifier: Schema.Types.String,
+        isDeleted: { type: Schema.Types.Boolean, default: false },
+        clientId: mongoose.Schema.Types.ObjectId,
         stage: {
             type: Schema.Types.String,
-            enum: ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED', 'LOST'],
+            enum: ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED', 'LOST', 'POTENTIAL'],
         },
         dealSize: Schema.Types.Number,
-        potential: { type: Schema.Types.String, enum: ['LIKELY', 'VERY_LIKELY', 'NOT_LIKELY'] },
+        likelyHood: { type: Schema.Types.String, enum: ['LIKELY', 'VERY_LIKELY', 'NOT_LIKELY'] },
         followUp: Schema.Types.Date,
         notes: [{ text: Schema.Types.String, creationTime: Schema.Types.Date, updationTime: Schema.Types.Date }],
     },

@@ -1,0 +1,24 @@
+<html>
+<head>
+    <script>
+        let getLinkedInId = () => {
+            console.log('In get LinkedIn ID function');
+            const urlParams = new URLSearchParams(window.location.search);
+            const linkedInId = urlParams.get('linkedInId');
+            console.log('linkedInId::', linkedInId);
+            setTimeout(() => {
+
+
+                window.location = "https://www.linkedin.com/";
+            }, 3000);
+
+        }
+    </script>
+</head>
+<body onload="getLinkedInId()">
+<!--<body>-->
+<h4>Hold Up Tight!!!</h4>
+<p>Redirecting to the LinkedInFeed</p>
+
+</body>
+</html>

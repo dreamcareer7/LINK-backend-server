@@ -1,0 +1,16 @@
+{
+    "errorMessages": [],
+    "industries": [
+        "Automotive",
+        "Civil Engineering",
+        "Computer Software",
+        "Financial Services",
+        "Architecture & Planing",
+        "Government Administration",
+        "Hospitality",
+        "Human Resources",
+        "Information Technology & Services",
+        "Marketing & Advertising"
+    ],
+    "gender": ["MALE", "FEMALE", "OTHER"]
+}

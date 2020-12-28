@@ -1,26 +1,20 @@
 const express = require('express');
-const { connectLogger } = require('log4js');
 const router = express.Router();
 const mongoose = require('mongoose');
-const { compile } = require('morgan');
-const { route } = require('.');
 const Admin = mongoose.model('admin');
-const passwordHash = require('password-hash');
 const config = require('../config');
 const authMiddleWare = require('../middleware/authenticate');
 const mailHelper = require('../helper/mailer.helper');
-const jwt = require('jsonwebtoken');
-
 const Logger = require('../services/logger');
 
 /**
  * Creates Admin - Sign-up Call
  */
-router.post('/sign-up', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
-    if (!req.body.email || !req.body.password) {
+router.post('/sign-up', async (req, res) => {
+    if (!req.body.email) {
         return res.status(400).json({
-            status: 'EMAIL_OR_PASSWORD_NOT_FOUND',
-            message: 'Please enter email and password.',
+            status: 'EMAIL_NOT_FOUND',
+            message: 'Please enter email Id.',
         });
     }
     try {
@@ -31,63 +25,57 @@ router.post('/sign-up', authMiddleWare.adminAuthMiddleWare, async (req, res) => 
                 message: 'Admin with this email already exist in the system.',
             });
         }
-        let admin = new Admin({
+        let newAdmin = new Admin({
             firstName: req.body.firstName,
             lastName: req.body.lastName,
             email: req.body.email,
             phone: req.body.phone,
-            password: req.body.password,
         });
 
+        await newAdmin.save();
+        let admin = await Admin.findOne({ email: req.body.email, isDeleted: false });
+        let token = admin.getTokenForPassword();
+        let link = config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.setPasswordPage + `?token=${token}`;
+        admin.forgotOrSetPasswordToken = token;
         await admin.save();
-
+        let mailObj = { toAddress: [admin.email], subject: 'Set Password Link', text: link };
+        mailHelper.sendMail(mailObj);
         res.status(200).json({
             status: 'SUCCESS',
-            message: 'Successfully signed up.',
+            message: `Successfully signed up. And Set password link is sent in your registerd Email and This link is expired in ${config.forgotOrSetPasswordExpTime} Minutes.`,
         });
     } catch (e) {
         Logger.log.error('Error in sign-up API call', e.message || e);
         res.status(500).json({
-            status: 'Error',
+            status: 'ERROR',
             message: error.message,
         });
     }
 });
+
 /**
- * Call for Login
+ * Get admin data
+ *
  */
-router.post('/login', async (req, res) => {
-    let userId = req.body.email;
-    let password = req.body.password;
+
+router.get('/get-admin', async (req, res) => {
     try {
-        let admin = await Admin.findByCredentials(userId, password);
+        let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false }).select(
+            'firstName lastName email phone profileUrl',
+        );
+
         if (!admin) {
             return res.status(400).send({
                 status: 'ADMIN_NOT_FOUND',
-                message: 'Incorrect email or password.',
+                message: 'admin is not found.',
             });
         }
-        let token = admin.getAuthToken();
-        let d = new Date();
-        admin.jwtToken.push({
-            expiredTime: parseInt(config.expireTime) * 3600000 + d.getTime(),
-            token: token,
-        });
-        await admin.save();
-        res.status(200).json({
+        return res.status(200).send({
             status: 'SUCCESS',
-            data: {
-                firstName: admin.firstName,
-                lastName: admin.lastName,
-                email: admin.email,
-                phone: admin.phone,
-                _id: admin._id,
-                profileUrl: admin.profileUrl,
-                token: token,
-            },
+            data: admin,
         });
     } catch (e) {
-        Logger.log.error('Error in login API call', e.message || e);
+        Logger.log.error('Error in get Admin API.', e.message || e);
         res.status(500).json({
             status: e.status || 'ERROR',
             message: e.message,
@@ -98,8 +86,7 @@ router.post('/login', async (req, res) => {
 /*
  update admin data
  */
-
-router.post('/update/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.post('/update/:id', async (req, res) => {
     try {
         if (req.admin._id != req.params.id) {
             return res.status(400).send({
@@ -107,7 +94,9 @@ router.post('/update/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) 
                 message: `Can not update Admin by other Admins`,
             });
         }
-        let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false });
+        let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false }).select(
+            '-forgotOrSetPasswordToken -jwtToken -password',
+        );
         if (!admin) {
             return res.status(400).send({
                 status: 'ADMIN_NOT_FOUND',
@@ -121,7 +110,6 @@ router.post('/update/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) 
         admin.phone = req.body.phone;
         admin.profileUrl = req.body.profileUrl;
         await admin.save();
-        admin.password = undefined;
         return res.status(200).send({
             status: 'SUCCESS',
             data: admin,
@@ -134,11 +122,11 @@ router.post('/update/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) 
         });
     }
 });
+
 /*
  inactive admin 
  */
-
-router.delete('/delete/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.delete('/delete/:id', async (req, res) => {
     try {
         if (req.admin._id == req.params.id) {
             return res.status(400).send({
@@ -146,7 +134,9 @@ router.delete('/delete/:id', authMiddleWare.adminAuthMiddleWare, async (req, res
                 message: `Can not delete Admin by it's Self`,
             });
         } else {
-            let admin = await Admin.findOne({ _id: req.params.id, isDeleted: false });
+            let admin = await Admin.findOne({ _id: req.params.id, isDeleted: false }).select(
+                '-forgotOrSetPasswordToken -jwtToken',
+            );
             if (!admin) {
                 return res.status(400).send({
                     status: 'ADMIN_NOT_FOUND',
@@ -175,7 +165,7 @@ router.delete('/delete/:id', authMiddleWare.adminAuthMiddleWare, async (req, res
 /*
 active admin
 */
-router.put('/active/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.put('/active/:id', async (req, res) => {
     try {
         if (req.admin._id == req.params.id) {
             return res.status(400).send({
@@ -215,216 +205,14 @@ get all admin
 
 router.get('/all-admin', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
-        let admins = await Admin.find({});
+        let admins = await Admin.find({}).select('-forgotOrSetPasswordToken -jwtToken -password');
 
-        admins.forEach((admin) => {
-            admin.jwtToken = undefined;
-            admin.password = undefined;
-        });
         res.status(200).json({
-            status: 'SUCESS',
+            status: 'SUCCESS',
             data: admins,
         });
     } catch (e) {
         Logger.log.error('Error in get all Admin API call', e.message || e);
-        res.status(500).json({
-            status: 'ERROR',
-            message: e.message,
-        });
-    }
-});
-
-/*
-logout admin
-*/
-
-router.post('/logout', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
-    try {
-        let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false });
-        if (!admin) {
-            return res.status(400).send({
-                status: 'ADMIN_NOT_FOUND',
-                message: 'admin is not found.',
-            });
-        }
-        for (let i = 0; i < admin.jwtToken.length; i++) {
-            if (admin.jwtToken[i].token === req.admin.token) {
-                admin.jwtToken.splice(i, 1);
-                break;
-            }
-        }
-        admin.save();
-        res.status(200).json({
-            status: 'SUCESS',
-            message: 'Admin is Sucessfully logout.',
-        });
-    } catch (e) {
-        Logger.log.error('Error in logout Admin API call', e.message || e);
-        res.status(500).json({
-            status: 'ERROR',
-            message: e.message,
-        });
-    }
-});
-
-/** 
- logout from all devices
-*/
-router.post('/logout-all-devices', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
-    try {
-        let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false });
-        if (!admin) {
-            return res.status(400).send({
-                status: 'ADMIN_NOT_FOUND',
-                message: 'admin is not found.',
-            });
-        }
-        admin.jwtToken = [];
-        admin.save();
-        res.status(200).json({
-            status: 'SUCESS',
-            message: 'Admin is Sucessfully logout from all devices.',
-        });
-    } catch (e) {
-        Logger.log.error('Error in logout Admin from all devices API call', e.message || e);
-        res.status(500).json({
-            status: 'ERROR',
-            message: e.message,
-        });
-    }
-});
-
-/*
-update admin password
-*/
-
-router.post('/change-password', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
-    try {
-        let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false });
-        if (!admin) {
-            return res.status(400).send({
-                status: 'ADMIN_NOT_FOUND',
-                message: 'admin is not found.',
-            });
-        }
-        if (passwordHash.verify(req.body.oldPassword, admin.password)) {
-            admin.password = req.body.newPassword;
-            await admin.save();
-            return res.status(200).send({
-                status: 'SUCESS',
-                message: 'Password is sucessfully updated.',
-            });
-        } else {
-            return res.status(400).send({
-                status: 'ERROR',
-                message: 'Old password is not matched.',
-            });
-        }
-    } catch (e) {
-        Logger.log.error('Error in update Admin password API call', e.message || e);
-        res.status(500).json({
-            status: 'ERROR',
-            message: e.message,
-        });
-    }
-});
-
-/*
-admin forgot password
-*/
-router.post('/forgot-password', async (req, res) => {
-    try {
-        let jwtSecret = config.jwtSecret;
-        let access = 'auth';
-
-        if (!req.body.email) {
-            return res.status(400).send({
-                status: 'EMIALID_REQUIRED',
-                message: 'Email Id is required.',
-            });
-        }
-        let admin = await Admin.findOne({ email: req.body.email, isDeleted: false });
-        if (!admin) {
-            return res.status(400).send({
-                status: 'NOT_FOUND',
-                message: 'Email Id is not found',
-            });
-        }
-        let token = jwt.sign({ _id: admin._id.toHexString(), access }, jwtSecret).toString();
-        let link = config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.forgotPasswordPage + `?token=${token}`;
-        let d = new Date();
-        admin.forgotPassword.expiredTime = parseInt(config.forgotPasswordExpTime) * 60000 + d.getTime();
-        admin.forgotPassword.token = token;
-        await admin.save();
-        let mailObj = { toAddress: [admin.email], subject: 'Reset Password Link', text: link };
-        mailHelper.sendMail(mailObj);
-        res.status(200).send({
-            status: 'SUCESS',
-            message: `Reset password link is sent in your registerd Email and This link is expired in ${config.forgotPasswordExpTime} Minutes.`,
-        });
-    } catch (e) {
-        Logger.log.error('Error in forgot Admin password API call', e.message || e);
-        res.status(500).json({
-            status: 'ERROR',
-            message: e.message,
-        });
-    }
-});
-
-router.put('/reset-password', async (req, res) => {
-    try {
-        let d = new Date();
-        if (!req.body.password || !req.body.confirmPassword || !req.query.token) {
-            return res.status(400).send({
-                status: 'REQUIRED',
-                message: 'Password Confirm Password and Toke is required.',
-            });
-        }
-        if (req.body.password !== req.body.confirmPassword) {
-            return res.status(400).send({
-                status: 'NOT_MATCHED',
-                message: 'Password and Confirm Password is does not matched !',
-            });
-        }
-        decoded = jwt.verify(req.query.token, config.jwtSecret);
-        let admin = await Admin.findOne({ _id: decoded._id, isDeleted: false });
-        if (admin && decoded) {
-            if (admin.forgotPassword.token === req.query.token) {
-                if (admin.forgotPassword.expiredTime > d.getTime()) {
-                    admin.password = req.body.password;
-                    admin.forgotPassword.token = null;
-                    admin.forgotPassword.expiredTime = null;
-                    await admin.save();
-                    return res.status(200).send({
-                        status: 'SUCESS',
-                        message: 'Your Password is sucessfully reset.',
-                    });
-                } else {
-                    admin.forgotPassword.token = null;
-                    admin.forgotPassword.expiredTime = null;
-                    await admin.save();
-                    return res.status(400).send({
-                        status: 'EXPIRED_LINK',
-                        message: 'Reset Password link is Expired !',
-                    });
-                }
-            } else {
-                admin.forgotPassword.token = null;
-                admin.forgotPassword.expiredTime = null;
-                await admin.save();
-                return res.status(400).send({
-                    status: 'TOKEN_NOT_FOUND',
-                    message: 'Token not found in DB !',
-                });
-            }
-        } else {
-            return res.status(200).send({
-                status: 'ERROR',
-                message: 'Error in reset Admin password API call',
-            });
-        }
-    } catch (e) {
-        Logger.log.error('Error in reset Admin password API call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,

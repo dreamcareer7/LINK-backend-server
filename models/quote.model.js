@@ -15,6 +15,7 @@ const quoteSchema = new Schema(
     {
         quote: Schema.Types.String,
         quoteBy: Schema.Types.String,
+        isPublished: { type: Schema.Types.Boolean, default: false },
         tags: [
             {
                 type: mongoose.Schema.Types.ObjectId,

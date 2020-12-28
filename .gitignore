@@ -45,5 +45,8 @@ package-lock.json
 #Save files
 *.save
 
+upload/organization.json
+demo.js
+
 #Key files
 keys/*

@@ -7,11 +7,9 @@
  */
 const mongoose = require('mongoose');
 const config = require('../config');
-const { schema } = require('./organization.model');
 const Schema = mongoose.Schema;
 const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
-const { connectLogger } = require('log4js');
 const logger = require('./../services/logger');
 /**
  * Schema Definition
@@ -23,18 +21,12 @@ const adminSchema = new Schema(
         email: Schema.Types.String,
         phone: Schema.Types.String,
         password: Schema.Types.String,
-        profileUrl: Schema.Types.String,
+        profilePicUrl: Schema.Types.String,
         isDeleted: { type: Schema.Types.Boolean, default: false },
-        jwtToken: [
-            {
-                expiredTime: Schema.Types.Number,
-                token: Schema.Types.String,
-            },
-        ],
-        forgotPassword: {
-            expiredTime: Schema.Types.Number,
-            token: Schema.Types.String,
-        },
+        jwtToken: [Schema.Types.String],
+        forgotOrSetPasswordToken: Schema.Types.String,
+        isTwoFAEnabled: { type: Schema.Types.Boolean, default: false },
+        twoFASecretKey: { type: Schema.Types.String },
     },
     { timestamps: true },
 );
@@ -48,29 +40,17 @@ adminSchema.statics.findByToken = async function(token) {
     let decoded;
     let jwtSecret = config.jwtSecret;
     let d = new Date();
-    let flag = false;
-    let counter;
     let adminData;
-
     try {
         decoded = jwt.verify(token, jwtSecret);
         adminData = await admin.findOne({
             _id: decoded._id,
         });
-        for (let i = 0; i < adminData.jwtToken.length; i++) {
-            if (adminData.jwtToken[i].token === token) {
-                flag = true;
-                counter = i;
-                break;
-            }
-        }
-
-        if (flag) {
-            if (adminData.jwtToken[counter].expiredTime > d.getTime()) {
-                decoded = jwt.verify(token, jwtSecret);
+        if (adminData.jwtToken.indexOf(token) !== -1) {
+            if (decoded.expiredTime > d.getTime()) {
                 return adminData;
             } else {
-                adminData.jwtToken.splice(counter, 1);
+                adminData.jwtToken.splice(adminData.jwtToken.indexOf(token), 1);
                 await adminData.save();
                 return Promise.reject({ status: 'TOKEN_EXPIRED', message: 'JwtToken is expired' });
             }
@@ -128,9 +108,36 @@ adminSchema.statics.findByCredentials = function(email, password) {
  */
 adminSchema.methods.getAuthToken = function() {
     let a = this;
+    let d = new Date();
     let jwtSecret = config.jwtSecret;
     let access = 'auth';
-    let token = jwt.sign({ _id: a._id.toHexString(), access }, jwtSecret).toString();
+    let token = jwt
+        .sign(
+            { _id: a._id.toHexString(), expiredTime: parseInt(config.expireTime) * 3600000 + d.getTime(), access },
+            jwtSecret,
+        )
+        .toString();
+    return token;
+};
+
+/**
+ * Generates token For set password or reset password
+ */
+adminSchema.methods.getTokenForPassword = function() {
+    let a = this;
+    let d = new Date();
+    let jwtSecret = config.jwtSecret;
+    let access = 'auth';
+    let token = jwt
+        .sign(
+            {
+                _id: a._id.toHexString(),
+                expiredTime: parseInt(config.forgotOrSetPasswordExpTime) * 3600000 + d.getTime(),
+                access,
+            },
+            jwtSecret,
+        )
+        .toString();
     return token;
 };
 /**

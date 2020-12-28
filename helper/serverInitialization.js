@@ -1,31 +1,80 @@
 const mongoose = require('mongoose');
 const Admin = mongoose.model('admin');
+const mailHelper = require('./mailer.helper');
+const Organization = mongoose.model('organization');
+const org = require('../static-files/organization.json');
 
 /**
- * Config
+ * config
  * */
-const Config = require('./../config');
+const config = require('./../config');
 /**
  * Services
  * */
 const Logger = require('./../services/logger');
 
+/**
+ * admin created by system
+ */
+
 let createAdmin = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            let existingAdmin = await Admin.findOne({ email: Config.organization.adminEmail });
+            let existingAdmin = await Admin.findOne({ email: config.organization.adminEmail });
             if (existingAdmin) {
                 Logger.log.trace('Admin already exists');
                 return resolve();
             }
-            let admin = new Admin({
-                email: Config.organization.adminEmail,
-                password: Config.organization.adminPassword,
+            let newAdmin = new Admin({
+                email: config.organization.adminEmail,
             });
+            await newAdmin.save();
+            let admin = await Admin.findOne({ email: config.organization.adminEmail });
+            Logger.log.trace('Admin did not existed, created one with email:', config.organization.adminEmail);
+            let token = admin.getTokenForPassword();
+            let link = config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.setPasswordPage + `?token=${token}`;
+            admin.forgotOrSetPasswordToken = token;
+
             await admin.save();
-            Logger.log.trace('Admin did not existed, created one with email:', Config.organization.adminEmail);
+            let mailObj = { toAddress: [admin.email], subject: 'Set Password Link', text: link };
+            mailHelper.sendMail(mailObj);
         } catch (e) {
             Logger.log.error('Error creating new Admin', e.message || e);
+            return reject(e);
+        }
+    });
+};
+/**
+ * organization created by system
+ */
+
+let createOrganization = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let existingOrganization = await Organization.findOne({
+                organizationId: config.organization.organizationId,
+            });
+            if (existingOrganization) {
+                existingOrganization.errorMessages = org.errorMessages;
+                existingOrganization.industries = org.industries;
+                existingOrganization.gender = org.gender;
+
+                await existingOrganization.save();
+                Logger.log.trace('Organization is Updated.');
+                return resolve();
+            }
+
+            let newOrganization = new Organization({
+                organizationId: config.organization.organizationId,
+                errorMessages: org.errorMessages,
+                industries: org.industries,
+                gender: org.gender,
+            });
+
+            await newOrganization.save();
+            Logger.log.trace('New Organization is Created.');
+        } catch (e) {
+            Logger.log.error('Error creating Organization Admin', e.message || e);
             return reject(e);
         }
     });
@@ -33,4 +82,5 @@ let createAdmin = () => {
 
 module.exports = {
     createAdmin,
+    createOrganization,
 };

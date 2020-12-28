@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const config = require('../config');
-const authMiddleWare = require('../middleware/authenticate');
 const Quote = mongoose.model('quote');
 const Tag = mongoose.model('tag');
 const Logger = require('../services/logger');
@@ -11,41 +9,27 @@ const Logger = require('../services/logger');
 add Quote
 */
 
-router.post('/add-quote', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.post('/add-quote', async (req, res) => {
     try {
-        if (!req.body.quote || !req.body.quoteBy || !req.body.tag) {
+        if (!req.body.quote || !req.body.quoteBy || !req.body.tags) {
             return res.status(400).json({
                 status: 'REQUIRE_FIELD_EMPTY',
                 message: 'Enter mandatory Fields.',
             });
         }
-        let tags = await Tag.find({});
-
-        for (let i = 0; i < req.body.tag.length; i++) {
-            let flag = true;
-            for (let j = 0; j < tags.length; j++) {
-                if (req.body.tag[i].toLowerCase() === tags[j].tag.toLowerCase()) {
-                    flag = false;
-                    break;
-                }
-            }
-            if (flag) {
-                let t = new Tag({
-                    tag: req.body.tag[i],
-                });
-                await t.save();
-            }
+        for (let i = 0; i < req.body.tags.length; i++) {
+            await Tag.updateOne(
+                { tag: req.body.tags[i].toLowerCase() },
+                { tag: req.body.tags[i].toLowerCase() },
+                { upsert: true },
+            );
         }
-        tags = await Tag.find({});
         let tagArr = [];
-        for (let i = 0; i < req.body.tag.length; i++) {
-            for (let j = 0; j < tags.length; j++) {
-                if (req.body.tag[i].toLowerCase() === tags[j].tag.toLowerCase()) {
-                    tagArr.push(tags[j]._id);
-                    break;
-                }
-            }
+        for (let i = 0; i < req.body.tags.length; i++) {
+            tag = await Tag.findOne({ tag: req.body.tags[i].toLowerCase() });
+            tagArr.push(tag._id);
         }
+
         let quote = new Quote({
             quote: req.body.quote,
             quoteBy: req.body.quoteBy,
@@ -53,7 +37,7 @@ router.post('/add-quote', authMiddleWare.adminAuthMiddleWare, async (req, res) =
         });
         await quote.save();
         res.status(200).send({
-            status: 'SUCESS',
+            status: 'SUCCESS',
             data: quote,
         });
     } catch (e) {
@@ -67,57 +51,37 @@ router.post('/add-quote', authMiddleWare.adminAuthMiddleWare, async (req, res) =
 /*
 update quotes
 */
-router.put('/update-quote/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.put('/update-quote/:id', async (req, res) => {
     try {
-        if (!req.body.quote || !req.body.quoteBy || !req.body.tag || !req.params.id) {
+        if (!req.body.quote || !req.body.quoteBy || !req.body.tags || !req.params.id) {
             return res.status(400).json({
                 status: 'REQUIRE_FIELD_EMPTY',
                 message: 'Enter mandatory Fields.',
             });
         }
-        let quote = await Quote.findOne({ _id: req.params.id })
-            .populate('tag')
-            .exec();
-        if (!quote) {
-            return res.status(400).json({
-                status: 'NOT_FOUND',
-                message: 'Quote is not found.',
-            });
+        for (let i = 0; i < req.body.tags.length; i++) {
+            await Tag.updateOne(
+                { tag: req.body.tags[i].toLowerCase() },
+                { tag: req.body.tags[i].toLowerCase() },
+                { upsert: true },
+            );
         }
-
-        quote.quote = req.body.quote;
-        quote.quoteBy = req.body.quoteBy;
-        let tags = await Tag.find({});
-
-        for (let i = 0; i < req.body.tag.length; i++) {
-            let flag = true;
-            for (let j = 0; j < tags.length; j++) {
-                if (req.body.tag[i].toLowerCase() === tags[j].tag.toLowerCase()) {
-                    flag = false;
-                    break;
-                }
-            }
-            if (flag) {
-                let t = new Tag({
-                    tag: req.body.tag[i],
-                });
-                await t.save();
-            }
-        }
-        tags = await Tag.find({});
         let tagArr = [];
-        for (let i = 0; i < req.body.tag.length; i++) {
-            for (let j = 0; j < tags.length; j++) {
-                if (req.body.tag[i].toLowerCase() === tags[j].tag.toLowerCase()) {
-                    tagArr.push(tags[j]._id);
-                    break;
-                }
-            }
+        for (let i = 0; i < req.body.tags.length; i++) {
+            tag = await Tag.findOne({ tag: req.body.tags[i].toLowerCase() });
+            tagArr.push(tag._id);
         }
-        quote.tags = tagArr;
-        await quote.save();
+
+        let quote = await Quote.findOneAndUpdate(
+            {
+                _id: req.params.id,
+            },
+            { quote: req.body.quote, quoteBy: req.body.quoteBy, isPublished: req.body.isPublished, tags: tagArr },
+            { new: true },
+        );
+
         res.status(200).send({
-            status: 'SUCESS',
+            status: 'SUCCESS',
             data: quote,
         });
     } catch (e) {
@@ -133,7 +97,7 @@ router.put('/update-quote/:id', authMiddleWare.adminAuthMiddleWare, async (req, 
 Delete Quote
 */
 
-router.delete('/delete-quote/:id', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.delete('/delete-quote/:id', async (req, res) => {
     try {
         if (!req.params.id) {
             return res.status(400).json({
@@ -141,7 +105,7 @@ router.delete('/delete-quote/:id', authMiddleWare.adminAuthMiddleWare, async (re
                 message: 'Id is requires in params.',
             });
         }
-        let quote = await Quote.deleteOne({ _id: req.params.id });
+        let quote = await Quote.findByIdAndDelete({ _id: req.params.id });
 
         if (!quote) {
             return res.status(400).json({
@@ -150,8 +114,8 @@ router.delete('/delete-quote/:id', authMiddleWare.adminAuthMiddleWare, async (re
             });
         }
         return res.status(200).send({
-            status: 'SUCESS',
-            message: 'delete quote sucessfully.',
+            status: 'SUCCESS',
+            message: 'delete quote SUCCESSfully.',
         });
     } catch (e) {
         Logger.log.error('Error in delete quote.', e.message || e);
@@ -167,10 +131,10 @@ get all  quotes
 
 */
 
-router.get('/all-quote', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.get('/all-quote', async (req, res) => {
     try {
         let quote = await Quote.find({})
-            .populate('tag')
+            .populate('tags')
             .exec();
         if (!quote) {
             return res.status(400).json({
@@ -179,7 +143,7 @@ router.get('/all-quote', authMiddleWare.adminAuthMiddleWare, async (req, res) =>
             });
         }
         return res.status(200).send({
-            status: 'SUCESS',
+            status: 'SUCCESS',
             data: quote,
         });
     } catch (e) {
@@ -195,7 +159,7 @@ router.get('/all-quote', authMiddleWare.adminAuthMiddleWare, async (req, res) =>
 get all tags
 */
 
-router.get('/all-tags', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.get('/all-tags', async (req, res) => {
     try {
         let tags = await Tag.find({});
 
@@ -206,7 +170,7 @@ router.get('/all-tags', authMiddleWare.adminAuthMiddleWare, async (req, res) => 
             });
         }
         return res.status(200).send({
-            status: 'SUCESS',
+            status: 'SUCCESS',
             data: tags,
         });
     } catch (e) {

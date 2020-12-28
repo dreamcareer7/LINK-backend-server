@@ -13,28 +13,11 @@ const Schema = mongoose.Schema;
  */
 const organizationSchema = new Schema(
     {
-        // subscriptionPrice: {
-        //     monthly: 19.0,
-        //     yearly: 160.0,
-        // },
-        errorMessages: [{ title: '', text: '' }],
-        industries: {
-            type: Schema.Types.String,
-            enum: [
-                'Automotive',
-                'Civil Engineering',
-                'Computer Software',
-                'Financial Services',
-                'Architecture & Planing',
-                'Government Administration',
-                'Hospitality',
-                'Human Resources',
-                'Information Technology & Services',
-                'Marketing & Advertising',
-            ],
-        },
-        gender: { type: Schema.Types.String, enum: ['MALE', 'FEMALE', 'OTHER'] },
-        integrations: { strip: { publishableKey: Schema.Types.String, secretKey: Schema.Types.String }, zendesk: {} },
+        organizationId: Schema.Types.String,
+        errorMessages: [{ title: Schema.Types.String, text: Schema.Types.String }],
+        industries: Schema.Types.Array,
+        gender: Schema.Types.Array,
+        //  integrations: { strip: { publishableKey: Schema.Types.String, secretKey: Schema.Types.String }, zendesk: {} },
     },
     { timestamps: true },
 );
