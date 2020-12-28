@@ -38,6 +38,6 @@ module.exports = {
         clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
     },
     firebase: {
-        dbUrl: 'https://fir-project-nitis.firebaseio.com',
+        dbUrl: process.env.FIREBASE_DB_URL,
     },
 };
