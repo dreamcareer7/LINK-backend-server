@@ -9,7 +9,11 @@ const Logger = require('../services/logger');
 router.get('/', async (req, res) => {
     try {
         let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
-        await conversationHelper.extract_chats(cookieStr, ajaxToken);
+        let conversation = await conversationHelper.extract_chats(cookieStr, ajaxToken);
+        res.status(200).json({
+            status: 'SUCCESS',
+            data: conversation,
+        });
     } catch (e) {
         Logger.log.error('Error in  API call', e.message || e);
         res.status(500).json({

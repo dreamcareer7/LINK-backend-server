@@ -1,6 +1,5 @@
 const Logger = require('../services/logger');
 const axios = require('axios');
-const { raw } = require('express');
 
 const extract_chats = async (cookie, ajaxToken) => {
     try {
@@ -8,9 +7,10 @@ const extract_chats = async (cookie, ajaxToken) => {
         let extracted_chats = [];
         while (true) {
             let raw_chats_data = await fetch_chats(cookie, ajaxToken, created_before);
-            console.log('---', raw_chats_data);
+
             let processed_chat_data = await process_chat_data(raw_chats_data);
-            if (processed_chat_data['chats']) {
+
+            if (processed_chat_data['chats'].length > 0) {
                 extracted_chats.push(processed_chat_data['chats']);
                 created_before = processed_chat_data['lowestLastActivity'];
             } else {
@@ -33,8 +33,9 @@ const process_chat_data = async (raw_chats_data) => {
         let lowest_last_activity = 0;
         let raw_data = raw_chats_data['included'];
 
-        for (let item in raw_data) {
+        raw_data.forEach((item) => {
             let item_type = item['$type'];
+
             if (item_type == 'com.linkedin.voyager.identity.shared.MiniProfile') {
                 raw_chats[item['entityUrn']] = {
                     firstName: item['firstName'],
@@ -73,10 +74,22 @@ const process_chat_data = async (raw_chats_data) => {
                     conversationId: conversation_id,
                 };
             }
-        }
+        });
 
         for (let chat_id in raw_chats) {
+            try {
+                temp_key = entity_urns[raw_chats[chat_id]['entityUrn']]['entityUrn'];
+            } catch (e) {
+                continue;
+            }
+            if (last_activities.hasOwnProperty(temp_key)) {
+                let chat = raw_chats[chat_id];
+                chat['lastActivityAt'] = last_activities[temp_key]['lastActivityAt'];
+                chat['conversationId'] = entity_urns[raw_chats[chat_id]['entityUrn']]['conversationId'];
+                extracted_chats.push(chat);
+            }
         }
+
         return {
             chats: extracted_chats,
             lowestLastActivity: lowest_last_activity,
@@ -119,8 +132,8 @@ const fetch_chats = async (cookie, ajaxToken, created_before) => {
         };
 
         let response = await axios(data);
-        console.log(response);
-        return response;
+
+        return response.data;
     } catch (e) {
         Logger.log.error('Error in fetch chat.', e.message || e);
         return Promise.reject({ message: 'Error in fetch chat.' });
