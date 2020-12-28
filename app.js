@@ -60,6 +60,7 @@ let subscribers = require('./routes/subscribers.route');
 let clientInvitation = require('./routes/client-invitation.route');
 let adminAnalytics = require('./routes/admin-analytics.route');
 let clientAnalytics = require('./routes/client-analytics.route');
+let payment = require('./routes/payment.route');
 
 app.use('/', index);
 app.use('/admin', authMiddleWare.adminAuthMiddleWare, admin);
@@ -73,7 +74,7 @@ app.use('/subscribers', authMiddleWare.adminAuthMiddleWare, subscribers);
 app.use('/client-invitation', authMiddleWare.adminAuthMiddleWare, clientInvitation);
 app.use('/admin-analytics', authMiddleWare.adminAuthMiddleWare, adminAnalytics);
 app.use('/client-analytics', authMiddleWare.clientAuthMiddleWare, clientAnalytics);
-
+app.use('/payment', payment);
 /**
  * Create Admin
  */

@@ -17,7 +17,7 @@ const paymentSchema = new Schema(
         paymentDate: Schema.Types.Date,
         paymentStatus: {
             type: Schema.Types.String,
-            enum: ['PAID', 'PAYMENT_REQUESTED', 'PENDING'],
+            enum: ['PAID', 'PAYMENT_REQUESTED', 'PENDING', 'FAILED'],
             default: 'PENDING',
         },
         plan: { type: Schema.Types.String, enum: ['FREE_TRIAL', 'MONTHLY', 'YEARLY'] },
