@@ -2,9 +2,12 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Client = mongoose.model('client');
+const Conversation = mongoose.model('conversation');
 const config = require('../config');
 const authMiddleWare = require('../middleware/authenticate');
 const linkedInHelper = require('../helper/linkedin.helper');
+const cookieHelper = require('../helper/cookie.helper');
+const conversationHelper = require('../helper/conversation.helper');
 const Logger = require('../services/logger');
 const jwt = require('jsonwebtoken');
 
@@ -129,6 +132,7 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
             });
         }
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false });
+
         if (!client) {
             return res.status(400).send({
                 status: 'NOT_FOUND',
@@ -136,8 +140,24 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
             });
         }
         client.cookie = req.body.cookie;
+        if (client.isConversationAdded == false) {
+            let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.body.cookie);
+            let conversation = await conversationHelper.extract_chats(cookieStr, ajaxToken);
+
+            await Conversation.updateOne(
+                { clientId: req.client._id, publicIdentifier: conversation.publicIdentifier },
+                {
+                    clientId: req.client._id,
+                    conversationId: conversation.conversationId,
+                    publicIdentifier: conversation.publicIdentifier,
+                },
+                { upsert: true },
+            );
+            client.isConversationAdded = true;
+        }
 
         await client.save();
+
         return res.status(200).send({
             status: 'SUCCESS',
             message: 'Cookie Sucessfully saved.',
