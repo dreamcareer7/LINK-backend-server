@@ -47,3 +47,6 @@ package-lock.json
 
 upload/organization.json
 demo.js
+
+#Key files
+keys/*

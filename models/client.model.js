@@ -60,6 +60,7 @@ const clientSchema = new Schema(
         },
         cookie: Schema.Types.String,
         //  ajaxToken: Schema.Types.String,
+        fcmToken: [Schema.Types.String],
     },
     { timestamps: true },
 );

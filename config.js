@@ -37,4 +37,7 @@ module.exports = {
         clientId: process.env.LINKEDIN_CLIENT_ID,
         clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
     },
+    firebase: {
+        dbUrl: process.env.FIREBASE_DB_URL,
+    },
 };
