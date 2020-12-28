@@ -31,4 +31,7 @@ module.exports = {
         publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
         secretKey: process.env.STRIPE_SECRET_KEY,
     },
+    firebase: {
+        dbUrl: 'https://fir-project-nitis.firebaseio.com',
+    },
 };

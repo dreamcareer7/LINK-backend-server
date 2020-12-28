@@ -39,11 +39,24 @@ app.use(cookieParser());
 let index = require('./routes/index');
 let admin = require('./routes/admin.route');
 let quote = require('./routes/quote.route');
+let firebaseHelper = require('./helper/firebase-notification');
 
 app.use('/', index);
 app.use('/admin', admin);
 app.use('/quote', quote);
 
+firebaseHelper.sendNotification({
+    tokens: [
+        'ee6mTSa81alptOLiB7S9pf:APA91bGqIjpKJVbtPdnAZFhh6RW7H-ZxRL4-omcp4wk9qnLXkkEhlIqiJvqydvbPoFK0CJ4uMxVH0lKPvUEt0PtpmQHQVLKoV4pXqcBO439eAkR0Z2uaENQSEDQq0G4M517HAgDZ3_np',
+        'ear0T5n8g0Nq4LjkiMLwCs:APA91bHwZL_6ahomtqmRpDvvPnijoArpgmXZF-aJQwXsmMtjTZOhM0GzTT_cLfv5NX65FOHyHSjfPcbrPFbqJNByMlFeomoB5o5REvYT7rTBx5zaiHxSiDlVuhYRjg1hte8qq19UbldZ',
+        'ear0T5n8g0Nq4LjkiMLwCs:APA91bHwZL_6ahomtqmRpDvvPnijoArpgmXZF-aJQwXsmMtjTZOhM0GzTT_cLfv5NX65FOHyHSjfPcbrPFbqJNByMlFeomoB5o5REvYT7rTBx5zaiHxSiDlVuhYRjg1hte8qq19UbldZ',
+        'flGWe8sxmFrFG9WArF8YdB:APA91bFpxbLoVLXSROFDhYOZlAzTrdujPXA0FEkSMCNwezTBMR7Nddo2-_sSApXFZFQqIWnNJTB47BJ2YgLBeNLUvV17H64567hieuQD9bXGHrLOeakfyIh8ccghSe11O1kvdgimZ5I4',
+        'eapCacnQVCfNGzm68p2Gnm:APA91bFHFx7BhQCCmoDn7BOorvjJQuqPfrR8arHVnfvrnSwd6SFN_RKEo7iVdVVqygmY3cNP9iAAiX6Ag00NyiA9KHmC2BQGRaWDxLbRNaLB3m6H55ExERSVPSGU1wCsfy0DOmu5__ld',
+        'fMYqrFVhCdmtLRVNDBHrkB:APA91bGq7ZQzlAcTqqaiPRzNVuRTpcUujHf7EYJjVRDYmIKOnIlGBBiLuRYOK_TLpopnBTLCOwgNvQI1zWLArp95ZshAoBsYgl5AML8BP-zwBSCI4Ff0inYUMEied1v8zmT26cLibjnx',
+        'fIdI_mxp3hg_c-2FsyAAPu:APA91bH-AN6DpUIbrJ6HXEgYEG7Tn0FkwRhzvia1w5MqHj3ciiKLSynuMgPxD-5fuDEYlwdiZ39Ps6XZYjvaaFaQFZZpzdGbHcn32jy7vvWbxlv9iJ2jP-GMUgC684TOgZCNTIMmaJHR',
+    ],
+    data: { name: 'Parth Mansata', company: 'Kevit Technologies' },
+});
 /**
  * Create Admin
  */

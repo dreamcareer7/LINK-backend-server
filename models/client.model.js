@@ -48,6 +48,7 @@ const clientSchema = new Schema(
             planStartDate: Schema.Types.Date,
             planEndDate: Schema.Types.Date,
         },
+        fcmToken: [Schema.Types.String],
     },
     { timestamps: true },
 );
