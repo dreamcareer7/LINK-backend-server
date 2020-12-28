@@ -1,25 +1,10 @@
-// const getModifyCookie = (cookie) => {
-//     let cookieArr = cookie.split(' ');
-//     let str = '';
-//     for (let i = 0; i < cookieArr.length; i++) {
-//         if (cookieArr[i].includes('bscookie') || cookieArr[i].includes('queryString')) {
-//             cookieArr.splice(i, 1);
-//         }
-//     }
-//     for (let i = 0; i < cookieArr.length; i++) {
-//         str = str + cookieArr[i];
-//     }
-//     console.log(str);
-//     return str;
-// };
-
 /**
  *
  * extract only required fields of cookie
  */
 
 const getModifyCookie = (cookie) => {
-    let cookieArr = cookie.split(' ');
+    let cookieArr = cookie.split(';');
     let cookieStr = '';
     let ajaxToken;
     for (let i = 0; i < cookieArr.length; i++) {
@@ -36,17 +21,15 @@ const getModifyCookie = (cookie) => {
         ) {
             if (cookieArr[i].includes('JSESSIONID')) {
                 if (!cookieStr.includes('JSESSIONID')) {
-                    cookieStr = cookieStr + cookieArr[i];
+                    cookieStr = cookieStr + cookieArr[i] + ';';
                     let temp = cookieArr[i].split('=').pop();
                     temp = temp.replace(';', '');
                     temp = temp.replace(/"/g, '');
-                    // temp = temp[1].split(';');
-                    // temp = temp[0].split('"');
                     ajaxToken = temp;
                 }
                 continue;
             } else {
-                cookieStr = cookieStr + cookieArr[i];
+                cookieStr = cookieStr + cookieArr[i] + ';';
             }
         }
     }

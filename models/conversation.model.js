@@ -14,7 +14,8 @@ const Schema = mongoose.Schema;
 const conversationSchema = new Schema(
     {
         clientId: mongoose.Schema.Types.ObjectId,
-        conversationId: mongoose.Schema.Types.ObjectId,
+        conversationId: Schema.Types.String,
+        publicIdentifier: Schema.Types.String,
     },
     { timestamps: true },
 );
