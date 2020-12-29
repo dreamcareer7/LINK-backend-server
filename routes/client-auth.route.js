@@ -140,19 +140,24 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
             });
         }
         client.cookie = req.body.cookie;
-        if (client.isConversationAdded == false) {
-            let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.body.cookie);
-            let conversation = await conversationHelper.extract_chats(cookieStr, ajaxToken);
 
-            await Conversation.updateOne(
-                { clientId: req.client._id, publicIdentifier: conversation.publicIdentifier },
-                {
-                    clientId: req.client._id,
-                    conversationId: conversation.conversationId,
-                    publicIdentifier: conversation.publicIdentifier,
-                },
-                { upsert: true },
-            );
+        if (client.isConversationAdded === false) {
+            let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.body.cookie);
+            let conversations = await conversationHelper.extract_chats(cookieStr, ajaxToken);
+
+            let newConversation = new Conversation({
+                clientId: req.client._id,
+            });
+            await newConversation.save();
+
+            for (let i = 0; i < conversations.length; i++) {
+                await newConversation.conversations.push({
+                    conversationId: conversations[i].conversationId,
+                    publicIdentifier: conversations[i].publicIdentifier,
+                });
+            }
+            await newConversation.save();
+
             client.isConversationAdded = true;
         }
 
@@ -162,7 +167,7 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
             status: 'SUCCESS',
             message: 'Cookie Sucessfully saved.',
         });
-    } catch {
+    } catch (e) {
         Logger.log.error('Error in get cookie and token call.', e.message || e);
         res.status(500).json({
             status: e.status || 'ERROR',

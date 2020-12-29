@@ -1,23 +1,46 @@
 const Logger = require('../services/logger');
 const axios = require('axios');
 
-const extract_chats = async (cookie, ajaxToken) => {
+const extract_chats = async (cookie, ajaxToken, newConversationIdArr) => {
     try {
         let created_before = null;
         let extracted_chats = [];
-        while (true) {
-            let raw_chats_data = await fetch_chats(cookie, ajaxToken, created_before);
+        if (!newConversationIdArr) {
+            while (true) {
+                let raw_chats_data = await fetch_chats(cookie, ajaxToken, created_before);
 
-            let processed_chat_data = await process_chat_data(raw_chats_data);
+                let processed_chat_data = await process_chat_data(raw_chats_data);
 
-            if (processed_chat_data['chats'].length > 0) {
-                extracted_chats.push(processed_chat_data['chats']);
-                created_before = processed_chat_data['lowestLastActivity'];
-            } else {
-                break;
+                if (processed_chat_data['chats'].length > 0) {
+                    extracted_chats.push(processed_chat_data['chats']);
+                    created_before = processed_chat_data['lowestLastActivity'];
+                } else {
+                    break;
+                }
+            }
+        } else {
+            while (newConversationIdArr.length > 0) {
+                let raw_chats_data = await fetch_chats(cookie, ajaxToken, created_before);
+
+                let processed_chat_data = await process_chat_data(raw_chats_data);
+
+                if (processed_chat_data['chats'].length > 0) {
+                    for (let j = 0; j < processed_chat_data['chats'].length; j++) {
+                        for (let i = 0; i < newConversationIdArr.length; i++) {
+                            if (newConversationIdArr[i] == processed_chat_data['chats'][j].conversationId) {
+                                newConversationIdArr.splice(i, 1);
+                                extracted_chats.push(processed_chat_data['chats'][j]);
+                            }
+                        }
+                    }
+
+                    created_before = processed_chat_data['lowestLastActivity'];
+                } else {
+                    break;
+                }
             }
         }
-        return extracted_chats;
+        return extracted_chats.flat();
     } catch (e) {
         Logger.log.error('Error in extract_chats.', e.message || e);
         return Promise.reject({ message: 'Error in extract_chats.' });
