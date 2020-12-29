@@ -7,7 +7,7 @@ const cookieHelper = require('../helper/cookie.helper');
 const conversationHelper = require('../helper/conversation.helper');
 const Logger = require('../services/logger');
 
-router.get('/get-conversationIdArr', async (req, res) => {
+router.post('/get-conversationIdArr', async (req, res) => {
     try {
         if (!req.body.conversationIdArr) {
             return res.status(400).send({
