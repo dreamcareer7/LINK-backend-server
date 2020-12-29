@@ -1,4 +1,7 @@
 module.exports = {
+    twoFA: {
+        generatorName: 'Linkfluencer',
+    },
     jwtSecret: process.env.JWT_SECRET || 'SimpleJWT',
     expireTime: process.env.EXPIRE_TIME || '2', //in hrs
     backEndBaseUrl: process.env.BACKEND_BASE_URL || 'http://localhost:3500/',
