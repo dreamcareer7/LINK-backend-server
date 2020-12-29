@@ -36,6 +36,7 @@ router.post('/login', async (req, res) => {
             res.status(200).send({
                 status: 'PROMPT_FOR_OTP',
                 data: {
+                    isTwoFAEnabled: admin.isTwoFAEnabled,
                     token: token,
                 },
             });
@@ -47,6 +48,7 @@ router.post('/login', async (req, res) => {
             res.status(200).json({
                 status: 'SUCCESS',
                 data: {
+                    isTwoFAEnabled: admin.isTwoFAEnabled,
                     firstName: admin.firstName,
                     lastName: admin.lastName,
                     email: admin.email,
