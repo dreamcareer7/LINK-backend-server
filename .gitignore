@@ -50,3 +50,4 @@ demo.js
 
 #Key files
 keys/*
+!keys/**/.gitkeep
