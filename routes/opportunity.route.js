@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Opportunity = mongoose.model('opportunity');
+const Conversation = mongoose.model('conversation');
 const Logger = require('../services/logger');
 const opportunityHelper = require('../helper/opportunity.helper');
 const cookieHelper = require('../helper/cookie.helper');
@@ -25,6 +26,51 @@ router.post('/add-opportunity', async (req, res) => {
             if (opportunity) {
                 opportunity = await Opportunity.findOneAndUpdate(
                     { clientId: req.client._id, isDeleted: false, publicIdentifier: req.body.publicIdentifier },
+                    opportunityData,
+                    { new: true },
+                );
+                Logger.log.info('Opportunity updated.');
+            } else {
+                opportunity = new Opportunity(opportunityData);
+                await opportunity.save();
+                Logger.log.info('New Opportunity added.');
+            }
+            return res.status(200).send({
+                status: 'SUCCESS',
+                data: opportunity,
+            });
+        } else if (req.body.conversationId) {
+            let publicIdentifier;
+            let dbConversation = await Conversation.findOne({
+                clientId: req.client._id,
+                'conversations.conversationId': req.body.conversationId,
+            });
+
+            if (!dbConversation) {
+                return res.status(400).send({
+                    status: 'NOT_FOUND',
+                    message: 'ConversationId is Not Found in db.',
+                });
+            }
+
+            for (let i = 0; i < dbConversation.conversations.length; i++) {
+                if (dbConversation.conversations[i].conversationId == req.body.conversationId) {
+                    publicIdentifier = dbConversation.conversations[i].publicIdentifier;
+                }
+            }
+
+            let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
+            let opportunityData = await opportunityHelper.getProfile(publicIdentifier, cookieStr, ajaxToken);
+            opportunityData.clientId = req.client._id;
+            let opportunity = await Opportunity.findOne({
+                clientId: req.client._id,
+                isDeleted: false,
+                publicIdentifier: publicIdentifier,
+            });
+
+            if (opportunity) {
+                opportunity = await Opportunity.findOneAndUpdate(
+                    { clientId: req.client._id, isDeleted: false, publicIdentifier: publicIdentifier },
                     opportunityData,
                     { new: true },
                 );
@@ -99,9 +145,13 @@ router.get('/get-opportunity', async (req, res) => {
         });
 
         if (opportunitys) {
+            let publicIdentifierArr = [];
+            for (let i = 0; i < opportunitys.length; i++) {
+                publicIdentifierArr.push(opportunitys[i].publicIdentifier);
+            }
             return res.status(200).send({
                 status: 'SUCCESS',
-                data: opportunitys,
+                data: publicIdentifierArr,
             });
         } else {
             return res.status(400).send({

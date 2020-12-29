@@ -30,6 +30,7 @@ const clientSchema = new Schema(
         companyLocation: Schema.Types.String,
         gender: Schema.Types.String,
         subscriberImportance: Schema.Types.String,
+        isConversationAdded: { type: Schema.Types.Boolean, default: false },
         isInvited: { type: Schema.Types.Boolean, default: false },
         invitedToken: { type: Schema.Types.String, default: null },
         jwtToken: [Schema.Types.String],
