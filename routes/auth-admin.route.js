@@ -26,7 +26,7 @@ router.post('/login', async (req, res) => {
                 message: 'Incorrect email or password.',
             });
         }
-        console.log(admin);
+
         if (admin.isTwoFAEnabled) {
             let jwtSecret = config.jwtSecret;
             let access = 'auth';
