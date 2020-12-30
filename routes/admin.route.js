@@ -61,7 +61,7 @@ router.post('/sign-up', async (req, res) => {
 router.get('/get-admin', async (req, res) => {
     try {
         let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false }).select(
-            'firstName lastName email phone profileUrl',
+            '-password -jwtToken -forgotOrSetPasswordToken -isDeleted -twoFASecretKey',
         );
 
         if (!admin) {
@@ -95,7 +95,7 @@ router.post('/update/:id', async (req, res) => {
             });
         }
         let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false }).select(
-            '-forgotOrSetPasswordToken -jwtToken -password',
+            '-password -jwtToken -forgotOrSetPasswordToken -isDeleted -twoFASecretKey',
         );
         if (!admin) {
             return res.status(400).send({
@@ -205,7 +205,9 @@ get all admin
 
 router.get('/all-admin', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
-        let admins = await Admin.find({}).select('-forgotOrSetPasswordToken -jwtToken -password');
+        let admins = await Admin.find({}).select(
+            '-password -jwtToken -forgotOrSetPasswordToken -isDeleted -twoFASecretKey',
+        );
 
         res.status(200).json({
             status: 'SUCCESS',
