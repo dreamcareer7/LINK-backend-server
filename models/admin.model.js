@@ -47,7 +47,7 @@ adminSchema.statics.findByToken = async function(token) {
             .findOne({
                 _id: decoded._id,
             })
-            .select('-password -jwtToken -forgotOrSetPasswordToken -isDeleted -twoFASecretKey');
+            .select('-password');
         if (adminData.jwtToken.indexOf(token) !== -1) {
             if (decoded.expiredTime > d.getTime()) {
                 return adminData;

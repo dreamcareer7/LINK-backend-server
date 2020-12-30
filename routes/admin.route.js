@@ -122,6 +122,33 @@ router.post('/update/:id', async (req, res) => {
         });
     }
 });
+/**
+ * enable-disable-2fa for admin
+ */
+
+router.put('/enable-disable-2fa', async (req, res) => {
+    try {
+        if (!req.body.isTwoFAEnabled) {
+            return res.status(400).json({
+                status: 'ERROR',
+                message: 'isTwoFAEnabled is can not Empty.',
+            });
+        }
+        let admin = req.admin;
+        admin.isTwoFAEnabled = req.body.isTwoFAEnabled;
+        await admin.save();
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: { isTwoFAEnabled: admin.isTwoFAEnabled },
+        });
+    } catch (e) {
+        Logger.log.error('Error in TwoFAEnabled for Admin API call', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
 
 /*
  inactive admin 

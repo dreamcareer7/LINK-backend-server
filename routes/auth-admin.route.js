@@ -26,10 +26,11 @@ router.post('/login', async (req, res) => {
                 message: 'Incorrect email or password.',
             });
         }
+        console.log(admin);
         if (admin.isTwoFAEnabled) {
             let jwtSecret = config.jwtSecret;
             let access = 'auth';
-            let expiryTime = parseInt(config.jwtExpireTime.twoFAToken) * 60 * 1000 + new Date().getTime();
+            let expiryTime = parseInt(config.expireTime) * 60 * 1000 + new Date().getTime();
             let token = jwt
                 .sign({ _id: admin._id.toHexString(), access, expiryTime: expiryTime }, jwtSecret)
                 .toString();
