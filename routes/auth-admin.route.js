@@ -301,7 +301,7 @@ router.put('/reset-password/:token', async (req, res) => {
         } else {
             return res.status(500).send({
                 status: 'ERROR',
-                message: 'Invalid Token or Admin is not Find.',
+                message: 'Invalid Token or Admin is not Found.',
             });
         }
     } catch (e) {
