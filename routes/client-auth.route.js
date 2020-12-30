@@ -142,23 +142,29 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
         client.cookie = req.body.cookie;
 
         if (client.isConversationAdded === false) {
-            let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.body.cookie);
-            let conversations = await conversationHelper.extract_chats(cookieStr, ajaxToken);
-
-            let newConversation = new Conversation({
-                clientId: req.client._id,
-            });
-            await newConversation.save();
-
-            for (let i = 0; i < conversations.length; i++) {
-                await newConversation.conversations.push({
-                    conversationId: conversations[i].conversationId,
-                    publicIdentifier: conversations[i].publicIdentifier,
-                });
-            }
-            await newConversation.save();
-
             client.isConversationAdded = true;
+            await client.save();
+            try {
+                let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.body.cookie);
+                let conversations = await conversationHelper.extract_chats(cookieStr, ajaxToken);
+
+                let newConversation = new Conversation({
+                    clientId: req.client._id,
+                });
+                await newConversation.save();
+
+                for (let i = 0; i < conversations.length; i++) {
+                    await newConversation.conversations.push({
+                        conversationId: conversations[i].conversationId,
+                        publicIdentifier: conversations[i].publicIdentifier,
+                    });
+                }
+
+                await newConversation.save();
+            } catch (e) {
+                client.isConversationAdded = false;
+                await client.save();
+            }
         }
 
         await client.save();
