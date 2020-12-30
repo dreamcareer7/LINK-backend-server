@@ -147,7 +147,7 @@ router.post('/logout', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
         admin.save();
         res.status(200).json({
             status: 'SUCCESS',
-            message: 'Admin is SUCCESSfully logout.',
+            message: 'Admin is Successfully logout.',
         });
     } catch (e) {
         Logger.log.error('Error in logout Admin API call', e.message || e);
@@ -174,7 +174,7 @@ router.post('/logout-all-devices', authMiddleWare.adminAuthMiddleWare, async (re
         admin.save();
         res.status(200).json({
             status: 'SUCCESS',
-            message: 'Admin is SUCCESSfully logout from all devices.',
+            message: 'Admin is Successfully logout from all devices.',
         });
     } catch (e) {
         Logger.log.error('Error in logout Admin from all devices API call', e.message || e);
@@ -203,7 +203,7 @@ router.post('/change-password', authMiddleWare.adminAuthMiddleWare, async (req, 
             await admin.save();
             return res.status(200).send({
                 status: 'SUCCESS',
-                message: 'Password is SUCCESSfully updated.',
+                message: 'Password is Successfully updated.',
             });
         } else {
             return res.status(400).send({
@@ -259,32 +259,27 @@ router.post('/forgot-password', async (req, res) => {
 /*
 admin reset password 
 */
-router.put('/reset-password', async (req, res) => {
+router.put('/reset-password/:token', async (req, res) => {
     try {
         let d = new Date();
-        if (!req.body.password || !req.body.confirmPassword || !req.query.token) {
+        if (!req.body.password || !req.params.token) {
             return res.status(400).send({
                 status: 'REQUIRED',
                 message: 'Password Confirm Password and Token is required.',
             });
         }
-        if (req.body.password !== req.body.confirmPassword) {
-            return res.status(400).send({
-                status: 'NOT_MATCHED',
-                message: 'Password and Confirm Password is does not matched !',
-            });
-        }
-        decoded = jwt.verify(req.query.token, config.jwtSecret);
+
+        decoded = jwt.verify(req.params.token, config.jwtSecret);
         let admin = await Admin.findOne({ _id: decoded._id, isDeleted: false });
         if (admin && decoded) {
-            if (admin.forgotOrSetPasswordToken === req.query.token) {
+            if (admin.forgotOrSetPasswordToken === req.params.token) {
                 if (decoded.expiredTime > d.getTime()) {
                     admin.password = req.body.password;
                     admin.forgotOrSetPasswordToken = null;
                     await admin.save();
                     return res.status(200).send({
                         status: 'SUCCESS',
-                        message: 'Your Password is SUCCESSfully reset.',
+                        message: 'Your Password is Successfully reset.',
                     });
                 } else {
                     admin.forgotOrSetPasswordToken = null;
@@ -417,25 +412,20 @@ router.put('/configure-2fa', authMiddleWare.adminAuthMiddleWare, async (req, res
 /*
 Set Password
 */
-router.put('/set-password', async (req, res) => {
+router.put('/set-password/:token', async (req, res) => {
     try {
         let d = new Date();
-        if (!req.body.password || !req.body.confirmPassword || !req.query.token) {
+        if (!req.body.password || !req.params.token) {
             return res.status(400).send({
                 status: 'REQUIRED',
                 message: 'Password Confirm Password and Token is required.',
             });
         }
-        if (req.body.password !== req.body.confirmPassword) {
-            return res.status(400).send({
-                status: 'NOT_MATCHED',
-                message: 'Password and Confirm Password is does not matched !',
-            });
-        }
-        decoded = jwt.verify(req.query.token, config.jwtSecret);
+
+        decoded = jwt.verify(req.params.token, config.jwtSecret);
         let admin = await Admin.findOne({ _id: decoded._id, isDeleted: false });
         if (admin && decoded) {
-            if (admin.forgotOrSetPasswordToken === req.query.token) {
+            if (admin.forgotOrSetPasswordToken === req.params.token) {
                 if (decoded.expiredTime > d.getTime()) {
                     admin.password = req.body.password;
                     admin.forgotOrSetPasswordToken = null;
@@ -443,7 +433,7 @@ router.put('/set-password', async (req, res) => {
                     await admin.save();
                     return res.status(200).send({
                         status: 'SUCCESS',
-                        message: 'Your Password is SUCCESSfully set.',
+                        message: 'Your Password is Successfully set.',
                     });
                 } else {
                     admin.forgotOrSetPasswordToken = null;

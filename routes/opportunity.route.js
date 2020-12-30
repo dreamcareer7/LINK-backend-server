@@ -181,7 +181,7 @@ router.delete('/delete-opportunity/:id', async (req, res) => {
         if (opportunity) {
             return res.status(200).json({
                 status: 'SUCCESS',
-                message: 'opportunitys is Deleted SUCCESSfully.',
+                message: 'opportunitys is Deleted Successfully.',
             });
         } else {
             return res.status(400).json({

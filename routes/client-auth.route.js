@@ -64,7 +64,7 @@ router.get('/sign-up', async (req, res) => {
             client.jwtToken.push(token);
             await client.save();
             console.log('Client Token ::', token);
-            Logger.log.info('Login SUCCESSfully to Client Deshbord.');
+            Logger.log.info('Login Successfully to Client Deshbord.');
             return res.status(200).send({
                 message: 'Welcome to Dashbord.',
                 status: 'SUCCESS',
@@ -236,7 +236,7 @@ router.get('/sign-up-invitation', async (req, res) => {
                 client.jwtToken.push(token);
                 await client.save();
                 console.log('Client Token ::', token);
-                Logger.log.info('Login SUCCESSfully to Client Deshbord.');
+                Logger.log.info('Login Successfully to Client Deshbord.');
                 return res.status(200).send({
                     message: 'Welcome to Dashbord.',
                     status: 'SUCCESS',
@@ -381,7 +381,7 @@ router.post('/logout', authMiddleWare.clientAuthMiddleWare, async (req, res) => 
         client.save();
         res.status(200).json({
             status: 'SUCCESS',
-            message: 'Client is SUCCESSfully logout.',
+            message: 'Client is Successfully logout.',
         });
     } catch (e) {
         Logger.log.error('Error in logout Client API call', e.message || e);
@@ -408,7 +408,7 @@ router.post('/logout-all-devices', authMiddleWare.clientAuthMiddleWare, async (r
         client.save();
         res.status(200).json({
             status: 'SUCCESS',
-            message: 'Client is SUCCESSfully logout from all devices.',
+            message: 'Client is Successfully logout from all devices.',
         });
     } catch (e) {
         Logger.log.error('Error in logout Client from all devices API call', e.message || e);

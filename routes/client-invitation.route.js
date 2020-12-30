@@ -43,7 +43,7 @@ router.post('/send-invitation', async (req, res) => {
         mailHelper.sendMail(mailObj);
         return res.status(200).send({
             status: 'SUCCESS',
-            message: `Invitation SUCCESSfully Sent to ${newClient.email}.`,
+            message: `Invitation Successfully Sent to ${newClient.email}.`,
         });
     } catch (e) {
         Logger.log.error('Error in Client Invitation API call.', e.message || e);
@@ -79,7 +79,7 @@ router.delete('/delete-invitation/:id', async (req, res) => {
             await Client.findByIdAndDelete(req.params.id);
             return res.status(400).send({
                 status: 'SUCCESS',
-                message: 'Client deleted SUCCESSfully.',
+                message: 'Client deleted SUCCESSSuccessfullyfully.',
             });
         }
     } catch (e) {

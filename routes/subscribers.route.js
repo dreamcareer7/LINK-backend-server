@@ -105,7 +105,7 @@ router.put('/delete-subscription/:id', async (req, res) => {
         await client.save();
         return res.status(200).send({
             status: 'SUCCESS',
-            message: 'subscription deleted SUCCESSfully.',
+            message: 'subscription deleted Successfully.',
         });
     } catch (e) {
         Logger.log.error('Error in delete-subscription API call', e.message || e);

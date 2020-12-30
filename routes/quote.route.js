@@ -115,7 +115,7 @@ router.delete('/delete-quote/:id', async (req, res) => {
         }
         return res.status(200).send({
             status: 'SUCCESS',
-            message: 'delete quote SUCCESSfully.',
+            message: 'delete quote Successfully.',
         });
     } catch (e) {
         Logger.log.error('Error in delete quote.', e.message || e);
