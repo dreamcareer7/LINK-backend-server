@@ -265,7 +265,7 @@ router.put('/reset-password/:token', async (req, res) => {
         if (!req.body.password || !req.params.token) {
             return res.status(400).send({
                 status: 'REQUIRED',
-                message: 'Password Confirm Password and Token is required.',
+                message: 'Password and Token is required.',
             });
         }
 
@@ -418,7 +418,7 @@ router.put('/set-password/:token', async (req, res) => {
         if (!req.body.password || !req.params.token) {
             return res.status(400).send({
                 status: 'REQUIRED',
-                message: 'Password Confirm Password and Token is required.',
+                message: 'Password  and Token is required.',
             });
         }
 
