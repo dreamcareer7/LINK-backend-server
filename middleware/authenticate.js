@@ -10,7 +10,6 @@ let adminAuthMiddleWare = async (req, res, next) => {
     if (token) {
         try {
             let admin = await Admin.findByToken(token);
-            admin.password = undefined;
             if (admin) {
                 req.admin = admin;
                 req.admin.token = token;

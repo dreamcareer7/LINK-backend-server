@@ -43,9 +43,11 @@ adminSchema.statics.findByToken = async function(token) {
     let adminData;
     try {
         decoded = jwt.verify(token, jwtSecret);
-        adminData = await admin.findOne({
-            _id: decoded._id,
-        });
+        adminData = await admin
+            .findOne({
+                _id: decoded._id,
+            })
+            .select('-password');
         if (adminData.jwtToken.indexOf(token) !== -1) {
             if (decoded.expiredTime > d.getTime()) {
                 return adminData;
