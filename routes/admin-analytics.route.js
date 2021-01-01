@@ -7,11 +7,64 @@ const Logger = require('../services/logger');
 
 router.put('/deal-value', async (req, res) => {
     try {
-        let opportunity = await Opportunity.find({}).select('dealSize');
+        if (!req.body.endDate || !req.body.startDate) {
+            return res.status(400).json({
+                status: 'ERROR',
+                message: 'Required field is missing',
+            });
+        }
+        let maxDealValue;
+        let mod;
+        let div;
+
+        let opportunity = await Opportunity.find()
+            .sort({ dealSize: -1 })
+            .limit(1)
+            .select('dealSize');
+        maxDealValue = opportunity[0].dealSize;
+        mod = maxDealValue % 7;
+        maxDealValue = 7 - mod + maxDealValue;
+        div = maxDealValue / 7;
+        let concatArr = [];
+        for (let i = 1; i <= 7; i++) {
+            concatArr.push({
+                $cond: [
+                    {
+                        $and: [{ $gte: ['$dealSize', div * i - div + 1] }, { $lte: ['$dealSize', div * i] }],
+                    },
+                    `${div * i - div + 1}-${div * i}`,
+                    '',
+                ],
+            });
+        }
+        let dealValue = await Opportunity.aggregate([
+            {
+                $match: {
+                    createdAt: {
+                        $gte: new Date(req.body.startDate),
+                        $lte: new Date(req.body.endDate),
+                    },
+                },
+            },
+            {
+                $project: {
+                    range: {
+                        $concat: concatArr,
+                    },
+                },
+            },
+            {
+                $group: {
+                    _id: '$range',
+                    total: {
+                        $sum: 1,
+                    },
+                },
+            },
+        ]).allowDiskUse(true);
         return res.status(200).send({
             status: 'SUCCESS',
-            data: opportunity,
-            length: opportunity.length,
+            data: dealValue,
         });
     } catch (e) {
         Logger.log.error('Error in get deal value of opportunity API call', e.message || e);
