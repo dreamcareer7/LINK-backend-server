@@ -128,12 +128,6 @@ router.post('/update/:id', async (req, res) => {
 
 router.put('/enable-disable-2fa', async (req, res) => {
     try {
-        if (!req.body.isTwoFAEnabled) {
-            return res.status(400).json({
-                status: 'ERROR',
-                message: 'isTwoFAEnabled is can not Empty.',
-            });
-        }
         let admin = req.admin;
         admin.isTwoFAEnabled = req.body.isTwoFAEnabled;
         await admin.save();

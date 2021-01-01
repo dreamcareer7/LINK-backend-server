@@ -44,8 +44,13 @@ router.put('/paused-subscription/:id', async (req, res) => {
                 message: 'subscriber is not found.',
             });
         }
-        console.log(client);
-        client.isSubscriptionPaused = true;
+
+        if (req.body.isSubscriptionPaused === true) {
+            client.selectedPlan.status = 'PAUSED';
+        } else {
+            client.selectedPlan.status = client.selectedPlan.currentPlan;
+        }
+
         await client.save();
         return res.status(200).send({
             status: 'SUCCESS',
@@ -73,7 +78,11 @@ router.put('/cancel-subscription/:id', async (req, res) => {
                 message: 'subscriber is not found.',
             });
         }
-        client.isSubscribed = false;
+        if (req.body.isSubscriptionCancelled === true) {
+            client.selectedPlan.status = 'CANCELLED';
+        } else {
+            client.selectedPlan.status = client.selectedPlan.currentPlan;
+        }
         await client.save();
         return res.status(200).send({
             status: 'SUCCESS',
