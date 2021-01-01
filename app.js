@@ -59,7 +59,7 @@ let opportunityNote = require('./routes/opportunity-note.route');
 let subscribers = require('./routes/subscribers.route');
 let clientInvitation = require('./routes/client-invitation.route');
 let adminAnalytics = require('./routes/admin-analytics.route');
-let clientAnalytics = require('./routes/client-analytics.route');
+let clientAnalytics = require('./routes/client-dashboard.route');
 let payment = require('./routes/payment.route');
 let conversation = require('./routes/conversation.route');
 
@@ -74,7 +74,7 @@ app.use('/opportunity-note', authMiddleWare.clientAuthMiddleWare, opportunityNot
 app.use('/subscribers', authMiddleWare.adminAuthMiddleWare, subscribers);
 app.use('/client-invitation', authMiddleWare.adminAuthMiddleWare, clientInvitation);
 app.use('/admin-analytics', authMiddleWare.adminAuthMiddleWare, adminAnalytics);
-app.use('/client-analytics', authMiddleWare.clientAuthMiddleWare, clientAnalytics);
+app.use('/client-dashboard', authMiddleWare.clientAuthMiddleWare, clientAnalytics);
 app.use('/payment', payment);
 app.use('/conversation', authMiddleWare.clientAuthMiddleWare, conversation);
 /**
