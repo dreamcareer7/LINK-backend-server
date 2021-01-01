@@ -67,7 +67,7 @@ router.put('/deal-value', async (req, res) => {
             data: dealValue,
         });
     } catch (e) {
-        Logger.log.error('Error in get deal value of opportunity API call', e.message || e);
+        Logger.log.error('Error in  deal-value admin analytics call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,
@@ -114,7 +114,7 @@ router.put('/industries', async (req, res) => {
             data: data,
         });
     } catch (e) {
-        Logger.log.error('Error in  API call', e.message || e);
+        Logger.log.error('Error in industries  admin analytics call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,
@@ -161,7 +161,7 @@ router.put('/gender', async (req, res) => {
             data: data,
         });
     } catch (e) {
-        Logger.log.error('Error in  API call', e.message || e);
+        Logger.log.error('Error in gender  admin analytics call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,
@@ -201,7 +201,7 @@ router.put('/subscription', async (req, res) => {
             data: data,
         });
     } catch (e) {
-        Logger.log.error('Error in  API call', e.message || e);
+        Logger.log.error('Error in subscription admin analytics call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,
@@ -242,7 +242,7 @@ router.put('/opportunities', async (req, res) => {
             data: data,
         });
     } catch (e) {
-        Logger.log.error('Error in  API call', e.message || e);
+        Logger.log.error('Error in opportunities  admin analytics call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,
@@ -290,7 +290,7 @@ router.put('/company-size', async (req, res) => {
             data: data,
         });
     } catch (e) {
-        Logger.log.error('Error in  API call', e.message || e);
+        Logger.log.error('Error in company-size admin analytics call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,
