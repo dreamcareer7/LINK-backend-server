@@ -183,6 +183,29 @@ router.get('/all-tags', async (req, res) => {
 });
 
 /**
+ * published or unpublished quote
+ */
+router.put('/published-unpublished/:id', async (req, res) => {
+    try {
+        let quote = await Quote.findOne({ _id: req.params.id });
+        quote.isPublished = req.body.isPublished;
+        await quote.save();
+        return res.status(200).json({
+            status: 'SUCCESS',
+            data: {
+                isPublished: quote.isPublished,
+            },
+        });
+    } catch (e) {
+        Logger.log.error('Error in quotes published-unpublished api call.', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+/**
  * Export Router
  */
 module.exports = router;
