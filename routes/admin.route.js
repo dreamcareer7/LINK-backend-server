@@ -226,9 +226,9 @@ get all admin
 
 router.get('/all-admin', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
-        let admins = await Admin.find({}).select(
-            '-password -jwtToken -forgotOrSetPasswordToken -isDeleted -twoFASecretKey',
-        );
+        let admins = await Admin.find({})
+            .select('-password -jwtToken -forgotOrSetPasswordToken -isDeleted -twoFASecretKey')
+            .lean();
 
         for (let i = 0; i < admins.length; i++) {
             if (req.admin._id.toString() == admins[i]._id.toString()) {
