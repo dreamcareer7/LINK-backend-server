@@ -51,6 +51,9 @@ router.put('/pipeline-value', async (req, res) => {
                         total: {
                             $sum: 1,
                         },
+                        totalDealValue: {
+                            $sum: '$dealSize',
+                        },
                     },
                 },
             ],

@@ -230,6 +230,12 @@ router.get('/all-admin', authMiddleWare.adminAuthMiddleWare, async (req, res) =>
             '-password -jwtToken -forgotOrSetPasswordToken -isDeleted -twoFASecretKey',
         );
 
+        for (let i = 0; i < admins.length; i++) {
+            if (req.admin._id.toString() == admins[i]._id.toString()) {
+                admins[i].isLoggedIn = true;
+                break;
+            }
+        }
         res.status(200).json({
             status: 'SUCCESS',
             data: admins,
