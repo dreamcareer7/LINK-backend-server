@@ -115,7 +115,7 @@ router.delete('/delete-message/:id', async function(req, res) {
 
         res.status(200).send({
             status: 'SUCCESS',
-            data: organization.errorMessages,
+            message: 'Error message deleted Successfully.',
         });
     } catch (e) {
         Logger.log.error('Error in delete Message API call', e.message || e);
