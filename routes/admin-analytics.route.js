@@ -40,8 +40,8 @@ router.put('/deal-value', async (req, res) => {
             });
         }
 
-        maxDealValue = dealRange[0].maxDealValue;
-        minDealValue = dealRange[0].minDealValue;
+        maxDealValue = Math.ceil(dealRange[0].maxDealValue);
+        minDealValue = Math.floor(dealRange[0].minDealValue);
 
         let a = minDealValue;
         let b = Math.pow(maxDealValue / minDealValue, 1 / 7);
@@ -83,8 +83,15 @@ router.put('/deal-value', async (req, res) => {
             }
         }
         concatArr.pop();
-
         let dealValue = await Opportunity.aggregate([
+            {
+                $match: {
+                    createdAt: {
+                        $gte: new Date(req.body.startDate),
+                        $lte: new Date(req.body.endDate),
+                    },
+                },
+            },
             {
                 $project: {
                     range: {
