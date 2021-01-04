@@ -14,30 +14,8 @@ router.put('/deal-value', async (req, res) => {
             });
         }
         let maxDealValue;
-        let mod;
-        let div;
-
-        let opportunity = await Opportunity.find()
-            .sort({ dealSize: -1 })
-            .limit(1)
-            .select('dealSize');
-        maxDealValue = opportunity[0].dealSize;
-        mod = maxDealValue % 7;
-        maxDealValue = 7 - mod + maxDealValue;
-        div = maxDealValue / 7;
-        let concatArr = [];
-        for (let i = 1; i <= 7; i++) {
-            concatArr.push({
-                $cond: [
-                    {
-                        $and: [{ $gte: ['$dealSize', div * i - div + 1] }, { $lte: ['$dealSize', div * i] }],
-                    },
-                    `${div * i - div + 1}-${div * i}`,
-                    '',
-                ],
-            });
-        }
-        let dealValue = await Opportunity.aggregate([
+        let minDealValue;
+        let dealRange = await Opportunity.aggregate([
             {
                 $match: {
                     createdAt: {
@@ -46,6 +24,67 @@ router.put('/deal-value', async (req, res) => {
                     },
                 },
             },
+            {
+                $group: {
+                    _id: null,
+                    maxDealValue: { $max: '$dealSize' },
+                    minDealValue: { $min: '$dealSize' },
+                },
+            },
+        ]);
+
+        if (dealRange.length === 0) {
+            return res.status(200).send({
+                status: 'SUCCESS',
+                data: dealRange,
+            });
+        }
+
+        maxDealValue = dealRange[0].maxDealValue;
+        minDealValue = dealRange[0].minDealValue;
+
+        let a = minDealValue;
+        let b = Math.pow(maxDealValue / minDealValue, 1 / 7);
+
+        let dealRangeArr = [];
+        for (let i = 0; i <= 7; i++) {
+            dealRangeArr.push(Math.ceil(a * Math.pow(b, i)));
+        }
+
+        let concatArr = [];
+
+        for (let i = 0; i <= 7; i++) {
+            if (i === 0) {
+                concatArr.push({
+                    $cond: [
+                        {
+                            $and: [
+                                { $gte: ['$dealSize', dealRangeArr[i]] },
+                                { $lte: ['$dealSize', dealRangeArr[i + 1]] },
+                            ],
+                        },
+                        `${dealRangeArr[i]}-${dealRangeArr[i + 1]}`,
+                        '',
+                    ],
+                });
+            } else {
+                concatArr.push({
+                    $cond: [
+                        {
+                            $and: [
+                                { $gte: ['$dealSize', dealRangeArr[i] + 1] },
+                                { $lte: ['$dealSize', dealRangeArr[i + 1]] },
+                            ],
+                        },
+                        `${dealRangeArr[i] + 1}-${dealRangeArr[i + 1]}`,
+                        '',
+                    ],
+                });
+            }
+        }
+        concatArr.pop();
+
+        let dealValue = await Opportunity.aggregate([
             {
                 $project: {
                     range: {
@@ -267,7 +306,7 @@ router.put('/company-size', async (req, res) => {
                                 'selectedPlan.status': req.body.selectedPlan,
                             },
                             {
-                                updatedAt: {
+                                createdAt: {
                                     $gte: new Date(req.body.startDate),
                                     $lte: new Date(req.body.endDate),
                                 },
