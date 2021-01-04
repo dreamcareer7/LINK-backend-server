@@ -86,15 +86,9 @@ router.get('/get-admin', async (req, res) => {
 /*
  update admin data
  */
-router.post('/update/:id', async (req, res) => {
+router.put('/update/:id', async (req, res) => {
     try {
-        if (req.admin._id != req.params.id) {
-            return res.status(400).send({
-                status: 'ERROR',
-                message: `Can not update Admin by other Admins`,
-            });
-        }
-        let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false }).select(
+        let admin = await Admin.findOne({ _id: req.params.id, isDeleted: false }).select(
             '-password -jwtToken -forgotOrSetPasswordToken -isDeleted -twoFASecretKey',
         );
         if (!admin) {

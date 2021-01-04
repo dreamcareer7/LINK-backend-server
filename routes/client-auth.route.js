@@ -146,7 +146,7 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
             await client.save();
             try {
                 let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.body.cookie);
-                let conversations = await conversationHelper.extract_chats(cookieStr, ajaxToken);
+                let conversations = await conversationHelper.extractChats(cookieStr, ajaxToken);
 
                 let newConversation = new Conversation({
                     clientId: req.client._id,

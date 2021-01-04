@@ -56,6 +56,7 @@ router.post('/add-opportunity', async (req, res) => {
             for (let i = 0; i < dbConversation.conversations.length; i++) {
                 if (dbConversation.conversations[i].conversationId == req.body.conversationId) {
                     publicIdentifier = dbConversation.conversations[i].publicIdentifier;
+                    break;
                 }
             }
 

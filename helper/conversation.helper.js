@@ -1,66 +1,66 @@
 const Logger = require('../services/logger');
 const axios = require('axios');
 
-const extract_chats = async (cookie, ajaxToken, newConversationIdArr) => {
+const extractChats = async (cookie, ajaxToken, newConversationIdArr) => {
     try {
-        let created_before = null;
-        let extracted_chats = [];
+        let createdBefore = null;
+        let extractedChats = [];
         if (!newConversationIdArr) {
             while (true) {
-                let raw_chats_data = await fetch_chats(cookie, ajaxToken, created_before);
+                let rawChatsData = await fetchChats(cookie, ajaxToken, createdBefore);
 
-                let processed_chat_data = await process_chat_data(raw_chats_data);
+                let processedChatData = await processChatData(rawChatsData);
 
-                if (processed_chat_data['chats'].length > 0) {
-                    extracted_chats.push(processed_chat_data['chats']);
-                    created_before = processed_chat_data['lowestLastActivity'];
+                if (processedChatData['chats'].length > 0) {
+                    extractedChats.push(processedChatData['chats']);
+                    createdBefore = processedChatData['lowestLastActivity'];
                 } else {
                     break;
                 }
             }
         } else {
             while (newConversationIdArr.length > 0) {
-                let raw_chats_data = await fetch_chats(cookie, ajaxToken, created_before);
+                let rawChatsData = await fetchChats(cookie, ajaxToken, createdBefore);
 
-                let processed_chat_data = await process_chat_data(raw_chats_data);
+                let processedChatData = await processChatData(rawChatsData);
 
-                if (processed_chat_data['chats'].length > 0) {
-                    for (let j = 0; j < processed_chat_data['chats'].length; j++) {
+                if (processedChatData['chats'].length > 0) {
+                    for (let j = 0; j < processedChatData['chats'].length; j++) {
                         for (let i = 0; i < newConversationIdArr.length; i++) {
-                            if (newConversationIdArr[i] == processed_chat_data['chats'][j].conversationId) {
+                            if (newConversationIdArr[i] === processedChatData['chats'][j].conversationId) {
                                 newConversationIdArr.splice(i, 1);
-                                extracted_chats.push(processed_chat_data['chats'][j]);
+                                extractedChats.push(processedChatData['chats'][j]);
                             }
                         }
                     }
 
-                    created_before = processed_chat_data['lowestLastActivity'];
+                    createdBefore = processedChatData['lowestLastActivity'];
                 } else {
                     break;
                 }
             }
         }
-        return extracted_chats.flat();
+        return extractedChats.flat();
     } catch (e) {
-        Logger.log.error('Error in extract_chats.', e.message || e);
-        return Promise.reject({ message: 'Error in extract_chats.' });
+        Logger.log.error('Error in extractChats.', e.message || e);
+        return Promise.reject({ message: 'Error in extractChats.' });
     }
 };
 
-const process_chat_data = async (raw_chats_data) => {
+const processChatData = async (rawChatsData) => {
     try {
-        let extracted_chats = [];
-        let raw_chats = {};
-        let last_activities = {};
-        let entity_urns = {};
-        let lowest_last_activity = 0;
-        let raw_data = raw_chats_data['included'];
+        let extractedChats = [];
+        let rawChats = {};
+        let lastActivities = {};
+        let entityUrns = {};
+        let lowestLastActivity = 0;
+        let rawData = rawChatsData['included'];
 
-        raw_data.forEach((item) => {
-            let item_type = item['$type'];
+        rawData.forEach((item) => {
+            let itemType = item['$type'];
 
-            if (item_type == 'com.linkedin.voyager.identity.shared.MiniProfile') {
-                raw_chats[item['entityUrn']] = {
+            if (itemType === 'com.linkedin.voyager.identity.shared.MiniProfile') {
+                rawChats[item['entityUrn']] = {
                     firstName: item['firstName'],
                     lastName: item['lastName'],
                     occupation: item['occupation'],
@@ -69,66 +69,66 @@ const process_chat_data = async (raw_chats_data) => {
                     trackingId: item['trackingId'],
                     $type: item['$type'],
                 };
-            } else if (item_type == 'com.linkedin.voyager.entities.shared.MiniCompany') {
-                raw_chats[item['entityUrn']] = {
+            } else if (itemType === 'com.linkedin.voyager.entities.shared.MiniCompany') {
+                rawChats[item['entityUrn']] = {
                     name: item['name'],
                     universalName: item['universalName'],
                     entityUrn: item['entityUrn'],
                     trackingId: item['trackingId'],
                     $type: item['$type'],
                 };
-            } else if (item_type == 'com.linkedin.voyager.messaging.Conversation') {
-                last_activities[item['*participants'][0]] = {
+            } else if (itemType === 'com.linkedin.voyager.messaging.Conversation') {
+                lastActivities[item['*participants'][0]] = {
                     lastActivityAt: item['lastActivityAt'],
                 };
-                if (lowest_last_activity == 0 || lowest_last_activity > item['lastActivityAt']) {
-                    lowest_last_activity = item['lastActivityAt'];
+                if (lowestLastActivity === 0 || lowestLastActivity > item['lastActivityAt']) {
+                    lowestLastActivity = item['lastActivityAt'];
                 }
-            } else if (item_type == 'com.linkedin.voyager.messaging.MessagingMember') {
-                conversation_id = item['entityUrn'].split('fs_messagingMember:(')[1].split(',')[0];
-                entity_urns[item['*miniProfile']] = {
+            } else if (itemType === 'com.linkedin.voyager.messaging.MessagingMember') {
+                conversationId = item['entityUrn'].split('fs_messagingMember:(')[1].split(',')[0];
+                entityUrns[item['*miniProfile']] = {
                     entityUrn: item['entityUrn'],
-                    conversationId: conversation_id,
+                    conversationId: conversationId,
                 };
-            } else if (item_type == 'com.linkedin.voyager.messaging.MessagingCompany') {
-                conversation_id = item['entityUrn'].split('fs_messagingCompany:(')[1].split(',')[0];
-                entity_urns[item['*miniCompany']] = {
+            } else if (itemType === 'com.linkedin.voyager.messaging.MessagingCompany') {
+                conversationId = item['entityUrn'].split('fs_messagingCompany:(')[1].split(',')[0];
+                entityUrns[item['*miniCompany']] = {
                     entityUrn: item['entityUrn'],
-                    conversationId: conversation_id,
+                    conversationId: conversationId,
                 };
             }
         });
 
-        for (let chat_id in raw_chats) {
+        for (let chatId in rawChats) {
             try {
-                temp_key = entity_urns[raw_chats[chat_id]['entityUrn']]['entityUrn'];
+                tempKey = entityUrns[rawChats[chatId]['entityUrn']]['entityUrn'];
             } catch (e) {
                 continue;
             }
-            if (last_activities.hasOwnProperty(temp_key)) {
-                let chat = raw_chats[chat_id];
-                chat['lastActivityAt'] = last_activities[temp_key]['lastActivityAt'];
-                chat['conversationId'] = entity_urns[raw_chats[chat_id]['entityUrn']]['conversationId'];
-                extracted_chats.push(chat);
+            if (lastActivities.hasOwnProperty(tempKey)) {
+                let chat = rawChats[chatId];
+                chat['lastActivityAt'] = lastActivities[tempKey]['lastActivityAt'];
+                chat['conversationId'] = entityUrns[rawChats[chatId]['entityUrn']]['conversationId'];
+                extractedChats.push(chat);
             }
         }
 
         return {
-            chats: extracted_chats,
-            lowestLastActivity: lowest_last_activity,
+            chats: extractedChats,
+            lowestLastActivity: lowestLastActivity,
         };
     } catch (e) {
-        Logger.log.error('Error in process_chat_data.', e.message || e);
-        return Promise.reject({ message: 'Error in process_chat_data.' });
+        Logger.log.error('Error in processChatData.', e.message || e);
+        return Promise.reject({ message: 'Error in processChatData.' });
     }
 };
-const fetch_chats = async (cookie, ajaxToken, created_before) => {
+const fetchChats = async (cookie, ajaxToken, createdBefore) => {
     try {
-        if (created_before == null) {
+        if (createdBefore === null) {
             url =
                 'https://www.linkedin.com/voyager/api/messaging/conversations?keyVersion=LEGACY_INBOX&count=20&q=syncToken';
         } else {
-            url = `https://www.linkedin.com/voyager/api/messaging/conversations?keyVersion=LEGACY_INBOX&createdBefore=${created_before}`;
+            url = `https://www.linkedin.com/voyager/api/messaging/conversations?keyVersion=LEGACY_INBOX&createdBefore=${createdBefore}`;
         }
         let data = {
             method: 'GET',
@@ -164,5 +164,5 @@ const fetch_chats = async (cookie, ajaxToken, created_before) => {
 };
 
 module.exports = {
-    extract_chats,
+    extractChats,
 };

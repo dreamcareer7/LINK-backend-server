@@ -7,7 +7,7 @@ const cookieHelper = require('../helper/cookie.helper');
 const conversationHelper = require('../helper/conversation.helper');
 const Logger = require('../services/logger');
 
-router.post('/get-conversationIdArr', async (req, res) => {
+router.post('/get-conversation-id-arr', async (req, res) => {
     try {
         if (!req.body.conversationIdArr) {
             return res.status(400).send({
@@ -33,7 +33,7 @@ router.post('/get-conversationIdArr', async (req, res) => {
             }
         }
         let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
-        let conversation = await conversationHelper.extract_chats(cookieStr, ajaxToken, newConversationIdArr);
+        let conversation = await conversationHelper.extractChats(cookieStr, ajaxToken, newConversationIdArr);
         let dbConversation = await Conversation.findOne({
             clientId: req.client._id,
         });
