@@ -68,6 +68,8 @@ let adminAnalytics = require('./routes/admin-analytics.route');
 let clientAnalytics = require('./routes/client-dashboard.route');
 let payment = require('./routes/payment.route');
 let conversation = require('./routes/conversation.route');
+let clientFollowUps = require('./routes/client-follow-ups.route');
+let clientCrm = require('./routes/client-crm.route');
 
 app.use('/', index);
 app.use('/admin', authMiddleWare.adminAuthMiddleWare, admin);
@@ -83,6 +85,9 @@ app.use('/admin-analytics', authMiddleWare.adminAuthMiddleWare, adminAnalytics);
 app.use('/client-dashboard', authMiddleWare.clientAuthMiddleWare, clientAnalytics);
 app.use('/payment', payment);
 app.use('/conversation', authMiddleWare.clientAuthMiddleWare, conversation);
+app.use('/client-follow-ups', authMiddleWare.clientAuthMiddleWare, clientFollowUps);
+app.use('/client-crm', authMiddleWare.clientAuthMiddleWare, clientCrm);
+
 /**
  * Create Admin
  */
