@@ -11,47 +11,29 @@ const Logger = require('../services/logger');
 
 router.put('/filters', async (req, res) => {
     try {
-        let and = [];
+        let queryObj = {
+            clientId: req.client._id,
+            isDeleted: false,
+        };
+
         if (req.body.stages.length > 0) {
-            let or = [];
-            for (i = 0; i < req.body.stages.length; i++) {
-                or.push({
-                    stage: req.body.stages[i],
-                });
-            }
-            and.push({
-                $or: or,
-            });
+            queryObj.stage = { $in: req.body.stages };
         }
 
         if (req.body.likelyHoods.length > 0) {
-            let or = [];
-            for (i = 0; i < req.body.likelyHoods.length; i++) {
-                or.push({
-                    likelyHood: req.body.likelyHoods[i],
-                });
-            }
-            and.push({
-                $or: or,
-            });
+            queryObj.likelyHood = { $in: req.body.likelyHoods };
         }
         if (req.body.dealSize) {
-            and.push({
-                dealSize: req.body.dealSize,
-            });
+            queryObj.dealSize = req.body.dealSize;
         }
         if (req.body.endDate && req.body.startDate) {
-            and.push({
-                createdAt: {
-                    $gte: new Date(req.body.startDate),
-                    $lte: new Date(req.body.endDate),
-                },
-            });
+            queryObj.createdAt = {
+                $gte: new Date(req.body.startDate),
+                $lte: new Date(req.body.endDate),
+            };
         }
-        if (and.length == 0) {
-            and.push({});
-        }
-        let opportunities = await Opportunity.find({ clientId: req.client._id, isDeleted: false, $and: and });
+
+        let opportunities = await Opportunity.find(queryObj);
         res.status(200).send({
             status: 'SUCCESS',
             data: opportunities,

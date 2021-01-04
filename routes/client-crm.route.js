@@ -8,42 +8,33 @@ const Logger = require('../services/logger');
  */
 router.put('/filters', async (req, res) => {
     try {
-        let and = [{ stage: req.body.stage }];
+        let queryObj = {
+            stage: req.body.stage,
+            clientId: req.client._id,
+            isDeleted: false,
+        };
+
         if (req.body.endDate && req.body.startDate) {
-            and.push({
-                createdAt: {
-                    $gte: new Date(req.body.startDate),
-                    $lte: new Date(req.body.endDate),
-                },
-            });
+            queryObj.createdAt = {
+                $gte: new Date(req.body.startDate),
+                $lte: new Date(req.body.endDate),
+            };
         }
         if (req.body.startDeal && req.body.endDeal) {
-            and.push({
-                dealSize: {
-                    $gte: req.body.startDeal,
-                    $lte: req.body.endDeal,
-                },
-            });
+            queryObj.dealSize = {
+                $gte: req.body.startDeal,
+                $lte: req.body.endDeal,
+            };
         }
         if (req.body.location) {
-            and.push({
-                location: { $regex: req.body.location, $options: 'i' },
-            });
+            queryObj.location = { $regex: req.body.location, $options: 'i' };
         }
 
         if (req.body.likelyHoods.length > 0) {
-            let or = [];
-            for (i = 0; i < req.body.likelyHoods.length; i++) {
-                or.push({
-                    likelyHood: req.body.likelyHoods[i],
-                });
-            }
-            and.push({
-                $or: or,
-            });
+            queryObj.likelyHood = { $in: req.body.likelyHoods };
         }
 
-        let opportunities = await Opportunity.find({ clientId: req.client._id, isDeleted: false, $and: and });
+        let opportunities = await Opportunity.find(queryObj);
         res.status(200).send({
             status: 'SUCCESS',
             data: opportunities,
