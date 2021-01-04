@@ -31,7 +31,7 @@ router.put('/deal-value', async (req, res) => {
                     minDealValue: { $min: '$dealSize' },
                 },
             },
-        ]);
+        ]).allowDiskUse(true);
 
         if (dealRange.length === 0) {
             return res.status(200).send({
