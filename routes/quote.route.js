@@ -36,6 +36,9 @@ router.post('/add-quote', async (req, res) => {
             tags: tagArr,
         });
         await quote.save();
+        quote = await Quote.findOne({ _id: quote._id })
+            .populate('tags')
+            .exec();
         res.status(200).send({
             status: 'SUCCESS',
             data: quote,
@@ -78,7 +81,9 @@ router.put('/update-quote/:id', async (req, res) => {
             },
             { quote: req.body.quote, quoteBy: req.body.quoteBy, isPublished: req.body.isPublished, tags: tagArr },
             { new: true },
-        );
+        )
+            .populate('tags')
+            .exec();
 
         res.status(200).send({
             status: 'SUCCESS',
