@@ -140,14 +140,22 @@ router.get('/all-quote', async (req, res) => {
     try {
         let page = parseInt(req.query.page);
         let limit = parseInt(req.query.limit);
-        let quote = await Quote.paginate(
-            {},
-            {
-                page,
-                limit,
-                populate: 'tags',
-            },
-        );
+        let queryObj = {};
+        let options = {
+            page,
+            limit,
+            populate: 'tags',
+        };
+        if (req.body.status === true || req.body.status === false) {
+            queryObj.isPublished = req.body.status;
+        }
+        if (req.body.sorting === 'RECENT') {
+            options.sort = { createdAt: -1 };
+        } else if (req.body.sorting === 'OLD') {
+            options.sort = { createdAt: 1 };
+        }
+
+        let quote = await Quote.paginate(queryObj, options);
 
         if (!quote) {
             return res.status(400).json({
