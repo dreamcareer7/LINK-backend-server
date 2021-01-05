@@ -163,6 +163,41 @@ const fetchChats = async (cookie, ajaxToken, createdBefore) => {
     }
 };
 
+const fetchConversation = async (cookie, ajaxToken, conversationId) => {
+    try {
+        let data = {
+            method: 'GET',
+            url: `https://www.linkedin.com/voyager/api/messaging/conversations/${conversationId}/events?q=syncToken&reload=true`,
+
+            headers: {
+                authority: 'www.linkedin.com',
+                accept: 'application/vnd.linkedin.normalized+json+2.1',
+                'csrf-token': ajaxToken,
+                'x-restli-protocol-version': '2.0.0',
+                'x-li-lang': 'en_US',
+                'user-agent':
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
+                'x-li-page-instance': 'urn:li:page:messaging_thread;2yOQNnTKS8yllg7K8byIgw==',
+                'x-li-track':
+                    '{"clientVersion":"1.7.6872","mpVersion":"1.7.6872","osName":"web","timezoneOffset":5.5,"deviceFormFactor":"DESKTOP","mpName":"voyager-web","displayDensity":1,"displayWidth":1920,"displayHeight":1080}',
+                'sec-fetch-mode': 'cors',
+                'sec-fetch-dest': 'empty',
+                referer: `https://www.linkedin.com/messaging/thread/${conversationId}/`,
+                'accept-language': 'en-US,en;q=0.9',
+                cookie: cookie,
+            },
+        };
+
+        let response = await axios(data);
+
+        return response.data;
+    } catch (e) {
+        Logger.log.error('Error in fetch Conversation.', e.message || e);
+        return Promise.reject({ message: 'Error in fetch Conversation.' });
+    }
+};
+
 module.exports = {
     extractChats,
+    fetchConversation,
 };

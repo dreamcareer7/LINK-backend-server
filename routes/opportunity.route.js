@@ -7,6 +7,7 @@ const Logger = require('../services/logger');
 const opportunityHelper = require('../helper/opportunity.helper');
 const cookieHelper = require('../helper/cookie.helper');
 const firebaseHelper = require('../helper/firebase-notification');
+const conversationHelper = require('../helper/conversation.helper');
 
 /**
  * add opportunity
@@ -93,6 +94,47 @@ router.post('/add-opportunity', async (req, res) => {
         }
     } catch (e) {
         Logger.log.error('Error in add opportunity API call.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+router.get('/fetch-conversation/:id', async (req, res) => {
+    try {
+        let opportunity = await Opportunity.findOne({ _id: req.params.id, clientId: req.client._id, isDeleted: false });
+        if (!opportunity) {
+            return res.status(400).json({
+                status: 'ERROR',
+                message: 'opportunitys is not Found!',
+            });
+        }
+        let dbConversation = await Conversation.findOne({
+            clientId: req.client._id,
+            'conversations.publicIdentifier': opportunity.publicIdentifier,
+        });
+        if (!dbConversation) {
+            return res.status(400).send({
+                status: 'NOT_FOUND',
+                message: 'ConversationId is Not Found in db.',
+            });
+        }
+        let conversationId;
+        for (let i = 0; i < dbConversation.conversations.length; i++) {
+            if (dbConversation.conversations[i].publicIdentifier == opportunity.publicIdentifier) {
+                conversationId = dbConversation.conversations[i].conversationId;
+                break;
+            }
+        }
+        let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
+        let conversationData = await conversationHelper.fetchConversation(cookieStr, ajaxToken, conversationId);
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: conversationData,
+        });
+    } catch (e) {
+        Logger.log.error('Error in fetch-conversation API call.', e.message || e);
         res.status(500).json({
             status: e.status || 'ERROR',
             message: e.message,
