@@ -7,6 +7,7 @@
  */
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const mongoosePaginate = require('mongoose-paginate');
 
 /**
  * Schema Definition
@@ -25,6 +26,7 @@ const quoteSchema = new Schema(
     },
     { timestamps: true },
 );
+quoteSchema.plugin(mongoosePaginate);
 
 /**
  * Export Schema

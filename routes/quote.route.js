@@ -138,9 +138,17 @@ get all  quotes
 
 router.get('/all-quote', async (req, res) => {
     try {
-        let quote = await Quote.find({})
-            .populate('tags')
-            .exec();
+        let page = parseInt(req.query.page);
+        let limit = parseInt(req.query.limit);
+        let quote = await Quote.paginate(
+            {},
+            {
+                page,
+                limit,
+                populate: 'tags',
+            },
+        );
+
         if (!quote) {
             return res.status(400).json({
                 status: 'NOT_FOUND',

@@ -7,6 +7,7 @@
  */
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const mongoosePaginate = require('mongoose-paginate');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 
@@ -114,6 +115,7 @@ clientSchema.methods.getAuthToken = function() {
         .toString();
     return token;
 };
+clientSchema.plugin(mongoosePaginate);
 
 /**
  * Export Schema

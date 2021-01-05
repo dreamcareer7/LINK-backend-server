@@ -9,9 +9,21 @@ const Logger = require('../services/logger');
  */
 router.get('/get-subscribers', async (req, res) => {
     try {
-        let client = await Client.find({ isDeleted: false }).select(
-            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
+        let page = parseInt(req.query.page);
+        let limit = parseInt(req.query.limit);
+        // let client = await Client.find({ isDeleted: false }).select(
+        //     '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
+        // );
+        let client = await Client.paginate(
+            { isDeleted: false },
+            {
+                page,
+                limit,
+                select:
+                    '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
+            },
         );
+
         if (!client) {
             return res.status(400).json({
                 status: 'SUBSCRIBER_NOT_FOUND',

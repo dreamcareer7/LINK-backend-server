@@ -11,6 +11,7 @@ const Schema = mongoose.Schema;
 const passwordHash = require('password-hash');
 const jwt = require('jsonwebtoken');
 const logger = require('./../services/logger');
+
 /**
  * Schema Definition
  */
@@ -142,6 +143,7 @@ adminSchema.methods.getTokenForPassword = function() {
         .toString();
     return token;
 };
+
 /**
  * Export Schema
  */

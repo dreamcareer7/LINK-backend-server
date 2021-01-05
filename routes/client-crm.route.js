@@ -8,6 +8,8 @@ const Logger = require('../services/logger');
  */
 router.put('/filters', async (req, res) => {
     try {
+        let page = parseInt(req.query.page);
+        let limit = parseInt(req.query.limit);
         let queryObj = {
             stage: req.body.stage,
             clientId: req.client._id,
@@ -34,7 +36,8 @@ router.put('/filters', async (req, res) => {
             queryObj.likelyHood = { $in: req.body.likelyHoods };
         }
 
-        let opportunities = await Opportunity.find(queryObj);
+        let opportunities = await Opportunity.paginate(queryObj, { page, limit });
+
         res.status(200).send({
             status: 'SUCCESS',
             data: opportunities,

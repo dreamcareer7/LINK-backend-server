@@ -1,4 +1,3 @@
-const { json } = require('body-parser');
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
@@ -11,6 +10,9 @@ const Logger = require('../services/logger');
 
 router.put('/filters', async (req, res) => {
     try {
+        let page = parseInt(req.query.page);
+        let limit = parseInt(req.query.limit);
+
         let queryObj = {
             clientId: req.client._id,
             isDeleted: false,
@@ -33,7 +35,8 @@ router.put('/filters', async (req, res) => {
             };
         }
 
-        let opportunities = await Opportunity.find(queryObj);
+        let opportunities = await Opportunity.paginate(queryObj, { page, limit });
+
         res.status(200).send({
             status: 'SUCCESS',
             data: opportunities,

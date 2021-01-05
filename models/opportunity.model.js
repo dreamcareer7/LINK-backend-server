@@ -6,6 +6,7 @@
  * System and 3rd Party libs
  */
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate');
 const Schema = mongoose.Schema;
 
 /**
@@ -35,7 +36,7 @@ const opportunitySchema = new Schema(
     },
     { timestamps: true },
 );
-
+opportunitySchema.plugin(mongoosePaginate);
 /**
  * Export Schema
  */
