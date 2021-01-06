@@ -54,11 +54,11 @@ router.post('/sign-up', async (req, res) => {
 });
 
 /**
- * Get admin data
+ * Get loggedIn admin data
  *
  */
 
-router.get('/get-admin', async (req, res) => {
+router.get('/get-loggedIn-admin', async (req, res) => {
     try {
         let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false }).select(
             '-password -jwtToken -forgotOrSetPasswordToken -isDeleted -twoFASecretKey',
@@ -83,6 +83,30 @@ router.get('/get-admin', async (req, res) => {
     }
 });
 
+router.get('/get-admin/:id', async (req, res) => {
+    try {
+        let admin = await Admin.findOne({ _id: req.params.id, isDeleted: false }).select(
+            '-password -jwtToken -forgotOrSetPasswordToken -isDeleted -twoFASecretKey -isTwoFAEnabled',
+        );
+
+        if (!admin) {
+            return res.status(400).send({
+                status: 'ADMIN_NOT_FOUND',
+                message: 'admin is not found.',
+            });
+        }
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: admin,
+        });
+    } catch (e) {
+        Logger.log.error('Error in get Admin API.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
 /*
  update admin data
  */
@@ -221,7 +245,7 @@ get all admin
 router.get('/all-admin', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
         let admins = await Admin.find({ isDeleted: false })
-            .select('-password -jwtToken -forgotOrSetPasswordToken -isDeleted -twoFASecretKey')
+            .select('-password -jwtToken -forgotOrSetPasswordToken -isDeleted -twoFASecretKey -isTwoFAEnabled')
             .lean();
 
         for (let i = 0; i < admins.length; i++) {
