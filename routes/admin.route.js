@@ -85,9 +85,15 @@ router.get('/get-loggedIn-admin', async (req, res) => {
 
 router.get('/get-admin/:id', async (req, res) => {
     try {
-        let admin = await Admin.findOne({ _id: req.params.id, isDeleted: false }).select(
-            '-password -jwtToken -forgotOrSetPasswordToken -isDeleted -twoFASecretKey -isTwoFAEnabled',
-        );
+        let admin = await Admin.findOne({ _id: req.params.id, isDeleted: false })
+            .select('-password -jwtToken -forgotOrSetPasswordToken -isDeleted -twoFASecretKey')
+            .lean();
+
+        if (req.admin._id.toString() === admin._id.toString()) {
+            admin.isLoggedIn = true;
+        } else {
+            admin.isTwoFAEnabled = undefined;
+        }
 
         if (!admin) {
             return res.status(400).send({
