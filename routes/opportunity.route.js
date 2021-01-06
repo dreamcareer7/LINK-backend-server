@@ -121,14 +121,21 @@ router.get('/fetch-conversation/:id', async (req, res) => {
             });
         }
         let conversationId;
+        let publicIdentifier;
         for (let i = 0; i < dbConversation.conversations.length; i++) {
             if (dbConversation.conversations[i].publicIdentifier == opportunity.publicIdentifier) {
                 conversationId = dbConversation.conversations[i].conversationId;
+                publicIdentifier = dbConversation.conversations[i].publicIdentifier;
                 break;
             }
         }
         let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
-        let conversationData = await conversationHelper.fetchConversation(cookieStr, ajaxToken, conversationId);
+        let conversationData = await conversationHelper.fetchConversation(
+            cookieStr,
+            ajaxToken,
+            conversationId,
+            publicIdentifier,
+        );
         return res.status(200).send({
             status: 'SUCCESS',
             data: conversationData,

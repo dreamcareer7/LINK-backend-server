@@ -163,7 +163,7 @@ const fetchChats = async (cookie, ajaxToken, createdBefore) => {
     }
 };
 
-const fetchConversation = async (cookie, ajaxToken, conversationId) => {
+const fetchConversation = async (cookie, ajaxToken, conversationId, publicIdentifier) => {
     try {
         let data = {
             method: 'GET',
@@ -189,11 +189,57 @@ const fetchConversation = async (cookie, ajaxToken, conversationId) => {
         };
 
         let response = await axios(data);
-
-        return response.data;
+        let msg = await processConversation(response.data, publicIdentifier);
+        return msg;
     } catch (e) {
         Logger.log.error('Error in fetch Conversation.', e.message || e);
         return Promise.reject({ message: 'Error in fetch Conversation.' });
+    }
+};
+
+const processConversation = async (response, publicIdentifier) => {
+    try {
+        let obj = {};
+        let msgArr = [];
+        for (let i = 0; i < response.included.length; i++) {
+            if (response.included[i].hasOwnProperty('publicIdentifier')) {
+                if (response.included[i].publicIdentifier !== publicIdentifier) {
+                    obj['1'] = { entityUrn: response.included[i].entityUrn };
+                } else {
+                    obj['2'] = { entityUrn: response.included[i].entityUrn };
+                }
+            }
+            if (response.included[i].hasOwnProperty('nameInitials')) {
+                for (let key in obj) {
+                    if (obj[key].entityUrn === response.included[i]['*miniProfile']) {
+                        obj[key].entityUrn = response.included[i].entityUrn;
+                    }
+                }
+            }
+        }
+
+        for (let i = 0; i < response.included.length; i++) {
+            let messageObj = {};
+            if (response.included[i].hasOwnProperty('*from')) {
+                for (let key in obj) {
+                    if (obj[key].entityUrn === response.included[i]['*from']) {
+                        messageObj.id = key;
+                        messageObj.message = response.included[i].eventContent.attributedBody.text;
+                        messageObj.createdAt = response.included[i].createdAt;
+                        msgArr.push(messageObj);
+                    }
+                }
+            }
+        }
+
+        msgArr.sort(function(a, b) {
+            return a.createdAt - b.createdAt;
+        });
+
+        return msgArr;
+    } catch (e) {
+        Logger.log.error('Error in process Conversation.', e.message || e);
+        return Promise.reject({ message: 'Error in process Conversation.' });
     }
 };
 
