@@ -195,6 +195,29 @@ router.get('/all-tags', async (req, res) => {
             data: tags,
         });
     } catch (e) {
+        Logger.log.error('Error in get all tags.', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+router.get('/get-quote/:id', async (req, res) => {
+    try {
+        let quote = await Quote.findOne({ _id: req.params.id }).populate('tags');
+
+        if (!quote) {
+            return res.status(400).json({
+                status: 'NOT_FOUND',
+                message: 'Quote is not found.',
+            });
+        }
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: quote,
+        });
+    } catch (e) {
         Logger.log.error('Error in get all quotes.', e.message || e);
         res.status(500).json({
             status: 'ERROR',
