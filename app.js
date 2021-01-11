@@ -70,6 +70,7 @@ let payment = require('./routes/payment.route');
 let conversation = require('./routes/conversation.route');
 let clientFollowUps = require('./routes/client-follow-ups.route');
 let clientCrm = require('./routes/client-crm.route');
+let organization = require('./routes/organization.route');
 
 app.use('/', index);
 app.use('/admin', authMiddleWare.adminAuthMiddleWare, admin);
@@ -87,6 +88,7 @@ app.use('/payment', payment);
 app.use('/conversation', authMiddleWare.clientAuthMiddleWare, conversation);
 app.use('/client-follow-ups', authMiddleWare.clientAuthMiddleWare, clientFollowUps);
 app.use('/client-crm', authMiddleWare.clientAuthMiddleWare, clientCrm);
+app.use('/organization', authMiddleWare.clientAuthMiddleWare, organization);
 
 /**
  * Create Admin
