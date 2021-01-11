@@ -313,6 +313,80 @@ router.post('/send-notifications/:id', async (req, res) => {
 });
 
 /**
+ * get opportunity by Id
+ */
+
+router.get('/get-opportunity/:id', async (req, res) => {
+    try {
+        let opportunity = await Opportunity.findOne({ _id: req.params.id, clientId: req.client._id, isDeleted: false });
+
+        if (opportunity) {
+            return res.status(200).send({
+                status: 'SUCCESS',
+                data: opportunity,
+            });
+        } else {
+            return res.status(400).send({
+                status: 'NOT_FOUND',
+                message: 'Opportunitys  is Not found.',
+            });
+        }
+    } catch (e) {
+        Logger.log.error('Error in get opportunity by Id API call.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+/**
+ * search-opportunity
+ */
+
+router.put('/search-opportunity', async (req, res) => {
+    try {
+        if (!req.body.name) {
+            return res.status(400).send({
+                status: 'ERROR',
+                message: 'name is required in body.',
+            });
+        }
+
+        let name = req.body.name
+            .replace(/  +/g, ' ')
+            .split(' ')
+            .slice(0, 2);
+
+        let opportunity = await Opportunity.find({
+            clientId: req.client._id,
+            isDeleted: false,
+
+            $or: [
+                { $and: [{ firstName: new RegExp(name[0], 'i') }, { lastName: new RegExp(name[1], 'i') }] },
+                { $and: [{ firstName: new RegExp(name[1], 'i') }, { lastName: new RegExp(name[0], 'i') }] },
+            ],
+        });
+        if (opportunity) {
+            return res.status(200).send({
+                status: 'SUCCESS',
+                data: opportunity,
+            });
+        } else {
+            return res.status(400).send({
+                status: 'NOT_FOUND',
+                message: 'Opportunitys is Not found.',
+            });
+        }
+    } catch (e) {
+        Logger.log.error('Error in search-opportunity API call.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
+/**
  * Export Router
  */
 module.exports = router;

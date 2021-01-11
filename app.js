@@ -88,7 +88,7 @@ app.use('/payment', payment);
 app.use('/conversation', authMiddleWare.clientAuthMiddleWare, conversation);
 app.use('/client-follow-ups', authMiddleWare.clientAuthMiddleWare, clientFollowUps);
 app.use('/client-crm', authMiddleWare.clientAuthMiddleWare, clientCrm);
-app.use('/organization', authMiddleWare.clientAuthMiddleWare, organization);
+app.use('/organization', organization);
 
 /**
  * Create Admin
@@ -97,6 +97,14 @@ let ServerInitializer = require('./helper/serverInitialization');
 
 ServerInitializer.createAdmin();
 ServerInitializer.createOrganization();
+
+/**
+ * Initialize CRON
+ */
+
+let SchedulerHelper = require('./services/cron.schedular.service');
+
+SchedulerHelper.scheduler();
 
 /**
  * Catch 404 routes

@@ -111,7 +111,7 @@ router.put('/cancel-subscription/:id', async (req, res) => {
 /**
  * delete subscribers by admin
  */
-router.put('/delete-subscription/:id', async (req, res) => {
+router.delete('/delete-subscription/:id', async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.params.id, isDeleted: false }).select(
             '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken',

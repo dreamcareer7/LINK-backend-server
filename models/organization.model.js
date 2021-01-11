@@ -16,11 +16,11 @@ const organizationSchema = new Schema(
         organizationId: Schema.Types.String,
         errorMessages: [{ title: Schema.Types.String, text: Schema.Types.String }],
         industries: Schema.Types.Array,
-        gender: Schema.Types.Array,
         companySize: Schema.Types.Array,
-        stage: Schema.Types.Array,
-        likelyHood: Schema.Types.Array,
-        //  integrations: { strip: { publishableKey: Schema.Types.String, secretKey: Schema.Types.String }, zendesk: {} },
+        quote: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'quote',
+        },
     },
     { timestamps: true },
 );

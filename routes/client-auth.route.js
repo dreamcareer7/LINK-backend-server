@@ -266,7 +266,7 @@ router.get('/sign-up-invitation', async (req, res) => {
 router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
-            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation',
+            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted',
         );
 
         if (!client) {
@@ -290,16 +290,10 @@ router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) 
 /*
  update client data
  */
-router.post('/update/:id', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+router.post('/update', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
-        if (!req.params.id) {
-            return res.status(400).send({
-                status: 'ERROR',
-                message: `ClientId is require in params`,
-            });
-        }
-        let client = await Client.findOne({ _id: req.params.id, isDeleted: false }).select(
-            'industry companyName companySize companyLocation notificationType notificationPeriod',
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
+            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
         );
         if (!client) {
             return res.status(400).send({
@@ -307,7 +301,11 @@ router.post('/update/:id', authMiddleWare.clientAuthMiddleWare, async (req, res)
                 message: 'Client is not found.',
             });
         }
-
+        client.firstName = req.body.firstName;
+        client.lastName = req.body.lastName;
+        client.email = req.body.email;
+        client.phone = req.body.phone;
+        client.title = req.body.title;
         client.industry = req.body.industry;
         client.companyName = req.body.companyName;
         client.companySize = req.body.companySize;
@@ -316,6 +314,7 @@ router.post('/update/:id', authMiddleWare.clientAuthMiddleWare, async (req, res)
         client['notificationType']['browser'] = req.body.notificationType.browser;
         client['notificationPeriod']['interval'] = req.body.notificationPeriod.interval;
         client['notificationPeriod']['customDate'] = req.body.notificationPeriod.customDate;
+
         await client.save();
         return res.status(200).send({
             status: 'SUCCESS',
@@ -334,36 +333,95 @@ router.post('/update/:id', authMiddleWare.clientAuthMiddleWare, async (req, res)
  * delete client
  */
 
-router.delete('/delete/:id', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+router.delete('/delete', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
-        if (!req.params.id) {
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false });
+        if (!client) {
             return res.status(400).send({
-                status: 'ERROR',
-                message: `ClientId is required in params.`,
-            });
-        } else {
-            let client = await Client.findOne({ _id: req.params.id, isDeleted: false });
-            if (!client) {
-                return res.status(400).send({
-                    status: 'CLIENT_NOT_FOUND',
-                    message: 'client is not found.',
-                });
-            }
-            client.isDeleted = true;
-            client.jwtToken = [];
-            await client.save();
-            return res.status(200).send({
-                status: 'SUCCESS',
-                data: {
-                    isDeleted: client.isDeleted,
-                },
+                status: 'CLIENT_NOT_FOUND',
+                message: 'client is not found.',
             });
         }
+        client.isDeleted = true;
+        client.jwtToken = [];
+        await client.save();
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: {
+                isDeleted: client.isDeleted,
+            },
+        });
     } catch (e) {
         Logger.log.error('Error in delete Client API call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,
+        });
+    }
+});
+/**
+ * paused subscribers by client
+ */
+router.put('/paused-subscription', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+    try {
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
+            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
+        );
+        if (!client) {
+            return res.status(400).json({
+                status: 'SUBSCRIBER_NOT_FOUND',
+                message: 'subscriber is not found.',
+            });
+        }
+
+        if (req.body.isSubscriptionPaused === true) {
+            client.selectedPlan.status = 'PAUSED';
+        } else {
+            client.selectedPlan.status = client.selectedPlan.currentPlan;
+        }
+
+        await client.save();
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: client,
+        });
+    } catch (e) {
+        Logger.log.error('Error in paused-subscription API call', e.message || e);
+        return res.status(500).json({
+            status: 'ERROR',
+            message: error.message,
+        });
+    }
+});
+/**
+ * cancel subscribers by client
+ */
+router.put('/cancel-subscription', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+    try {
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
+            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
+        );
+        if (!client) {
+            return res.status(400).json({
+                status: 'SUBSCRIBER_NOT_FOUND',
+                message: 'subscriber is not found.',
+            });
+        }
+        if (req.body.isSubscriptionCancelled === true) {
+            client.selectedPlan.status = 'CANCELLED';
+        } else {
+            client.selectedPlan.status = client.selectedPlan.currentPlan;
+        }
+        await client.save();
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: client,
+        });
+    } catch (e) {
+        Logger.log.error('Error in cancel-subscription API call', e.message || e);
+        return res.status(500).json({
+            status: 'ERROR',
+            message: error.message,
         });
     }
 });
