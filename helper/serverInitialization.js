@@ -58,8 +58,12 @@ let createOrganization = () => {
                 existingOrganization.errorMessages = org.errorMessages;
                 existingOrganization.industries = org.industries;
                 existingOrganization.gender = org.gender;
+                existingOrganization.companySize = org.companySize;
+                existingOrganization.stage = org.stage;
+                existingOrganization.likelyHood = org.likelyHood;
 
                 await existingOrganization.save();
+
                 Logger.log.trace('Organization is Updated.');
                 return resolve();
             }
@@ -69,6 +73,9 @@ let createOrganization = () => {
                 errorMessages: org.errorMessages,
                 industries: org.industries,
                 gender: org.gender,
+                companySize: org.companySize,
+                stage: org.stage,
+                likelyHood: org.likelyHood,
             });
 
             await newOrganization.save();
