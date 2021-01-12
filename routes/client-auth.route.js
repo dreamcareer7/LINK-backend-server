@@ -8,6 +8,8 @@ const authMiddleWare = require('../middleware/authenticate');
 const linkedInHelper = require('../helper/linkedin.helper');
 const cookieHelper = require('../helper/cookie.helper');
 const conversationHelper = require('../helper/conversation.helper');
+const opportunityHelper = require('../helper/opportunity.helper');
+
 const Logger = require('../services/logger');
 const jwt = require('jsonwebtoken');
 
@@ -78,6 +80,31 @@ router.get('/sign-up', async (req, res) => {
         });
     }
 });
+/**
+ * checks the cookie is valid or not / also checks for client is loged in or not in crome extension
+ */
+
+router.get('/checking-for-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+    try {
+        let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
+        await opportunityHelper.getProfile(req.client.publicIdentifier, cookieStr, ajaxToken);
+        if (req.client.hasOwnProperty('publicIdentifier') && req.client.hasOwnProperty('cookie')) {
+            return res.status(200).send({
+                message: req.client,
+                status: 'SUCCESS',
+            });
+        } else {
+            throw new Error('publicIdentifier or cookie is not found in db.');
+        }
+    } catch (e) {
+        console.log(e);
+        Logger.log.error('Error in checking-for-cookie API call.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
 
 /**
  *  sign-up from LinkedIn
@@ -139,8 +166,9 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
                 message: 'client is not Found',
             });
         }
+        console.log(req.body.publicIdentifier);
         client.cookie = req.body.cookie;
-
+        client.publicIdentifier = req.body.publicIdentifier;
         if (client.isConversationAdded === false) {
             client.isConversationAdded = true;
             await client.save();

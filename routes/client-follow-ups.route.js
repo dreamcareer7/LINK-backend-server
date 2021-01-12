@@ -25,8 +25,11 @@ router.put('/filters', async (req, res) => {
         if (req.body.likelyHoods.length > 0) {
             queryObj.likelyHood = { $in: req.body.likelyHoods };
         }
-        if (req.body.dealSize) {
-            queryObj.dealSize = req.body.dealSize;
+        if (req.body.startDeal && req.body.endDeal) {
+            queryObj.dealSize = {
+                $gte: req.body.startDeal,
+                $lte: req.body.endDeal,
+            };
         }
         if (req.body.endDate && req.body.startDate) {
             queryObj.createdAt = {
