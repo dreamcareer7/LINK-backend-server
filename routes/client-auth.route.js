@@ -152,55 +152,65 @@ router.get('/sign-up-extension', async (req, res) => {
  */
 router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
-        if (!req.body.cookie) {
-            return res.status(400).send({
-                status: 'NOT_FOUND',
-                message: 'Cookie is Not found.',
-            });
-        }
-        let client = await Client.findOne({ _id: req.client._id, isDeleted: false });
-
-        if (!client) {
-            return res.status(400).send({
-                status: 'NOT_FOUND',
-                message: 'client is not Found',
-            });
-        }
-        console.log(req.body.publicIdentifier);
-        client.cookie = req.body.cookie;
-        client.publicIdentifier = req.body.publicIdentifier;
-        if (client.isConversationAdded === false) {
-            client.isConversationAdded = true;
-            await client.save();
-            try {
-                let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.body.cookie);
-                let conversations = await conversationHelper.extractChats(cookieStr, ajaxToken);
-
-                let newConversation = new Conversation({
-                    clientId: req.client._id,
+        if (
+            req.client.hasOwnProperty('publicIdentifier') ||
+            (req.client.hasOwnProperty('publicIdentifier') && req.client.publicIdentifier === req.body.publicIdentifier)
+        ) {
+            if (!req.body.cookie) {
+                return res.status(400).send({
+                    status: 'NOT_FOUND',
+                    message: 'Cookie is Not found.',
                 });
-                await newConversation.save();
-
-                for (let i = 0; i < conversations.length; i++) {
-                    await newConversation.conversations.push({
-                        conversationId: conversations[i].conversationId,
-                        publicIdentifier: conversations[i].publicIdentifier,
-                    });
-                }
-
-                await newConversation.save();
-            } catch (e) {
-                client.isConversationAdded = false;
-                await client.save();
             }
+            let client = await Client.findOne({ _id: req.client._id, isDeleted: false });
+
+            if (!client) {
+                return res.status(400).send({
+                    status: 'NOT_FOUND',
+                    message: 'client is not Found',
+                });
+            }
+
+            client.cookie = req.body.cookie;
+            client.publicIdentifier = req.body.publicIdentifier;
+            if (client.isConversationAdded === false) {
+                client.isConversationAdded = true;
+                await client.save();
+                try {
+                    let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.body.cookie);
+                    let conversations = await conversationHelper.extractChats(cookieStr, ajaxToken);
+
+                    let newConversation = new Conversation({
+                        clientId: req.client._id,
+                    });
+                    await newConversation.save();
+
+                    for (let i = 0; i < conversations.length; i++) {
+                        await newConversation.conversations.push({
+                            conversationId: conversations[i].conversationId,
+                            publicIdentifier: conversations[i].publicIdentifier,
+                        });
+                    }
+
+                    await newConversation.save();
+                } catch (e) {
+                    client.isConversationAdded = false;
+                    await client.save();
+                }
+            }
+
+            await client.save();
+
+            return res.status(200).send({
+                status: 'SUCCESS',
+                message: 'Cookie Sucessfully saved.',
+            });
+        } else {
+            return res.status(401).send({
+                status: 'ERROR',
+                message: 'Invalid user.',
+            });
         }
-
-        await client.save();
-
-        return res.status(200).send({
-            status: 'SUCCESS',
-            message: 'Cookie Sucessfully saved.',
-        });
     } catch (e) {
         Logger.log.error('Error in get cookie and token call.', e.message || e);
         res.status(500).json({
