@@ -32,7 +32,7 @@ router.put('/filters', async (req, res) => {
             };
         }
         if (req.body.endDate && req.body.startDate) {
-            queryObj.createdAt = {
+            queryObj.followUp = {
                 $gte: new Date(req.body.startDate),
                 $lte: new Date(req.body.endDate),
             };
