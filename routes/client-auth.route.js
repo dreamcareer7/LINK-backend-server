@@ -87,7 +87,7 @@ router.get('/sign-up', async (req, res) => {
 router.get(
     '/checking-for-cookie',
     authMiddleWare.clientAuthMiddleWare,
-    authMiddleWare.linkedInLoggedInChecked,
+
     async (req, res) => {
         try {
             let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
