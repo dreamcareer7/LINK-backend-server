@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Client = mongoose.model('client');
+const Opportunity = mongoose.model('opportunity');
 const Logger = require('../services/logger');
 
 /**
@@ -36,6 +37,37 @@ router.get('/get-subscribers', async (req, res) => {
         });
     } catch (e) {
         Logger.log.error('Error in get-subscribers API call', e.message || e);
+        return res.status(500).json({
+            status: 'ERROR',
+            message: error.message,
+        });
+    }
+});
+router.get('/get-subscriber/:id', async (req, res) => {
+    try {
+        let promiseArr = [];
+        promiseArr.push(
+            Client.findOne({ _id: req.params.id, isDeleted: false }).select(
+                '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
+            ),
+        );
+        promiseArr.push(
+            Opportunity.aggregate([
+                { $match: { clientId: mongoose.Types.ObjectId(req.params.id), isDeleted: false } },
+                { $group: { _id: null, averageDeal: { $avg: '$dealSize' } } },
+            ]).allowDiskUse(true),
+        );
+        let data = await Promise.all(promiseArr);
+
+        res.status(200).send({
+            status: 'SUCCESS',
+            data: {
+                client: data[0],
+                averageDeal: data[1],
+            },
+        });
+    } catch (e) {
+        Logger.log.error('Error in get-subscriber API call', e.message || e);
         return res.status(500).json({
             status: 'ERROR',
             message: error.message,
