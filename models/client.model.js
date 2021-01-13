@@ -31,6 +31,7 @@ const clientSchema = new Schema(
         },
         linkedInID: Schema.Types.String,
         publicIdentifier: Schema.Types.String,
+        loggedInIdentifier: Schema.Types.String,
         companyLocation: Schema.Types.String,
         gender: { type: Schema.Types.String, enum: ['MALE', 'FEMALE', 'OTHER'] },
         subscriberImportance: Schema.Types.String,

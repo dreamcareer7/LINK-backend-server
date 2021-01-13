@@ -36,11 +36,32 @@ router.put('/filters', async (req, res) => {
             queryObj.likelyHood = { $in: req.body.likelyHoods };
         }
 
-        let opportunities = await Opportunity.paginate(queryObj, { page, limit });
+        let promiseArr = [];
+        promiseArr.push(Opportunity.paginate(queryObj, { page, limit }));
+        promiseArr.push(
+            Opportunity.aggregate([
+                {
+                    $match: {
+                        $and: [{ clientId: req.client._id }, { isDeleted: false }],
+                    },
+                },
+                {
+                    $group: {
+                        _id: null,
+                        maxDealValue: { $max: '$dealSize' },
+                        minDealValue: { $min: '$dealSize' },
+                    },
+                },
+            ]).allowDiskUse(true),
+        );
+        let data = await Promise.all(promiseArr);
 
         res.status(200).send({
             status: 'SUCCESS',
-            data: opportunities,
+            data: {
+                docs: data[0],
+                dealSize: data[1],
+            },
         });
     } catch (e) {
         Logger.log.error('Error client-crm filters in  API.', e.message || e);

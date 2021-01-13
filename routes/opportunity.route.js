@@ -8,11 +8,12 @@ const opportunityHelper = require('../helper/opportunity.helper');
 const cookieHelper = require('../helper/cookie.helper');
 const firebaseHelper = require('../helper/firebase-notification');
 const conversationHelper = require('../helper/conversation.helper');
+const authMiddleWare = require('../middleware/authenticate');
 
 /**
  * add opportunity
  */
-router.post('/add-opportunity', async (req, res) => {
+router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
     try {
         if (req.body.publicIdentifier) {
             let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
@@ -101,7 +102,7 @@ router.post('/add-opportunity', async (req, res) => {
     }
 });
 
-router.get('/fetch-conversation/:id', async (req, res) => {
+router.get('/fetch-conversation/:id', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
     try {
         let opportunity = await Opportunity.findOne({ _id: req.params.id, clientId: req.client._id, isDeleted: false });
         if (!opportunity) {
@@ -188,27 +189,19 @@ router.put('/update-opportunity/:id', async (req, res) => {
 /**
  * get opportunity
  */
-router.get('/get-opportunity', async (req, res) => {
+router.put('/get-opportunity', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
     try {
-        let opportunitys = await Opportunity.find({ clientId: req.client._id, isDeleted: false }, req.body, {
-            new: true,
-        });
+        let opportunitys = await Opportunity.find({
+            clientId: req.client._id,
+            isDeleted: false,
+            publicIdentifier: { $in: req.body.publicIdentifierArr },
+        }).select('publicIdentifier -_id');
 
-        if (opportunitys) {
-            let publicIdentifierArr = [];
-            for (let i = 0; i < opportunitys.length; i++) {
-                publicIdentifierArr.push(opportunitys[i].publicIdentifier);
-            }
-            return res.status(200).send({
-                status: 'SUCCESS',
-                data: publicIdentifierArr,
-            });
-        } else {
-            return res.status(400).send({
-                status: 'NOT_FOUND',
-                message: 'Opportunitys  is Not found..',
-            });
-        }
+        opportunitys = opportunitys.map((opportunitys) => opportunitys.publicIdentifier);
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: opportunitys,
+        });
     } catch (e) {
         Logger.log.error('Error in get opportunity API call.', e.message || e);
         res.status(500).json({
@@ -252,7 +245,7 @@ router.delete('/delete-opportunity/:id', async (req, res) => {
  * sync with linkedIn opportunity by jayla app
  */
 
-router.post('/sync-with-linkedIn/:id', async (req, res) => {
+router.post('/sync-with-linkedIn/:id', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
     try {
         let opportunity = await Opportunity.findOne({ _id: req.params.id, clientId: req.client._id, isDeleted: false });
         if (!opportunity) {

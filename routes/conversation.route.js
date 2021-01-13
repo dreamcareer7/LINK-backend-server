@@ -55,6 +55,7 @@ router.post('/get-conversation-id-arr', async (req, res) => {
             }
         }
         let addedOpportunity = [];
+
         for (let i = 0; i < dbConversation.conversations.length; i++) {
             let opportunity = await Opportunity.findOne({
                 clientId: req.client._id,

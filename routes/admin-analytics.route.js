@@ -18,10 +18,15 @@ router.put('/deal-value', async (req, res) => {
         let dealRange = await Opportunity.aggregate([
             {
                 $match: {
-                    createdAt: {
-                        $gte: new Date(req.body.startDate),
-                        $lte: new Date(req.body.endDate),
-                    },
+                    $and: [
+                        {
+                            createdAt: {
+                                $gte: new Date(req.body.startDate),
+                                $lte: new Date(req.body.endDate),
+                            },
+                        },
+                        { isDeleted: false },
+                    ],
                 },
             },
             {
@@ -86,10 +91,15 @@ router.put('/deal-value', async (req, res) => {
         let dealValue = await Opportunity.aggregate([
             {
                 $match: {
-                    createdAt: {
-                        $gte: new Date(req.body.startDate),
-                        $lte: new Date(req.body.endDate),
-                    },
+                    $and: [
+                        {
+                            createdAt: {
+                                $gte: new Date(req.body.startDate),
+                                $lte: new Date(req.body.endDate),
+                            },
+                        },
+                        { isDeleted: false },
+                    ],
                 },
             },
             {
@@ -142,6 +152,9 @@ router.put('/industries', async (req, res) => {
                                     $lte: new Date(req.body.endDate),
                                 },
                             },
+                            {
+                                isDeleted: false,
+                            },
                         ],
                     },
                 },
@@ -189,6 +202,7 @@ router.put('/gender', async (req, res) => {
                                     $lte: new Date(req.body.endDate),
                                 },
                             },
+                            { isDeleted: false },
                         ],
                     },
                 },
@@ -226,10 +240,15 @@ router.put('/subscription', async (req, res) => {
             [
                 {
                     $match: {
-                        'selectedPlan.planStartDate': {
-                            $gte: new Date(req.body.startDate),
-                            $lte: new Date(req.body.endDate),
-                        },
+                        $and: [
+                            {
+                                'selectedPlan.planStartDate': {
+                                    $gte: new Date(req.body.startDate),
+                                    $lte: new Date(req.body.endDate),
+                                },
+                            },
+                            { isDeleted: false },
+                        ],
                     },
                 },
                 {
@@ -266,10 +285,15 @@ router.put('/opportunities', async (req, res) => {
             [
                 {
                     $match: {
-                        updatedAt: {
-                            $gte: new Date(req.body.startDate),
-                            $lte: new Date(req.body.endDate),
-                        },
+                        $and: [
+                            {
+                                updatedAt: {
+                                    $gte: new Date(req.body.startDate),
+                                    $lte: new Date(req.body.endDate),
+                                },
+                            },
+                            { isDeleted: false },
+                        ],
                     },
                 },
                 {
@@ -318,6 +342,7 @@ router.put('/company-size', async (req, res) => {
                                     $lte: new Date(req.body.endDate),
                                 },
                             },
+                            { isDeleted: false },
                         ],
                     },
                 },

@@ -85,7 +85,7 @@ app.use('/client-invitation', authMiddleWare.adminAuthMiddleWare, clientInvitati
 app.use('/admin-analytics', authMiddleWare.adminAuthMiddleWare, adminAnalytics);
 app.use('/client-dashboard', authMiddleWare.clientAuthMiddleWare, clientAnalytics);
 app.use('/payment', payment);
-app.use('/conversation', authMiddleWare.clientAuthMiddleWare, conversation);
+app.use('/conversation', authMiddleWare.clientAuthMiddleWare, authMiddleWare.linkedInLoggedInChecked, conversation);
 app.use('/client-follow-ups', authMiddleWare.clientAuthMiddleWare, clientFollowUps);
 app.use('/client-crm', authMiddleWare.clientAuthMiddleWare, clientCrm);
 app.use('/organization', organization);
