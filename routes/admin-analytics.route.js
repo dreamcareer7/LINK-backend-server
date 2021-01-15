@@ -168,9 +168,15 @@ router.put('/industries', async (req, res) => {
                 },
             ],
         ]).allowDiskUse(true);
+        data = data.filter(function(value, index, arr) {
+            return value._id !== null;
+        });
+        data.sort(function(a, b) {
+            return b.total - a.total;
+        });
         return res.status(200).send({
             status: 'SUCCESS',
-            data: data,
+            data: data.slice(0, 10),
         });
     } catch (e) {
         Logger.log.error('Error in industries  admin analytics call', e.message || e);
