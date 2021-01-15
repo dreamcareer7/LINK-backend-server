@@ -102,7 +102,7 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
     }
 });
 
-router.get('/fetch-conversation/:id', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
+router.put('/fetch-conversation/:id', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
     try {
         let opportunity = await Opportunity.findOne({ _id: req.params.id, clientId: req.client._id, isDeleted: false });
         if (!opportunity) {
@@ -136,6 +136,8 @@ router.get('/fetch-conversation/:id', authMiddleWare.linkedInLoggedInChecked, as
             ajaxToken,
             conversationId,
             publicIdentifier,
+            req.client._id,
+            req.body.createdAt,
         );
         return res.status(200).send({
             status: 'SUCCESS',

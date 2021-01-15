@@ -1,5 +1,8 @@
 const Logger = require('../services/logger');
 const axios = require('axios');
+const mongoose = require('mongoose');
+const Opportunity = mongoose.model('opportunity');
+const Client = mongoose.model('client');
 
 const extractChats = async (cookie, ajaxToken, newConversationIdArr) => {
     try {
@@ -163,11 +166,25 @@ const fetchChats = async (cookie, ajaxToken, createdBefore) => {
     }
 };
 
-const fetchConversation = async (cookie, ajaxToken, conversationId, publicIdentifier) => {
+const fetchConversation = async (
+    cookie,
+    ajaxToken,
+    conversationId,
+    opportunityPublicIdentifier,
+    clientId,
+    createdAt,
+) => {
     try {
+        let url;
+        if (!isNaN(createdAt) && createdAt !== '' && createdAt !== null && createdAt !== undefined) {
+            url = `https://www.linkedin.com/voyager/api/messaging/conversations/${conversationId}/events?createdBefore=${createdAt}`;
+        } else {
+            url = `https://www.linkedin.com/voyager/api/messaging/conversations/${conversationId}/events?q=syncToken&reload=true`;
+        }
         let data = {
             method: 'GET',
-            url: `https://www.linkedin.com/voyager/api/messaging/conversations/${conversationId}/events?q=syncToken&reload=true`,
+
+            url: url,
 
             headers: {
                 authority: 'www.linkedin.com',
@@ -189,7 +206,7 @@ const fetchConversation = async (cookie, ajaxToken, conversationId, publicIdenti
         };
 
         let response = await axios(data);
-        let msg = await processConversation(response.data, publicIdentifier);
+        let msg = await processConversation(response.data, opportunityPublicIdentifier, clientId);
         return msg;
     } catch (e) {
         Logger.log.error('Error in fetch Conversation.', e.message || e);
@@ -197,16 +214,32 @@ const fetchConversation = async (cookie, ajaxToken, conversationId, publicIdenti
     }
 };
 
-const processConversation = async (response, publicIdentifier) => {
+const processConversation = async (response, opportunityPublicIdentifier, clientId) => {
     try {
+        let client = await Client.findOne({ _id: clientId, isDeleted: false })
+            .select(
+                '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
+            )
+            .lean();
+        let opportunity = await Opportunity.findOne({
+            clientId: clientId,
+            isDeleted: false,
+            publicIdentifier: opportunityPublicIdentifier,
+        }).lean();
         let obj = {};
         let msgArr = [];
         for (let i = 0; i < response.included.length; i++) {
             if (response.included[i].hasOwnProperty('publicIdentifier')) {
-                if (response.included[i].publicIdentifier !== publicIdentifier) {
-                    obj['1'] = { entityUrn: response.included[i].entityUrn };
+                if (response.included[i].publicIdentifier !== opportunityPublicIdentifier) {
+                    obj['1'] = {
+                        entityUrn: response.included[i].entityUrn,
+                        profilePicUrl: client.hasOwnProperty('profilePicUrl') ? client.profilePicUrl : null,
+                    };
                 } else {
-                    obj['2'] = { entityUrn: response.included[i].entityUrn };
+                    obj['2'] = {
+                        entityUrn: response.included[i].entityUrn,
+                        profilePicUrl: opportunity.hasOwnProperty('profilePicUrl') ? opportunity.profilePicUrl : null,
+                    };
                 }
             }
             if (response.included[i].hasOwnProperty('nameInitials')) {
@@ -224,6 +257,7 @@ const processConversation = async (response, publicIdentifier) => {
                 for (let key in obj) {
                     if (obj[key].entityUrn === response.included[i]['*from']) {
                         messageObj.id = key;
+                        messageObj.profilePicUrl = obj[key].profilePicUrl;
                         messageObj.message = response.included[i].eventContent.attributedBody.text;
                         messageObj.createdAt = response.included[i].createdAt;
                         msgArr.push(messageObj);
