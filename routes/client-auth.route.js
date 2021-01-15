@@ -184,6 +184,11 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
             await client.save();
             try {
                 let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.body.cookie);
+                let clientInfo = await opportunityHelper.getProfile(req.body.publicIdentifier, cookieStr, ajaxToken);
+                client.title = clientInfo.title;
+                client.companyName = clientInfo.companyName;
+                client.linkedInUrl = clientInfo.linkedInUrl;
+                await client.save();
                 let conversations = await conversationHelper.extractChats(cookieStr, ajaxToken);
 
                 let newConversation = new Conversation({
