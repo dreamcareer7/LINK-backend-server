@@ -103,7 +103,8 @@ ServerInitializer.createOrganization();
  */
 
 let SchedulerHelper = require('./services/cron.schedular.service');
-
+let notificationHelper = require('./helper/notification.helper');
+notificationHelper.scheduleNotification();
 SchedulerHelper.scheduler();
 
 /**
