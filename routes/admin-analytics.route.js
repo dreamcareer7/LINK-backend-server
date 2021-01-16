@@ -118,6 +118,13 @@ router.put('/deal-value', async (req, res) => {
                 },
             },
         ]).allowDiskUse(true);
+        dealValue = dealValue.filter(function(value, index, arr) {
+            return value._id !== '';
+        });
+        dealValue.sort((a, b) => {
+            return a._id.split('-').pop() - b._id.split('-').pop();
+        });
+
         return res.status(200).send({
             status: 'SUCCESS',
             data: dealValue,
