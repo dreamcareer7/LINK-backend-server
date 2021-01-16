@@ -23,7 +23,9 @@ router.put('/opportunities', async (req, res) => {
                 },
             ],
         ]).allowDiskUse(true);
-
+        data = data.filter(function(value, index, arr) {
+            return value._id !== null;
+        });
         return res.status(200).send({
             status: 'SUCCESS',
             data: data,
@@ -58,7 +60,9 @@ router.put('/pipeline-value', async (req, res) => {
                 },
             ],
         ]).allowDiskUse(true);
-
+        data = data.filter(function(value, index, arr) {
+            return value._id !== null;
+        });
         return res.status(200).send({
             status: 'SUCCESS',
             data: data,
