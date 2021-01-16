@@ -1,5 +1,11 @@
 {
-    "errorMessages": [],
+    "errorMessages": [
+        {
+            "text": "Browser_Not_Supported",
+            "message": "You're not currently in Google Chrome Web Browser. If you haven't already installed it. click download button below to start using Jayla."
+        },
+        { "text": "Not_Installed", "message": "Please Install Google Chrome Web Extension to use Jayla App." }
+    ],
     "industries": [
         "Accounting",
         "Airlines/Aviation",
