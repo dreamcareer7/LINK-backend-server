@@ -348,22 +348,22 @@ router.put('/company-size', async (req, res) => {
                 message: 'Required field is missing',
             });
         }
-        console.log(req.body.selectedPlan, req.body.endDate, req.body.startDate);
+
         let data = await Client.aggregate([
             [
                 {
                     $match: {
                         $and: [
-                            {
-                                'selectedPlan.status': req.body.selectedPlan,
-                            },
+                            // {
+                            //     'selectedPlan.status': req.body.selectedPlan,
+                            // },
                             {
                                 createdAt: {
                                     $gte: new Date(req.body.startDate),
                                     $lte: new Date(req.body.endDate),
                                 },
                             },
-                            { isDeleted: false },
+                            // { isDeleted: false },
                         ],
                     },
                 },
@@ -379,6 +379,18 @@ router.put('/company-size', async (req, res) => {
         ]).allowDiskUse(true);
         data = data.filter(function(value, index, arr) {
             return value._id !== null;
+        });
+        data.sort((a, b) => {
+            return (
+                a._id
+                    .split('-')
+                    .pop()
+                    .replace(/[,+]/gi, '') -
+                b._id
+                    .split('-')
+                    .pop()
+                    .replace(/[,+]/gi, '')
+            );
         });
         return res.status(200).send({
             status: 'SUCCESS',
