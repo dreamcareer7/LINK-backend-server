@@ -354,16 +354,16 @@ router.put('/company-size', async (req, res) => {
                 {
                     $match: {
                         $and: [
-                            // {
-                            //     'selectedPlan.status': req.body.selectedPlan,
-                            // },
+                            {
+                                'selectedPlan.status': req.body.selectedPlan,
+                            },
                             {
                                 createdAt: {
                                     $gte: new Date(req.body.startDate),
                                     $lte: new Date(req.body.endDate),
                                 },
                             },
-                            // { isDeleted: false },
+                            { isDeleted: false },
                         ],
                     },
                 },
