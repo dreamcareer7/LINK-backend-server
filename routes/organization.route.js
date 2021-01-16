@@ -15,7 +15,7 @@ router.get('/admin-today-quote', authMiddleWare.adminAuthMiddleWare, async funct
     try {
         let org = await Organization.findOne({
             organizationId: config.organization.organizationId,
-        });
+        }).populate('quote');
         res.status(200).send({
             status: 'SUCCESS',
             data: org.quote,
@@ -81,7 +81,7 @@ router.get('/client-today-quote', authMiddleWare.clientAuthMiddleWare, async fun
     try {
         let org = await Organization.findOne({
             organizationId: config.organization.organizationId,
-        });
+        }).populate('quote');
         res.status(200).send({
             status: 'SUCCESS',
             data: org.quote,

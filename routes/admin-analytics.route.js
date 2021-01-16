@@ -280,6 +280,19 @@ router.put('/subscription', async (req, res) => {
         data = data.filter(function(value, index, arr) {
             return value._id !== null;
         });
+        data.forEach((data) => {
+            if (data._id === 'FREE_TRIAL') {
+                data._id = 'Free Trial';
+            } else if (data._id === 'MONTHLY') {
+                data._id = 'Monthly';
+            } else if (data._id === 'YEARLY') {
+                data._id = 'Yearly';
+            } else if (data._id === 'PAUSED') {
+                data._id = 'Paused';
+            } else if (data._id === 'CANCELLED') {
+                data._id = 'Cancelled';
+            }
+        });
         return res.status(200).send({
             status: 'SUCCESS',
             data: data,
@@ -327,6 +340,23 @@ router.put('/opportunities', async (req, res) => {
         ]).allowDiskUse(true);
         data = data.filter(function(value, index, arr) {
             return value._id !== null;
+        });
+        data.forEach((data) => {
+            if (data._id === 'INITIAL_CONTACT') {
+                data._id = 'Initial Contact';
+            } else if (data._id === 'IN_CONVERSION') {
+                data._id = 'In Conversion';
+            } else if (data._id === 'MEETING_BOOKED') {
+                data._id = 'Meeting Booked';
+            } else if (data._id === 'FOLLOW_UP') {
+                data._id = 'Follow Up';
+            } else if (data._id === 'CLOSED') {
+                data._id = 'Closed';
+            } else if (data._id === 'LOST') {
+                data._id = 'Lost';
+            } else if (data._id === 'POTENTIAL') {
+                data._id = 'Potential';
+            }
         });
         return res.status(200).send({
             status: 'SUCCESS',
