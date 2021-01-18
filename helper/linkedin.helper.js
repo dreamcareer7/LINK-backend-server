@@ -15,7 +15,7 @@ const genLinkedInAccessToken = async (code, redirectUri) => {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
         };
-
+        console.log('DATA::', data);
         let response = await axios(data);
 
         return response.data.access_token;
@@ -46,8 +46,43 @@ const getLinkedInUserData = async (token) => {
         return Promise.reject({ message: 'Error in get LinkedIn User Data' });
     }
 };
+/**
+ * get linkedIn User data
+ */
+const getContactInfo = async (token) => {
+    try {
+        let data = {
+            method: 'GET',
+            url: `https://api.linkedin.com/v2/clientAwareMemberHandles?q=members&projection=(elements*(primary,type,handle~))`,
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        };
+        let response = await axios(data);
+        let responseObj = {};
+        if (response.data && response.data.elements.length !== 0) {
+            response.data.elements.forEach((element) => {
+                if (element.type === 'EMAIL' && element['handle~'] && element['handle~'].emailAddress) {
+                    responseObj.email = element['handle~'].emailAddress;
+                } else if (
+                    element.type === 'PHONE' &&
+                    element['handle~'] &&
+                    element['handle~'].phoneNumber &&
+                    element['handle~'].phoneNumber.number
+                ) {
+                    responseObj.phone = element['handle~'].phoneNumber.number;
+                }
+            });
+        }
+        return responseObj;
+    } catch (e) {
+        Logger.log.error('Error in get LinkedIn User Data', e.message || e);
+        return Promise.reject({ message: 'Error in get LinkedIn User Data' });
+    }
+};
 
 module.exports = {
     genLinkedInAccessToken,
     getLinkedInUserData,
+    getContactInfo,
 };

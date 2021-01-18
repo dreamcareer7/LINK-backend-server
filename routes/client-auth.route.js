@@ -30,7 +30,6 @@ router.get('/sign-up', async (req, res) => {
             config.backEndBaseUrl + 'client-auth/sign-up',
         );
         let user = await linkedInHelper.getLinkedInUserData(token);
-        console.log(token);
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
         if (!client) {
             let newClient = new Client({
@@ -54,6 +53,13 @@ router.get('/sign-up', async (req, res) => {
         client.profilePicUrl = user.hasOwnProperty('profilePicture')
             ? user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier
             : null;
+        let contactInfo = await linkedInHelper.getContactInfo(token);
+        if (contactInfo.email) {
+            client.email = contactInfo.email;
+        }
+        if (contactInfo.phone) {
+            client.phone = contactInfo.phone;
+        }
         await client.save();
         if (!client.isSubscribed) {
             Logger.log.info('Client still not Subscribed.');
