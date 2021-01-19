@@ -18,6 +18,8 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
         if (req.body.publicIdentifier) {
             let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
             let opportunityData = await opportunityHelper.getProfile(req.body.publicIdentifier, cookieStr, ajaxToken);
+            let contactInfo = await opportunityHelper.getContactInfo(req.body.publicIdentifier, cookieStr, ajaxToken);
+            opportunityData = { ...opportunityData, ...contactInfo };
             opportunityData.clientId = req.client._id;
             let opportunity = await Opportunity.findOne({
                 clientId: req.client._id,
@@ -64,6 +66,8 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
 
             let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
             let opportunityData = await opportunityHelper.getProfile(publicIdentifier, cookieStr, ajaxToken);
+            let contactInfo = await opportunityHelper.getContactInfo(req.body.publicIdentifier, cookieStr, ajaxToken);
+            opportunityData = { ...opportunityData, ...contactInfo };
             opportunityData.clientId = req.client._id;
             let opportunity = await Opportunity.findOne({
                 clientId: req.client._id,
@@ -258,7 +262,8 @@ router.post('/sync-with-linkedIn/:id', authMiddleWare.linkedInLoggedInChecked, a
         }
         let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
         opportunityData = await opportunityHelper.getProfile(opportunity.publicIdentifier, cookieStr, ajaxToken);
-
+        let contactInfo = await opportunityHelper.getContactInfo(req.body.publicIdentifier, cookieStr, ajaxToken);
+        opportunityData = { ...opportunityData, ...contactInfo };
         opportunity = await Opportunity.findOneAndUpdate(
             { _id: req.params.id, clientId: req.client._id, isDeleted: false },
             opportunityData,

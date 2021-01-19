@@ -20,6 +20,7 @@ const opportunitySchema = new Schema(
         companyName: Schema.Types.String,
         linkedInUrl: Schema.Types.String,
         email: Schema.Types.String,
+        phone: Schema.Types.String,
         profilePicUrl: Schema.Types.String,
         publicIdentifier: Schema.Types.String,
         isDeleted: { type: Schema.Types.Boolean, default: false },
