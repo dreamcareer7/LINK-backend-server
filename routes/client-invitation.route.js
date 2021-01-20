@@ -97,8 +97,16 @@ router.delete('/delete-invitation/:id', async (req, res) => {
 
 router.get('/get-invitations', async (req, res) => {
     try {
-        let clients = await Client.find({ isInvited: true }).select(
-            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
+        let page = parseInt(req.query.page);
+        let limit = parseInt(req.query.limit);
+        let clients = await Client.paginate(
+            { isInvited: true },
+            {
+                page,
+                limit,
+                select:
+                    '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
+            },
         );
         if (!clients) {
             return res.status(400).send({
