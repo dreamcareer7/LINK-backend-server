@@ -73,11 +73,11 @@ router.get('/sign-up', async (req, res) => {
             await client.save();
             console.log('Client Token ::', token);
             Logger.log.info('Login Successfully to Client Deshbord.');
-            return res.status(200).send({
-                message: 'Welcome to Dashbord.',
-                status: 'SUCCESS',
-            });
-            // return res.redirect(`${config.clientUrls.clientFrontEndBaseUrl}auth-verify?token=${token}`);
+            // return res.status(200).send({
+            //     message: 'Welcome to Dashbord.',
+            //     status: 'SUCCESS',
+            // });
+            return res.redirect(`${config.clientUrls.clientFrontEndBaseUrl}auth-verify?token=${token}`);
         }
     } catch (e) {
         Logger.log.error('Error in SignUp API call.', e.message || e);

@@ -15,7 +15,8 @@ const extractChats = async (cookie, ajaxToken, newConversationIdArr) => {
                 let processedChatData = await processChatData(rawChatsData);
 
                 if (processedChatData['chats'].length > 0) {
-                    extractedChats.push(processedChatData['chats']);
+                    // extractedChats.push(processedChatData['chats']);
+                    extractedChats = [...extractedChats, ...processedChatData['chats']];
                     createdBefore = processedChatData['lowestLastActivity'];
                 } else {
                     break;
@@ -29,12 +30,20 @@ const extractChats = async (cookie, ajaxToken, newConversationIdArr) => {
 
                 if (processedChatData['chats'].length > 0) {
                     for (let j = 0; j < processedChatData['chats'].length; j++) {
-                        for (let i = 0; i < newConversationIdArr.length; i++) {
-                            if (newConversationIdArr[i] === processedChatData['chats'][j].conversationId) {
-                                newConversationIdArr.splice(i, 1);
-                                extractedChats.push(processedChatData['chats'][j]);
-                            }
+                        if (newConversationIdArr.indexOf(processedChatData['chats'][j].conversationId) !== -1) {
+                            newConversationIdArr = newConversationIdArr.filter(
+                                (id) => id !== processedChatData['chats'][j].conversationId,
+                            );
+                            extractedChats.push(processedChatData['chats'][j]);
                         }
+                        // for (let i = 0; i < newConversationIdArr.length; i++) {
+                        //     if (newConversationIdArr[i] === processedChatData['chats'][j].conversationId) {
+                        //         newConversationIdArr.splice(i, 1);
+                        //         console.log('processedChatData[chats][j]:', processedChatData['chats'][j]);
+                        //         // extractedChats.push(processedChatData['chats'][j]);
+                        //         extractedChats = [...extractedChats, processedChatData['chats'][j]];
+                        //     }
+                        // }
                     }
 
                     createdBefore = processedChatData['lowestLastActivity'];
@@ -43,7 +52,7 @@ const extractChats = async (cookie, ajaxToken, newConversationIdArr) => {
                 }
             }
         }
-        return extractedChats.flat();
+        return extractedChats;
     } catch (e) {
         Logger.log.error('Error in extractChats.', e.message || e);
         return Promise.reject({ message: 'Error in extractChats.' });
