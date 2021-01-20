@@ -37,6 +37,7 @@ const clientSchema = new Schema(
         gender: { type: Schema.Types.String, enum: ['MALE', 'FEMALE', 'OTHER'] },
         subscriberImportance: Schema.Types.String,
         isConversationAdded: { type: Schema.Types.Boolean, default: false },
+        vicSub: { type: Schema.Types.Boolean, default: false },
         isInvited: { type: Schema.Types.Boolean, default: false },
         invitedToken: { type: Schema.Types.String, default: null },
         jwtToken: [Schema.Types.String],
