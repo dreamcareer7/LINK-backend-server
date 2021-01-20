@@ -204,7 +204,7 @@ router.put('/update-subscriber/:id', async (req, res) => {
         client.companyLocation = req.body.companyLocation;
         client.gender = req.body.gender;
         if (req.body.subscriberImportance) client.subscriberImportance = req.body.subscriberImportance;
-        if (req.body.vicSub) client.vicSub = req.body.vicSub;
+        if (req.body.hasOwnProperty('vicSub')) client.vicSub = req.body.vicSub;
         await client.save();
         return res.status(200).send({
             status: 'SUCCESS',
