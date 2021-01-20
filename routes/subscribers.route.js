@@ -180,8 +180,7 @@ router.put('/update-subscriber/:id', async (req, res) => {
             !req.body.email ||
             !req.body.industry ||
             !req.body.companyLocation ||
-            !req.body.gender ||
-            !req.body.subscriberImportance
+            !req.body.gender
         ) {
             return res.status(400).json({
                 status: 'ERROR',
@@ -204,7 +203,8 @@ router.put('/update-subscriber/:id', async (req, res) => {
         client.industry = req.body.industry;
         client.companyLocation = req.body.companyLocation;
         client.gender = req.body.gender;
-        client.subscriberImportance = req.body.subscriberImportance;
+        if (req.body.subscriberImportance) client.subscriberImportance = req.body.subscriberImportance;
+        if (req.body.vicSub) client.vicSub = req.body.vicSub;
         await client.save();
         return res.status(200).send({
             status: 'SUCCESS',
