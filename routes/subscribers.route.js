@@ -271,6 +271,46 @@ router.put('/update-subscriber/:id', async (req, res) => {
 });
 
 /**
+ * search-subscriber
+ */
+
+router.put('/search-subscriber', async (req, res) => {
+    try {
+        if (!req.body.name) {
+            return res.status(400).send({
+                status: 'ERROR',
+                message: 'name is required in body.',
+            });
+        }
+
+        let name = req.body.name
+            .replace(/  +/g, ' ')
+            .split(' ')
+            .slice(0, 2);
+
+        let subscribers = await Client.find({
+            isDeleted: false,
+            $or: [
+                { $and: [{ firstName: new RegExp(name[0], 'i') }, { lastName: new RegExp(name[1], 'i') }] },
+                { $and: [{ firstName: new RegExp(name[1], 'i') }, { lastName: new RegExp(name[0], 'i') }] },
+            ],
+        })
+            .select('firstName lastName')
+            .lean();
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: subscribers,
+        });
+    } catch (e) {
+        Logger.log.error('Error in search-opportunity API call.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+/**
  * Export Router
  */
 module.exports = router;
