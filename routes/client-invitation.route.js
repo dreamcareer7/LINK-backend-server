@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { Parser } = require('json2csv');
 const mongoose = require('mongoose');
 const Client = mongoose.model('client');
 const config = require('../config');
@@ -106,7 +107,7 @@ router.get('/get-invitations', async (req, res) => {
         let page = parseInt(req.query.page);
         let limit = parseInt(req.query.limit);
         let clients = await Client.paginate(
-            { isInvited: true },
+            { isInvited: true, isSubscribed: false },
             {
                 page,
                 limit,
@@ -128,6 +129,38 @@ router.get('/get-invitations', async (req, res) => {
         Logger.log.error('Error in Get Client Invitation API call.', e.message || e);
         res.status(500).json({
             status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+/**
+ * Download subscribers by admin
+ */
+router.get('/get-invitations/download', async (req, res) => {
+    try {
+        let clients = await Client.find({ isDeleted: false, isInvited: true, isSubscribed: false })
+            .select(
+                'firstName lastName email phone title industry companyName linkedInUrl companySize companyLocation selectedPlan',
+            )
+            .lean();
+        let fields = ['first-name', 'last-name', 'email', 'phone'];
+        const rawJson = clients.map((x) => {
+            return {
+                'first-name': x.firstName,
+                'last-name': x.lastName,
+                email: x.email,
+                phone: x.phone,
+            };
+        });
+        const json2csvParser = new Parser({ fields });
+        const csvData = json2csvParser.parse(rawJson);
+        res.header('Content-Type', 'text/csv');
+        res.send(csvData);
+    } catch (e) {
+        Logger.log.error('Error in download invited users API call', e.message || e);
+        return res.status(500).json({
+            status: 'ERROR',
             message: e.message,
         });
     }

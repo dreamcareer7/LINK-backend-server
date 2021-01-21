@@ -1,4 +1,5 @@
 const express = require('express');
+const { Parser } = require('json2csv');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Client = mongoose.model('client');
@@ -39,7 +40,57 @@ router.get('/get-subscribers', async (req, res) => {
         Logger.log.error('Error in get-subscribers API call', e.message || e);
         return res.status(500).json({
             status: 'ERROR',
-            message: error.message,
+            message: e.message,
+        });
+    }
+});
+/**
+ * Download subscribers by admin
+ */
+router.get('/get-subscribers/download', async (req, res) => {
+    try {
+        let clients = await Client.find({ isDeleted: false, isSubscribed: true })
+            .select(
+                'firstName lastName email phone title industry companyName linkedInUrl companySize companyLocation selectedPlan',
+            )
+            .lean();
+        let fields = [
+            'first-name',
+            'last-name',
+            'linkedIn-url',
+            'email',
+            'phone',
+            'location',
+            'title',
+            'company-name',
+            'industry',
+            'company-size',
+            'selected-plan',
+        ];
+        const rawJson = clients.map((x) => {
+            return {
+                'first-name': x.firstName,
+                'last-name': x.lastName,
+                'linkedIn-url': x.linkedInUrl,
+                email: x.email,
+                phone: x.phone,
+                location: x.companyLocation,
+                title: x.title,
+                'company-name': x.companyName,
+                industry: x.industry,
+                'company-size': x.companySize,
+                'selected-plan': x.selectedPlan ? (x.selectedPlan.status ? x.selectedPlan.status : '') : '',
+            };
+        });
+        const json2csvParser = new Parser({ fields });
+        const csvData = json2csvParser.parse(rawJson);
+        res.header('Content-Type', 'text/csv');
+        res.send(csvData);
+    } catch (e) {
+        Logger.log.error('Error in download subscribers API call', e.message || e);
+        return res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
         });
     }
 });
