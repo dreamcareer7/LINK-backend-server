@@ -146,12 +146,12 @@ router.get('/all-quote', async (req, res) => {
             limit,
             populate: 'tags',
         };
-        if (req.body.status === true || req.body.status === false) {
-            queryObj.isPublished = req.body.status;
+        if (req.query.hasOwnProperty('status')) {
+            queryObj.isPublished = req.query.status;
         }
-        if (req.body.sorting === 'RECENT') {
+        if (req.query.sorting && req.query.sorting === 'RECENT') {
             options.sort = { createdAt: -1 };
-        } else if (req.body.sorting === 'OLD') {
+        } else if (req.query.sorting && req.query.sorting === 'OLD') {
             options.sort = { createdAt: 1 };
         }
 

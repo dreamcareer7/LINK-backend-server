@@ -16,7 +16,7 @@ router.get('/get-subscribers', async (req, res) => {
         //     '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
         // );
         let client = await Client.paginate(
-            { isDeleted: false },
+            { isDeleted: false, isSubscribed: true },
             {
                 page,
                 limit,

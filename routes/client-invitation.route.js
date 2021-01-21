@@ -13,7 +13,12 @@ const mailHelper = require('../helper/mailer.helper');
 
 router.post('/send-invitation', async (req, res) => {
     try {
-        if (!req.body.firstName || !req.body.lastName || !req.body.email || !req.body.phone) {
+        if (
+            !req.body.hasOwnProperty('firstName') ||
+            !req.body.hasOwnProperty('lastName') ||
+            !req.body.hasOwnProperty('email') ||
+            !req.body.hasOwnProperty('phone')
+        ) {
             return res.status(400).send({
                 status: 'REQUIRED_FIELD_MISSING',
                 message: 'Required is field missing.',
@@ -33,6 +38,7 @@ router.post('/send-invitation', async (req, res) => {
             email: req.body.email,
             phone: req.body.phone,
             isInvited: true,
+            isSubscribed: false,
         });
         await newClient.save();
         let access = 'auth';
