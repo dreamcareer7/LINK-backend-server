@@ -86,17 +86,20 @@ clientSchema.statics.findByToken = async function(token) {
         clientData = await client.findOne({
             _id: decoded._id,
         });
-        if (clientData.jwtToken.indexOf(token) !== -1) {
-            if (decoded.expiredTime > d.getTime()) {
-                return clientData;
-            } else {
-                clientData.jwtToken.splice(clientData.jwtToken.indexOf(token), 1);
-                await clientData.save();
-                return Promise.reject({ status: 'TOKEN_EXPIRED', message: 'JwtToken is expired' });
-            }
+        //Note: Commented the checking of token to be present in the Database, because the User can be redirected to dashboard from the email as well
+        //      So it is not advisable to add a token Daily while sending the mail
+
+        // if (clientData.jwtToken.indexOf(token) !== -1) {
+        if (decoded.expiredTime > d.getTime()) {
+            return clientData;
         } else {
-            return Promise.reject({ status: 'TOKEN_NOT_FOUND', message: 'JwtToken is not found' });
+            // clientData.jwtToken.splice(clientData.jwtToken.indexOf(token), 1);
+            // await clientData.save();
+            return Promise.reject({ status: 'TOKEN_EXPIRED', message: 'JwtToken is expired' });
         }
+        // } else {
+        //     return Promise.reject({ status: 'TOKEN_NOT_FOUND', message: 'JwtToken is not found' });
+        // }
     } catch (e) {
         return Promise.reject({ status: 'INVALID_TOKEN', message: 'Cannot decode token' });
     }

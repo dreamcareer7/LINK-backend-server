@@ -13,14 +13,15 @@ const Schema = mongoose.Schema;
  */
 const notificationSchema = new Schema(
     {
-        clientId: mongoose.Schema.Types.ObjectId,
-        isReaded: { type: Schema.Types.Boolean, default: false },
-        notifications: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'opportunity',
-            },
-        ],
+        clientId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'client',
+        },
+        opportunityId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'opportunity',
+        },
+        isRead: { type: Schema.Types.Boolean, default: false },
     },
     { timestamps: true },
 );

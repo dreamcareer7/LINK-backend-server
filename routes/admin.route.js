@@ -35,14 +35,24 @@ router.post('/sign-up', async (req, res) => {
         await newAdmin.save();
         let admin = await Admin.findOne({ email: req.body.email, isDeleted: false });
         let token = admin.getTokenForPassword();
-        let link = config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.setPasswordPage + `?token=${token}`;
+        let setPasswordLink =
+            config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.setPasswordPage + `?token=${token}`;
         admin.forgotOrSetPasswordToken = token;
         await admin.save();
-        let mailObj = { toAddress: [admin.email], subject: 'Set Password Link', text: link };
+        let mailObj = {
+            toAddress: [admin.email],
+            subject: 'Set Password Link',
+            text: {
+                setPasswordLink,
+                firstName: admin.firstName,
+                lastName: admin.lastName,
+            },
+            mailFor: 'admin-on-board',
+        };
         mailHelper.sendMail(mailObj);
         res.status(200).json({
             status: 'SUCCESS',
-            message: `Successfully signed up. And Set password link is sent in your registerd Email and This link is expired in ${config.forgotOrSetPasswordExpTime} Minutes.`,
+            message: `Admin successfully signed up. Set password link is sent to the registered email and will expire in ${config.forgotOrSetPasswordExpTime} Minutes.`,
         });
     } catch (e) {
         Logger.log.error('Error in sign-up API call', e.message || e);

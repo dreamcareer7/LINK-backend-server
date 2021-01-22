@@ -13,14 +13,24 @@ router.get('/get-subscribers', async (req, res) => {
     try {
         let page = parseInt(req.query.page);
         let limit = parseInt(req.query.limit);
+        let startDate = new Date(req.query.startDate);
+        let endDate = new Date(req.query.endDate);
+        let subscriptionType = req.query.subscriptionType;
+        let sortOrder = req.query.sortOrder;
         // let client = await Client.find({ isDeleted: false }).select(
         //     '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
         // );
         let client = await Client.paginate(
-            { isDeleted: false, isSubscribed: true },
+            {
+                isDeleted: false,
+                isSubscribed: true,
+                createdAt: { $gte: startDate, $lte: endDate },
+                'selectedPlan.status': subscriptionType,
+            },
             {
                 page,
                 limit,
+                sort: { createdAt: sortOrder === 'ASC' ? 1 : -1 },
                 select:
                     '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
             },

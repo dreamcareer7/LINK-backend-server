@@ -69,8 +69,8 @@ router.get('/sign-up', async (req, res) => {
             });
         } else {
             let token = client.getAuthToken();
-            client.jwtToken.push(token);
-            await client.save();
+            // client.jwtToken.push(token);
+            // await client.save();
             console.log('Client Token ::', token);
             Logger.log.info('Login Successfully to Client Deshbord.');
             // return res.status(200).send({
@@ -141,8 +141,8 @@ router.get('/sign-up-extension', async (req, res) => {
         if (client) {
             if (client.isSubscribed) {
                 let token = client.getAuthToken();
-                client.jwtToken.push(token);
-                await client.save();
+                // client.jwtToken.push(token);
+                // await client.save();
 
                 return res.redirect(`${config.backEndBaseUrl}linkedin-signin.html?token=${token}`);
             } else {
@@ -290,8 +290,8 @@ router.get('/sign-up-invitation', async (req, res) => {
                 });
             } else {
                 let token = client.getAuthToken();
-                client.jwtToken.push(token);
-                await client.save();
+                // client.jwtToken.push(token);
+                // await client.save();
                 console.log('Client Token ::', token);
                 Logger.log.info('Login Successfully to Client Deshbord.');
                 return res.status(200).send({
@@ -394,7 +394,7 @@ router.delete('/delete', authMiddleWare.clientAuthMiddleWare, async (req, res) =
             });
         }
         client.isDeleted = true;
-        client.jwtToken = [];
+        // client.jwtToken = [];
         await client.save();
         return res.status(200).send({
             status: 'SUCCESS',
@@ -491,9 +491,9 @@ router.post('/logout', authMiddleWare.clientAuthMiddleWare, async (req, res) => 
             });
         }
 
-        client.jwtToken.splice(client.jwtToken.indexOf(req.client.token), 1);
+        // client.jwtToken.splice(client.jwtToken.indexOf(req.client.token), 1);
 
-        client.save();
+        // client.save();
         res.status(200).json({
             status: 'SUCCESS',
             message: 'Client is Successfully logout.',
@@ -519,7 +519,7 @@ router.post('/logout-all-devices', authMiddleWare.clientAuthMiddleWare, async (r
                 message: 'Client is not found.',
             });
         }
-        client.jwtToken = [];
+        // client.jwtToken = [];
         client.save();
         res.status(200).json({
             status: 'SUCCESS',

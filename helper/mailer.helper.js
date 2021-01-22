@@ -25,8 +25,28 @@ const sendMail = ({ toAddress, subject, text, html, mailFor }) => {
         });
         toAddressStr.substr(0, toAddressStr.lastIndexOf(','));
         switch (mailFor) {
-            case 'forgot-admin-password':
-                html = adminForgotPassword({ name: text.name, setPasswordLink: text.setPasswordLink });
+            case 'admin-forgot-password':
+                html = adminForgotPassword({
+                    firstName: text.firstName,
+                    lastName: text.lastName,
+                    resetPasswordLink: text.resetPasswordLink,
+                });
+                break;
+            case 'admin-on-board':
+                html = adminForgotPassword({
+                    firstName: text.firstName,
+                    lastName: text.lastName,
+                    setPasswordLink: text.setPasswordLink,
+                });
+                break;
+            case 'client-invitation':
+                html = adminForgotPassword({
+                    firstName: text.firstName,
+                    lastName: text.lastName,
+                    linkedInLink: text.linkedInLink,
+                    email: text.email,
+                    phone: text.phone,
+                });
                 break;
         }
         const mailBody = {

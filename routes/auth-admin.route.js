@@ -159,9 +159,9 @@ router.post('/logout', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     }
 });
 
-/** 
+/**
  logout from all devices
-*/
+ */
 router.post('/logout-all-devices', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
         let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false });
@@ -239,14 +239,24 @@ router.post('/forgot-password', async (req, res) => {
             });
         }
         let token = admin.getTokenForPassword();
-        let link = config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.forgotPasswordPage + `?token=${token}`;
+        let resetPasswordLink =
+            config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.forgotPasswordPage + `?token=${token}`;
         admin.forgotOrSetPasswordToken = token;
         await admin.save();
-        let mailObj = { toAddress: [admin.email], subject: 'Reset Password Link', text: link };
+        let mailObj = {
+            toAddress: [admin.email],
+            subject: 'Reset Password Link',
+            text: {
+                resetPasswordLink,
+                firstName: admin.firstName,
+                lastName: admin.lastName,
+            },
+            mailFor: 'admin-forgot-password',
+        };
         mailHelper.sendMail(mailObj);
         res.status(200).send({
             status: 'SUCCESS',
-            message: `Reset password link is sent in your registerd Email and This link is expired in ${config.forgotOrSetPasswordExpTime} Minutes.`,
+            message: `Reset password link is sent to your registered Email and the link will expire in ${config.forgotOrSetPasswordExpTime} Minutes.`,
         });
     } catch (e) {
         Logger.log.error('Error in forgot Admin password API call', e.message || e);
