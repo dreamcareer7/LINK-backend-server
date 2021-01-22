@@ -13,10 +13,23 @@ router.get('/get-subscribers', async (req, res) => {
     try {
         let page = parseInt(req.query.page);
         let limit = parseInt(req.query.limit);
-        let startDate = new Date(req.query.startDate);
-        let endDate = new Date(req.query.endDate);
+        let startDate;
+        let endDate;
         let subscriptionType = req.query.subscriptionType;
         let sortOrder = req.query.sortOrder;
+        if (req.query.startDate) {
+            startDate = new Date(req.query.startDate);
+        } else {
+            startDate = new Date();
+            startDate.setTime(startDate.getTime() - 30 * 24 * 3600 * 1000);
+        }
+        if (req.query.endDate) {
+            endDate = new Date(req.query.endDate);
+            // = req.query.endDate ? new Date(req.query.endDate) : new Date();
+        } else {
+            endDate = new Date();
+            endDate.setHours(23, 59, 59);
+        }
         // let client = await Client.find({ isDeleted: false }).select(
         //     '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
         // );
