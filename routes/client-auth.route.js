@@ -327,6 +327,8 @@ router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) 
                 message: 'client is not found.',
             });
         }
+        client = JSON.parse(JSON.stringify(client));
+        console.log(client);
         let activeStatus = ['FREE_TRIAL', 'MONTHLY', 'YEARLY'];
         client.isActive =
             client.selectedPlan &&
