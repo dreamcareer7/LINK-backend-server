@@ -46,6 +46,9 @@ package-lock.json
 *.save
 
 upload/organization.json
+!upload/.gitkeep
+!upload/admin-data/.gitkeep
+!upload/admin-data/profile-pic/.gitkeep
 demo.js
 
 #Key files

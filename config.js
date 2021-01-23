@@ -1,3 +1,10 @@
+let uploadLocations = {
+    admin: {
+        base: 'admin-data/',
+        profile: 'profile-pic/',
+    },
+};
+
 module.exports = {
     twoFA: {
         generatorName: 'Linkfluencer',
@@ -6,6 +13,7 @@ module.exports = {
     expireTime: process.env.EXPIRE_TIME || '2', //in hrs
     backEndBaseUrl: process.env.BACKEND_BASE_URL || 'http://localhost:3500/',
     forgotOrSetPasswordExpTime: process.env.FORGOT_PASSWORD_EXPIRE_TIME || '10', //in mins
+    uploadLocations: uploadLocations,
     adminUrls: {
         adminFrontEndBaseUrl: process.env.ADMIN_FRONTEND_BASE_URL || 'http://localhost:4200/',
         forgotPasswordPage: 'forgot/',

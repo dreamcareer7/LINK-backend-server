@@ -22,7 +22,7 @@ const adminSchema = new Schema(
         email: Schema.Types.String,
         phone: Schema.Types.String,
         password: Schema.Types.String,
-        profilePicUrl: Schema.Types.String,
+        profilePic: Schema.Types.String,
         isDeleted: { type: Schema.Types.Boolean, default: false },
         jwtToken: [Schema.Types.String],
         forgotOrSetPasswordToken: Schema.Types.String,

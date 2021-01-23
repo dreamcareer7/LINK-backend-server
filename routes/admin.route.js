@@ -1,11 +1,94 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
 const mongoose = require('mongoose');
 const Admin = mongoose.model('admin');
 const config = require('../config');
 const authMiddleWare = require('../middleware/authenticate');
 const mailHelper = require('../helper/mailer.helper');
 const Logger = require('../services/logger');
+
+const uploadProfilePath = path.resolve(__dirname, '../upload/' + getProfileImagePath());
+//Custom Multer storage engine
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, uploadProfilePath);
+    },
+    filename: function(req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now() + '-' + file.originalname);
+    },
+});
+const upload = multer({ dest: uploadProfilePath, storage: storage });
+
+/**
+ * Upload for profile-picture of Admin.
+ */
+router.post('/upload/profile-pic', upload.single('profile-pic'), async (req, res) => {
+    try {
+        let adminId = req.admin._id;
+        if (!adminId) {
+            Logger.log.error('Admin id not found in the logged in admin');
+            return res.status(400).send({
+                status: 'ERROR',
+                message: 'Admin not found, please try by logging in again.',
+            });
+        }
+        await Admin.updateOne({ _id: adminId }, { profilePic: req.file.filename });
+        let profilePicUrl = getProfileUrl(req.file.filename);
+        res.status(200).send({
+            status: 'SUCCESS',
+            data: {
+                profilePicUrl,
+            },
+        });
+    } catch (e) {
+        Logger.log.error('Error in upload profile picture API call', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: error.message,
+        });
+    }
+});
+
+/**
+ * Remove profile-picture of Admin.
+ */
+router.delete('/profile-pic', async (req, res) => {
+    let adminId = req.admin._id;
+    if (!adminId) {
+        Logger.log.error('Admin id not found in the logged in admin');
+        return res.status(400).send({
+            status: 'ERROR',
+            message: 'Admin not found, please try by logging in again.',
+        });
+    }
+    if (!req.query.oldImageName) {
+        Logger.log.error('In delete profile picture call, old image name not present for the admin:', adminId);
+        return res.status(400).send({
+            status: 'ERROR',
+            message: 'Image name not found, unable to remove old profile picture.',
+        });
+    }
+    let imagePath = path.resolve(__dirname + '/../upload/' + getProfileImagePath() + req.query.oldImageName);
+    fs.unlink(imagePath, async (err) => {
+        if (err) {
+            Logger.log.warn(
+                `Error deleting profile picture with name: ${req.query.oldImageName} by user ${req.admin._id}`,
+            );
+            Logger.log.warn(err.message || err);
+            return res.status(500).send('Error removing profile picture.');
+        } else {
+            Logger.log.info('Successfully deleted old profile picture.');
+            await Admin.updateOne({ _id: adminId }, { profilePic: null });
+            res.status(200).send({
+                status: 'SUCCESS',
+                message: 'Profile Picture removed successfully.',
+            });
+        }
+    });
+});
 
 /**
  * Creates Admin - Sign-up Call
@@ -111,6 +194,7 @@ router.get('/get-admin/:id', async (req, res) => {
                 message: 'admin is not found.',
             });
         }
+        admin.profilePic = getProfileUrl(admin.profilePic);
         return res.status(200).send({
             status: 'SUCCESS',
             data: admin,
@@ -265,6 +349,7 @@ router.get('/all-admin', authMiddleWare.adminAuthMiddleWare, async (req, res) =>
             .lean();
 
         for (let i = 0; i < admins.length; i++) {
+            admins[i].profilePic = getProfileUrl(admins[i].profilePic);
             if (req.admin._id.toString() == admins[i]._id.toString()) {
                 admins[i].isLoggedIn = true;
                 break;
@@ -282,6 +367,20 @@ router.get('/all-admin', authMiddleWare.adminAuthMiddleWare, async (req, res) =>
         });
     }
 });
+
+/**
+ * Helper Functions
+ */
+function getProfileImagePath() {
+    return config.uploadLocations.admin.base + config.uploadLocations.admin.profile;
+}
+
+function getProfileUrl(imageName) {
+    if (imageName)
+        if (imageName.indexOf(config.backEndBaseUrl + getProfileImagePath()) !== -1) return imageName;
+        else return config.backEndBaseUrl + getProfileImagePath() + imageName;
+    return '';
+}
 
 /**
  * Export Router
