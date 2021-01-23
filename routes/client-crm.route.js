@@ -11,7 +11,6 @@ router.put('/filters', async (req, res) => {
         let page = parseInt(req.query.page);
         let limit = parseInt(req.query.limit);
         let queryObj = {
-            stage: req.body.stage,
             clientId: req.client._id,
             isDeleted: false,
         };
@@ -28,11 +27,14 @@ router.put('/filters', async (req, res) => {
                 $lte: req.body.endDeal,
             };
         }
+        if (req.body.stage) {
+            queryObj.stage = req.body.stage;
+        }
         if (req.body.location) {
             queryObj.location = { $regex: req.body.location, $options: 'i' };
         }
 
-        if (req.body.likelyHoods.length > 0) {
+        if (req.body.likelyHoods && req.body.likelyHoods.length > 0) {
             queryObj.likelyHood = { $in: req.body.likelyHoods };
         }
 
