@@ -316,16 +316,22 @@ router.get('/sign-up-invitation', async (req, res) => {
 
 router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
-        let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
-            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted',
-        );
-
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false })
+            .select(
+                'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan',
+            )
+            .lean();
         if (!client) {
             return res.status(400).send({
                 status: 'CLIENT_NOT_FOUND',
                 message: 'client is not found.',
             });
         }
+        let activeStatus = ['FREE_TRIAL', 'MONTHLY', 'YEARLY'];
+        client.isActive =
+            client.selectedPlan &&
+            client.selectedPlan.status &&
+            activeStatus.indexOf(client.selectedPlan.status) !== -1;
         return res.status(200).send({
             status: 'SUCCESS',
             data: client,
@@ -507,9 +513,9 @@ router.post('/logout', authMiddleWare.clientAuthMiddleWare, async (req, res) => 
     }
 });
 
-/** 
+/**
  logout from all devices
-*/
+ */
 router.post('/logout-all-devices', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false });
