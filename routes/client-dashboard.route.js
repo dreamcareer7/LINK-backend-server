@@ -26,6 +26,16 @@ router.put('/opportunities', async (req, res) => {
         data = data.filter(function(value, index, arr) {
             return value._id !== null;
         });
+        let addedStages = data.map((stage) => stage._id);
+        let stages = ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED', 'LOST', 'POTENTIAL'];
+        stages.forEach((stage) => {
+            if (addedStages.indexOf(stage) === -1) {
+                data.push({
+                    _id: stage,
+                    total: 0,
+                });
+            }
+        });
         return res.status(200).send({
             status: 'SUCCESS',
             data: data,
