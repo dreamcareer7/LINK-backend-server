@@ -388,6 +388,31 @@ router.post('/update', authMiddleWare.clientAuthMiddleWare, async (req, res) => 
     }
 });
 
+/*
+ Add FCM Token
+ */
+router.put('/add-fcm-token', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+    try {
+        if (!req.body.fcmToken) {
+            return res.status(400).send({
+                status: 'FCM_TOKEN_NOT_FOUND',
+                message: 'FCM Token is not Found',
+            });
+        }
+        await Client.updateOne({ _id: req.client._id }, { $addToSet: { fcmToken: req.body.fcmToken } });
+        return res.status(200).send({
+            status: 'SUCCESS',
+            message: 'FCM Token added successfully',
+        });
+    } catch (e) {
+        Logger.log.error('Error in pushing FCM Token', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
 /**
  * delete client
  */
@@ -491,17 +516,9 @@ logout Client
 
 router.post('/logout', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
-        let client = await Client.findOne({ _id: req.client._id, isDeleted: false });
-        if (!client) {
-            return res.status(400).send({
-                status: 'CLIENT_NOT_FOUND',
-                message: 'client is not found.',
-            });
+        if (req.body.fcmToken) {
+            await Client.updateOne({ _id: req.client._id }, { $pull: { fcmToken: req.body.fcmToken } });
         }
-
-        // client.jwtToken.splice(client.jwtToken.indexOf(req.client.token), 1);
-
-        // client.save();
         res.status(200).json({
             status: 'SUCCESS',
             message: 'Client is Successfully logout.',
