@@ -32,11 +32,22 @@ let createAdmin = () => {
             let admin = await Admin.findOne({ email: config.organization.adminEmail });
             Logger.log.trace('Admin did not existed, created one with email:', config.organization.adminEmail);
             let token = admin.getTokenForPassword();
-            let link = config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.setPasswordPage + `?token=${token}`;
+            let setPasswordLink =
+                config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.setPasswordPage + `?token=${token}`;
             admin.forgotOrSetPasswordToken = token;
 
             await admin.save();
-            let mailObj = { toAddress: [admin.email], subject: 'Set Password Link', text: link };
+            //TODO add mailFor
+            let mailObj = {
+                toAddress: [admin.email],
+                subject: 'Set Password Link',
+                text: {
+                    setPasswordLink,
+                    firstName: admin.firstName,
+                    lastName: admin.lastName,
+                },
+                mailFor: 'admin-on-board',
+            };
             mailHelper.sendMail(mailObj);
         } catch (e) {
             Logger.log.error('Error creating new Admin', e.message || e);

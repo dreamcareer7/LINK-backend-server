@@ -26,20 +26,47 @@ const sendMail = ({ toAddress, subject, text, html, mailFor }) => {
         toAddressStr.substr(0, toAddressStr.lastIndexOf(','));
         switch (mailFor) {
             case 'admin-forgot-password':
-                html = adminForgotPassword({
-                    firstName: text.firstName,
-                    lastName: text.lastName,
-                    resetPasswordLink: text.resetPasswordLink,
-                });
+                //TODO Attach template
+
+                // html = adminForgotPassword({
+                //     firstName: text.firstName,
+                //     lastName: text.lastName,
+                //     resetPasswordLink: text.resetPasswordLink,
+                // });
                 break;
             case 'admin-on-board':
-                html = adminForgotPassword({
-                    firstName: text.firstName,
-                    lastName: text.lastName,
-                    setPasswordLink: text.setPasswordLink,
-                });
+                //TODO Attach template
+
+                // html = adminForgotPassword({
+                //     firstName: text.firstName,
+                //     lastName: text.lastName,
+                //     setPasswordLink: text.setPasswordLink,
+                // });
                 break;
             case 'client-invitation':
+                //TODO Attach template
+
+                // html = adminForgotPassword({
+                //     firstName: text.firstName,
+                //     lastName: text.lastName,
+                //     linkedInLink: text.linkedInLink,
+                //     email: text.email,
+                //     phone: text.phone,
+                // });
+                break;
+            case 'client-follow-ups':
+                //TODO Attach template
+
+                // html = adminForgotPassword({
+                //     firstName: text.firstName,
+                //     lastName: text.lastName,
+                //     linkedInLink: text.linkedInLink,
+                //     email: text.email,
+                //     phone: text.phone,
+                // });
+                break;
+            //TODO Consider this case on successful payment
+            case 'client-on-boarding':
                 html = adminForgotPassword({
                     firstName: text.firstName,
                     lastName: text.lastName,
@@ -57,6 +84,7 @@ const sendMail = ({ toAddress, subject, text, html, mailFor }) => {
         };
 
         if (!mailBody.html) mailBody.text = text;
+        if (typeof mailBody.text !== 'string') mailBody.text = JSON.stringify(text, null, 2);
 
         if (config.mailer.send === 'true') {
             transporter.sendMail(mailBody, (err, info) => {

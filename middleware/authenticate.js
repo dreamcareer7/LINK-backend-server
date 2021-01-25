@@ -60,14 +60,14 @@ let linkedInLoggedInChecked = async (req, res, next) => {
     if (token) {
         try {
             let client = await Client.findByToken(token);
-            // if (client.publicIdentifier === client.loggedInIdentifier) {
-            next();
-            // } else {
-            //     return res.status(401).json({
-            //         status: 'NOT_AUTHORIZED',
-            //         message: 'LinkedIn account is not registered.',
-            //     });
-            // }
+            if (client.publicIdentifier === client.loggedInIdentifier) {
+                next();
+            } else {
+                return res.status(401).json({
+                    status: 'NOT_AUTHORIZED',
+                    message: 'LinkedIn account is not registered.',
+                });
+            }
         } catch (e) {
             Logger.log.error('Error occurred.', e.message || e);
             return res.status(401).send({ message: 'Invalid Auth-Token' });

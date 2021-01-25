@@ -33,8 +33,9 @@ const getProfile = async (publicIdentifier, cookie, ajaxToken) => {
                 cookie: cookie,
             },
         };
-
+        console.log('Making an API Call..');
         let response = await axios(data);
+        console.log('Received the response..');
         let p;
         console.log('response::', JSON.stringify(response.data, null, 3));
         let companyArr = [];

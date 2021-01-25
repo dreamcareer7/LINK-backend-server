@@ -87,10 +87,10 @@ router.get('/sign-up', async (req, res) => {
         });
     }
 });
+
 /**
  * checks the cookie is valid or not / also checks for client is loged in or not in crome extension
  */
-
 router.get(
     '/checking-for-cookie',
     authMiddleWare.clientAuthMiddleWare,
@@ -144,12 +144,14 @@ router.get('/sign-up-extension', async (req, res) => {
                 // client.jwtToken.push(token);
                 // await client.save();
 
-                return res.redirect(`${config.backEndBaseUrl}linkedin-signin.html?token=${token}`);
+                return res.redirect(`${config.backEndBaseUrl}linkedin-signin.html?token=${token}&is=1`);
             } else {
-                return res.redirect(`https://www.linkedin.com/`);
+                return res.redirect(`${config.backEndBaseUrl}linkedin-signin.html?token=${token}&is=0`);
+                // return res.redirect(`https://www.linkedin.com/`);
             }
         } else {
-            return res.redirect(`https://www.linkedin.com/`);
+            return res.redirect(`${config.backEndBaseUrl}linkedin-signin.html?token=${token}&is=0`);
+            // return res.redirect(`https://www.linkedin.com/`);
         }
     } catch (e) {
         Logger.log.error('Error in SignUp API call.', e.message || e);
