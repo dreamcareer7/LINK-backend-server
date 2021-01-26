@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const moment = require('moment-timezone');
 const mongoose = require('mongoose');
 const Opportunity = mongoose.model('opportunity');
 const Logger = require('../services/logger');
@@ -68,7 +69,7 @@ router.get('/activity-breakdown', async (req, res) => {
             data: data,
         });
     } catch (e) {
-        Logger.log.error('Error in client-dashboard opportunities API call', e.message || e);
+        Logger.log.error('Error in client-reporting activity breakdown API call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,
@@ -116,7 +117,7 @@ router.get('/pipeline-value', async (req, res) => {
             data: data,
         });
     } catch (e) {
-        Logger.log.error('Error in client-dashboard pipeline-value API call', e.message || e);
+        Logger.log.error('Error in client-reporting pipeline value API call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,
@@ -144,10 +145,7 @@ router.get('/total-sales', async (req, res) => {
         for (let i = 0; i < totalBars; i++) {
             let tempDate = new Date(startDate.getTime());
             // console.log('tempDate::', tempDate);
-            responseObj[tempDate.setDate(tempDate.getDate() + i * groupOf)] = {
-                withAgent: 0,
-                withBot: 0,
-            };
+            responseObj[tempDate.setDate(tempDate.getDate() + i * groupOf)] = 0;
         }
         let data = await Opportunity.aggregate([
             [
@@ -185,7 +183,6 @@ router.get('/total-sales', async (req, res) => {
                 },
             ],
         ]).allowDiskUse(true);
-
         data.forEach((dayRecord) => {
             let dayDate = new Date(dayRecord._id.year, dayRecord._id.month - 1, dayRecord._id.day, 0, 0, 0);
             for (let j = 0; j < Object.keys(responseObj).length; j++) {
@@ -194,23 +191,24 @@ router.get('/total-sales', async (req, res) => {
                     (j === Object.keys(responseObj).length - 1 ||
                         parseInt(Object.keys(responseObj)[j + 1]) > dayDate.getTime())
                 ) {
-                    responseObj[Object.keys(responseObj)[j]] += dayRecord.count;
+                    responseObj[Object.keys(responseObj)[j]] += dayRecord.totalDealValue;
                 }
             }
         });
         let finalResponseArr = [];
         for (let i = 0; i < Object.keys(responseObj).length; i++) {
-            console.log('time::', Object.keys(responseObj)[i]);
-            finalResponseArr.push[new Date(parseInt(Object.keys(responseObj)[i]) - timezoneOffset * 60 * 60 * 1000)] =
-                responseObj[Object.keys(responseObj)[i]];
+            const dateLabel = moment(new Date(parseInt(Object.keys(responseObj)[i]))).format('MMM DD');
+            finalResponseArr.push({
+                _id: dateLabel,
+                totalDealSize: responseObj[Object.keys(responseObj)[i]],
+            });
         }
-
         return res.status(200).send({
             status: 'SUCCESS',
-            data: data,
+            data: finalResponseArr,
         });
     } catch (e) {
-        Logger.log.error('Error in client-dashboard pipeline-value API call', e.message || e);
+        Logger.log.error('Error in client-reporting total sales API call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,
@@ -298,7 +296,7 @@ router.get('/conversions', async (req, res) => {
             data: responseObj,
         });
     } catch (e) {
-        Logger.log.error('Error in client-dashboard pipeline-value API call', e.message || e);
+        Logger.log.error('Error in client-reporting conversions API call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,

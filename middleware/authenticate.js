@@ -36,7 +36,6 @@ let clientAuthMiddleWare = async (req, res, next) => {
     if (token) {
         try {
             let client = await Client.findByToken(token);
-            console.log('Client in Client Auth..', client);
             if (client) {
                 req.client = client;
                 req.client.token = token;
@@ -60,7 +59,6 @@ let linkedInLoggedInChecked = async (req, res, next) => {
     if (token) {
         try {
             let client = await Client.findByToken(token);
-            console.log('client::', client);
             req.client = client;
             // if (client.publicIdentifier === client.loggedInIdentifier) {
             next();
