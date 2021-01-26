@@ -33,7 +33,11 @@ router.post('/get-conversation-id-arr', async (req, res) => {
             }
         }
         let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
-        let conversation = await conversationHelper.extractChats(cookieStr, ajaxToken, newConversationIdArr);
+        let conversation = await conversationHelper.extractChats({
+            cookie: cookieStr,
+            ajaxToken: ajaxToken,
+            newConversationIdArr: newConversationIdArr,
+        });
         let dbConversation = await Conversation.findOne({
             clientId: req.client._id,
         });

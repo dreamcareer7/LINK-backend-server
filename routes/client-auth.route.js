@@ -199,7 +199,7 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
                 client.linkedInUrl = clientInfo.linkedInUrl;
                 client.companyLocation = clientInfo.location;
                 await client.save();
-                let conversations = await conversationHelper.extractChats(cookieStr, ajaxToken);
+                let conversations = await conversationHelper.extractChats({ cookie: cookieStr, ajaxToken: ajaxToken });
 
                 let newConversation = new Conversation({
                     clientId: req.client._id,

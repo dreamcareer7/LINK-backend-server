@@ -115,15 +115,39 @@ router.put('/fetch-conversation/:id', authMiddleWare.linkedInLoggedInChecked, as
                 message: 'opportunitys is not Found!',
             });
         }
+        console.log('opportunity::', opportunity);
         let dbConversation = await Conversation.findOne({
             clientId: req.client._id,
             'conversations.publicIdentifier': opportunity.publicIdentifier,
         });
         if (!dbConversation) {
-            return res.status(400).send({
-                status: 'NOT_FOUND',
-                message: 'ConversationId is Not Found in db.',
+            let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
+            let conversation = await conversationHelper.extractChats({
+                cookie: cookieStr,
+                ajaxToken: ajaxToken,
+                publicIdentifier: opportunity.publicIdentifier,
             });
+            if (conversation.length === 0) {
+                return res.status(400).send({
+                    status: 'SUCCESS',
+                    data: [],
+                });
+            }
+            console.log('Adding the conversation...', conversation[0]);
+            dbConversation = await Conversation.findOneAndUpdate(
+                {
+                    clientId: req.client._id,
+                },
+                {
+                    $push: {
+                        conversations: {
+                            conversationId: conversation[0].conversationId,
+                            publicIdentifier: conversation[0].publicIdentifier,
+                        },
+                    },
+                },
+                { new: true },
+            );
         }
         let conversationId;
         let publicIdentifier;

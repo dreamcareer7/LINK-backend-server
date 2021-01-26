@@ -4,25 +4,11 @@ const mongoose = require('mongoose');
 const Opportunity = mongoose.model('opportunity');
 const Client = mongoose.model('client');
 
-const extractChats = async (cookie, ajaxToken, newConversationIdArr) => {
+const extractChats = async ({ cookie, ajaxToken, newConversationIdArr, publicIdentifier }) => {
     try {
         let createdBefore = null;
         let extractedChats = [];
-        if (!newConversationIdArr) {
-            while (true) {
-                let rawChatsData = await fetchChats(cookie, ajaxToken, createdBefore);
-
-                let processedChatData = await processChatData(rawChatsData);
-
-                if (processedChatData['chats'].length > 0) {
-                    // extractedChats.push(processedChatData['chats']);
-                    extractedChats = [...extractedChats, ...processedChatData['chats']];
-                    createdBefore = processedChatData['lowestLastActivity'];
-                } else {
-                    break;
-                }
-            }
-        } else {
+        if (newConversationIdArr) {
             while (newConversationIdArr.length > 0) {
                 let rawChatsData = await fetchChats(cookie, ajaxToken, createdBefore);
 
@@ -46,6 +32,39 @@ const extractChats = async (cookie, ajaxToken, newConversationIdArr) => {
                         // }
                     }
 
+                    createdBefore = processedChatData['lowestLastActivity'];
+                } else {
+                    break;
+                }
+            }
+        } else if (publicIdentifier) {
+            let chatFound = false;
+            while (!chatFound) {
+                let rawChatsData = await fetchChats(cookie, ajaxToken, createdBefore);
+
+                let processedChatData = await processChatData(rawChatsData);
+                if (processedChatData['chats'].length > 0) {
+                    for (let j = 0; j < processedChatData['chats'].length; j++) {
+                        if (processedChatData['chats'][j].publicIdentifier === publicIdentifier) {
+                            extractedChats.push(processedChatData['chats'][j]);
+                            chatFound = true;
+                            break;
+                        }
+                    }
+
+                    createdBefore = processedChatData['lowestLastActivity'];
+                } else {
+                    break;
+                }
+            }
+        } else {
+            while (true) {
+                let rawChatsData = await fetchChats(cookie, ajaxToken, createdBefore);
+
+                let processedChatData = await processChatData(rawChatsData);
+
+                if (processedChatData['chats'].length > 0) {
+                    extractedChats = [...extractedChats, ...processedChatData['chats']];
                     createdBefore = processedChatData['lowestLastActivity'];
                 } else {
                     break;
@@ -287,6 +306,6 @@ const processConversation = async (response, opportunityPublicIdentifier, client
 };
 
 module.exports = {
-    extractChats,
+    extractChats: extractChats,
     fetchConversation,
 };

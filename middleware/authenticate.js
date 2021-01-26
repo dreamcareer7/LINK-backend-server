@@ -36,7 +36,7 @@ let clientAuthMiddleWare = async (req, res, next) => {
     if (token) {
         try {
             let client = await Client.findByToken(token);
-
+            console.log('Client in Client Auth..', client);
             if (client) {
                 req.client = client;
                 req.client.token = token;
@@ -60,14 +60,16 @@ let linkedInLoggedInChecked = async (req, res, next) => {
     if (token) {
         try {
             let client = await Client.findByToken(token);
-            if (client.publicIdentifier === client.loggedInIdentifier) {
-                next();
-            } else {
-                return res.status(401).json({
-                    status: 'NOT_AUTHORIZED',
-                    message: 'LinkedIn account is not registered.',
-                });
-            }
+            console.log('client::', client);
+            req.client = client;
+            // if (client.publicIdentifier === client.loggedInIdentifier) {
+            next();
+            // } else {
+            //     return res.status(401).json({
+            //         status: 'NOT_AUTHORIZED',
+            //         message: 'LinkedIn account is not registered.',
+            //     });
+            // }
         } catch (e) {
             Logger.log.error('Error occurred.', e.message || e);
             return res.status(401).send({ message: 'Invalid Auth-Token' });
