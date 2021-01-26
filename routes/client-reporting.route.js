@@ -46,6 +46,17 @@ router.get('/activity-breakdown', async (req, res) => {
                 });
             }
         });
+        let stageMap = {
+            INITIAL_CONTACT: 'INVITED',
+            FOLLOW_UP: 'ACCEPTED',
+            IN_CONVERSION: 'CONVERSATIONS',
+            MEETING_BOOKED: 'MEETINGS',
+            CLOSED: 'DEALS CLOSED',
+            LOST: 'DEALS LOST',
+        };
+        for (let i = 0; i < data.length; i++) {
+            data[i]._id = stageMap[data[i]._id];
+        }
         return res.status(200).send({
             status: 'SUCCESS',
             data: data,
