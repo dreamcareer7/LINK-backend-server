@@ -134,6 +134,21 @@ router.get('/total-sales', async (req, res) => {
         }
         let startDate = new Date(req.query.startDate);
         let endDate = new Date(req.query.endDate);
+        let totalDays = Math.ceil(endDate.getTime() - startDate.getTime()) / (24 * 3600 * 1000);
+        let groupOf = Math.ceil(totalDays / 20);
+        let completeGroups = Math.floor(totalDays / groupOf);
+        let remaining = totalDays - completeGroups * groupOf;
+        let totalBars = completeGroups;
+        if (remaining) totalBars++;
+        let responseObj = {};
+        for (let i = 0; i < totalBars; i++) {
+            let tempDate = new Date(startDate.getTime());
+            // console.log('tempDate::', tempDate);
+            responseObj[tempDate.setDate(tempDate.getDate() + i * groupOf)] = {
+                withAgent: 0,
+                withBot: 0,
+            };
+        }
         let data = await Opportunity.aggregate([
             [
                 {
@@ -163,9 +178,6 @@ router.get('/total-sales', async (req, res) => {
                                 },
                             },
                         },
-                        total: {
-                            $sum: 1,
-                        },
                         totalDealValue: {
                             $sum: '$dealSize',
                         },
@@ -173,6 +185,26 @@ router.get('/total-sales', async (req, res) => {
                 },
             ],
         ]).allowDiskUse(true);
+
+        data.forEach((dayRecord) => {
+            let dayDate = new Date(dayRecord._id.year, dayRecord._id.month - 1, dayRecord._id.day, 0, 0, 0);
+            for (let j = 0; j < Object.keys(responseObj).length; j++) {
+                if (
+                    parseInt(Object.keys(responseObj)[j]) < dayDate.getTime() &&
+                    (j === Object.keys(responseObj).length - 1 ||
+                        parseInt(Object.keys(responseObj)[j + 1]) > dayDate.getTime())
+                ) {
+                    responseObj[Object.keys(responseObj)[j]] += dayRecord.count;
+                }
+            }
+        });
+        let finalResponseArr = [];
+        for (let i = 0; i < Object.keys(responseObj).length; i++) {
+            console.log('time::', Object.keys(responseObj)[i]);
+            finalResponseArr.push[new Date(parseInt(Object.keys(responseObj)[i]) - timezoneOffset * 60 * 60 * 1000)] =
+                responseObj[Object.keys(responseObj)[i]];
+        }
+
         return res.status(200).send({
             status: 'SUCCESS',
             data: data,

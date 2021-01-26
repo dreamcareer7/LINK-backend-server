@@ -128,7 +128,7 @@ router.put('/fetch-conversation/:id', authMiddleWare.linkedInLoggedInChecked, as
                 publicIdentifier: opportunity.publicIdentifier,
             });
             if (conversation.length === 0) {
-                return res.status(400).send({
+                return res.status(200).send({
                     status: 'SUCCESS',
                     data: [],
                 });
