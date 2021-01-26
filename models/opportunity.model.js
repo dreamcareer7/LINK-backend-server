@@ -29,6 +29,7 @@ const opportunitySchema = new Schema(
         stage: {
             type: Schema.Types.String,
             enum: ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED', 'LOST', 'POTENTIAL'],
+            default: 'INITIAL_CONTACT',
         },
         dealSize: Schema.Types.Number,
         likelyHood: { type: Schema.Types.String, enum: ['LIKELY', 'VERY_LIKELY', 'NOT_LIKELY'] },

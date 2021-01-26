@@ -37,7 +37,7 @@ router.get('/activity-breakdown', async (req, res) => {
             return value._id !== null;
         });
         let addedStages = data.map((stage) => stage._id);
-        let stages = ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED', 'LOST', 'POTENTIAL'];
+        let stages = ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED', 'LOST'];
         stages.forEach((stage) => {
             if (addedStages.indexOf(stage) === -1) {
                 data.push({
@@ -55,6 +55,12 @@ router.get('/activity-breakdown', async (req, res) => {
             LOST: 'DEALS LOST',
         };
         for (let i = 0; i < data.length; i++) {
+            if (data[i]._id === 'POTENTIAL') {
+                data[i].splice(i, 1);
+                break;
+            }
+        }
+        for (let i = 0; i < data.length; i++) {
             data[i]._id = stageMap[data[i]._id];
         }
         return res.status(200).send({
@@ -69,7 +75,7 @@ router.get('/activity-breakdown', async (req, res) => {
         });
     }
 });
-router.put('/pipeline-value', async (req, res) => {
+router.get('/pipeline-value', async (req, res) => {
     try {
         if (!req.query.startDate || !req.query.endDate) {
             return res.status(400).send({
