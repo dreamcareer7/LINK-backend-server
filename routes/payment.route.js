@@ -17,6 +17,7 @@ router.post('/stripe-webhook', async (req, res) => {
     try {
         let eventType = req.body.type;
         let reqData = req.body.data.object;
+        console.log('Webhook Received::', JSON.stringify(req.body, null, 3));
         switch (eventType) {
             case 'customer.created':
                 if (reqData.metadata && reqData.metadata.jayla_customer_id) {
@@ -50,18 +51,22 @@ router.post('/stripe-webhook', async (req, res) => {
                         reqData.id,
                     );
                 } else {
-                    let client = Client.findOne({
+                    let client = await Client.findOne({
                         stripeCustomerId: reqData.customer,
                     });
                     if (!client) {
                         Logger.log.error('Customer not found with the Stripe Customer Id:', reqData.customer);
                     } else {
+                        console.log('client exists', client);
                         client.isSubscribed = true;
+                        if (!client.selectedPlan) {
+                            client.selectedPlan = {};
+                        }
                         client.selectedPlan.status = 'FREE_TRIAL';
-                        client.selectedPlan.trialEndDate = new Date(data.trial_end * 1000);
-                        if (client.plan.interval === 'month') {
+                        client.selectedPlan.trialEndDate = new Date(reqData.trial_end * 1000);
+                        if (reqData.plan.interval === 'month') {
                             client.selectedPlan.planSelected = 'MONTHLY';
-                        } else if (client.plan.interval === 'year') {
+                        } else if (reqData.plan.interval === 'year') {
                             client.selectedPlan.planSelected = 'YEARLY';
                         }
                     }
@@ -79,28 +84,28 @@ router.post('/stripe-webhook', async (req, res) => {
             case 'customer.subscription.updated':
                 if (reqData.status === 'active') {
                     Logger.log.info('Subscription changed to active:', reqData.id);
-                    let payment = Payment.findOne({
+                    let payment = await Payment.findOne({
                         stripeSubscriptionId: reqData.id,
                     });
                     if (!payment) {
                         Logger.log.error('Subscription not found with the Stripe Subscription Id:', reqData.id);
                     } else {
-                        let client = Client.findOne({
+                        let client = await Client.findOne({
                             _id: payment.clientId,
                         });
                         client.isSubscribed = true;
-                        if (client.plan.interval === 'month') {
+                        if (reqData.plan.interval === 'month') {
                             client.selectedPlan.status = 'MONTHLY';
                             client.selectedPlan.planSelected = 'MONTHLY';
                             payment.planType = 'MONTHLY';
-                        } else if (client.plan.interval === 'year') {
+                        } else if (reqData.plan.interval === 'year') {
                             client.selectedPlan.status = 'YEARLY';
                             client.selectedPlan.planSelected = 'YEARLY';
                             payment.planType = 'YEARLY';
                         }
                         payment.stripeNotification.push({
                             subscriptionStatus: reqData.status,
-                            subscriptionInterval: client.plan.interval,
+                            subscriptionInterval: reqData.plan.interval,
                             receivedAt: new Date(),
                         });
                     }
