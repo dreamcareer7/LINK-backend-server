@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Opportunity = mongoose.model('opportunity');
+const Notification = mongoose.model('notification');
 const Logger = require('../services/logger');
 
 router.put('/opportunities', async (req, res) => {
@@ -79,6 +80,40 @@ router.put('/pipeline-value', async (req, res) => {
         });
     } catch (e) {
         Logger.log.error('Error in client-dashboard pipeline-value API call', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+router.put('/clear-notifications', async (req, res) => {
+    try {
+        await Notification.updateMany({ clientId: req.client._id }, { isRead: true });
+        return res.status(200).send({
+            status: 'SUCCESS',
+            message: 'Notifications read successfully.',
+        });
+    } catch (e) {
+        Logger.log.error('Error in update notifications API call', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+router.get('/get-notifications', async (req, res) => {
+    try {
+        let notifications = await Notification.find({ clientId: req.client._id }, { isRead: false });
+        let showDot = false;
+        if (notifications.length !== 0) {
+            showDot = true;
+        }
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: { showDot },
+        });
+    } catch (e) {
+        Logger.log.error('Error in get notifications API call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,
