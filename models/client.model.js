@@ -78,7 +78,7 @@ const clientSchema = new Schema(
 clientSchema.statics.findByToken = async function(token) {
     let client = this;
     let decoded;
-    let jwtSecret = config.jwtSecret;
+    let jwtSecret = config.jwt.secret;
     let d = new Date();
     let clientData;
     try {
@@ -111,11 +111,15 @@ clientSchema.statics.findByToken = async function(token) {
 clientSchema.methods.getAuthToken = function() {
     let c = this;
     let d = new Date();
-    let jwtSecret = config.jwtSecret;
+    let jwtSecret = config.jwt.secret;
     let access = 'auth';
     let token = jwt
         .sign(
-            { _id: c._id.toHexString(), expiredTime: parseInt(config.expireTime) * 3600000 + d.getTime(), access },
+            {
+                _id: c._id.toHexString(),
+                expiredTime: parseInt(config.jwt.clientExpireTimeInHours) * 3600 * 1000 + d.getTime(),
+                access,
+            },
             jwtSecret,
         )
         .toString();

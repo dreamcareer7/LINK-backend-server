@@ -39,7 +39,7 @@ const adminSchema = new Schema(
 adminSchema.statics.findByToken = async function(token) {
     let admin = this;
     let decoded;
-    let jwtSecret = config.jwtSecret;
+    let jwtSecret = config.jwt.secret;
     let d = new Date();
     let adminData;
     try {
@@ -112,11 +112,15 @@ adminSchema.statics.findByCredentials = function(email, password) {
 adminSchema.methods.getAuthToken = function() {
     let a = this;
     let d = new Date();
-    let jwtSecret = config.jwtSecret;
+    let jwtSecret = config.jwt.secret;
     let access = 'auth';
     let token = jwt
         .sign(
-            { _id: a._id.toHexString(), expiredTime: parseInt(config.expireTime) * 3600000 + d.getTime(), access },
+            {
+                _id: a._id.toHexString(),
+                expiredTime: parseInt(config.jwt.adminExpireTimeInHours) * 3600 * 1000 + d.getTime(),
+                access,
+            },
             jwtSecret,
         )
         .toString();
@@ -129,7 +133,7 @@ adminSchema.methods.getAuthToken = function() {
 adminSchema.methods.getTokenForPassword = function() {
     let a = this;
     let d = new Date();
-    let jwtSecret = config.jwtSecret;
+    let jwtSecret = config.jwt.secret;
     let access = 'auth';
     let token = jwt
         .sign(

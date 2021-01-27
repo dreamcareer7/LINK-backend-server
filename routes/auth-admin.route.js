@@ -28,9 +28,9 @@ router.post('/login', async (req, res) => {
         }
 
         if (admin.isTwoFAEnabled) {
-            let jwtSecret = config.jwtSecret;
+            let jwtSecret = config.jwt.secret;
             let access = 'auth';
-            let expiryTime = parseInt(config.expireTime) * 60 * 1000 + new Date().getTime();
+            let expiryTime = parseInt(config.jwt.twoFAExpireTimeInHours) * 60 * 1000 + new Date().getTime();
             let token = jwt
                 .sign({ _id: admin._id.toHexString(), access, expiryTime: expiryTime }, jwtSecret)
                 .toString();
@@ -75,7 +75,7 @@ router.post('/verify-2fa', async (req, res) => {
     try {
         let token = req.body.token;
         let code = req.body.code;
-        let jwtSecret = config.jwtSecret;
+        let jwtSecret = config.jwt.secret;
         decoded = jwt.verify(token, jwtSecret);
         if (!decoded) {
             return res.status(401).send({
@@ -141,7 +141,7 @@ router.post('/logout', async (req, res) => {
             Logger.log.warn('JWT - Auth-Token not set in header for Logout Call');
             return res.status(401).send({ message: 'Auth-Token not set in header' });
         }
-        let decoded = jwt.verify(token, config.jwtSecret);
+        let decoded = jwt.verify(token, config.jwt.secret);
         await Admin.updateOne({ _id: decoded._id }, { $pull: { jwtToken: token } });
         res.status(200).json({
             status: 'SUCCESS',
@@ -277,7 +277,7 @@ router.put('/reset-password/:token', async (req, res) => {
             });
         }
 
-        decoded = jwt.verify(req.params.token, config.jwtSecret);
+        decoded = jwt.verify(req.params.token, config.jwt.secret);
         let admin = await Admin.findOne({ _id: decoded._id, isDeleted: false });
         if (admin && decoded) {
             if (admin.forgotOrSetPasswordToken === req.params.token) {
@@ -430,7 +430,7 @@ router.put('/set-password/:token', async (req, res) => {
             });
         }
 
-        decoded = jwt.verify(req.params.token, config.jwtSecret);
+        decoded = jwt.verify(req.params.token, config.jwt.secret);
         let admin = await Admin.findOne({ _id: decoded._id, isDeleted: false });
         if (admin && decoded) {
             if (admin.forgotOrSetPasswordToken === req.params.token) {

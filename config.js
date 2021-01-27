@@ -9,8 +9,12 @@ module.exports = {
     twoFA: {
         generatorName: 'Linkfluencer',
     },
-    jwtSecret: process.env.JWT_SECRET || 'SimpleJWT',
-    expireTime: process.env.EXPIRE_TIME || '2', //in hrs
+    jwt: {
+        secret: process.env.JWT_SECRET || 'SimpleJWT',
+        clientExpireTimeInHours: process.env.CLIENT_EXPIRE_TIME_IN_HOURS || '720', //in hrs
+        adminExpireTimeInHours: process.env.ADMIN_EXPIRE_TIME_IN_HOURS || '2', //in hrs
+        twoFAExpireTimeInHours: process.env.TWO_FA_TOKEN_EXPIRE_TIME_IN_MINUTES || '5', //in hrs
+    },
     backEndBaseUrl: process.env.BACKEND_BASE_URL || 'http://localhost:3500/',
     forgotOrSetPasswordExpTime: process.env.FORGOT_PASSWORD_EXPIRE_TIME || '10', //in mins
     uploadLocations: uploadLocations,

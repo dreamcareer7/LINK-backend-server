@@ -253,7 +253,7 @@ router.get('/sign-up-invitation', async (req, res) => {
             config.backEndBaseUrl + `client-auth/sign-up-invitation?requestedToken=${req.query.requestedToken}`,
         );
         let user = await linkedInHelper.getLinkedInUserData(token);
-        decoded = jwt.verify(req.query.requestedToken, config.jwtSecret);
+        decoded = jwt.verify(req.query.requestedToken, config.jwt.secret);
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
         if (!client) {
             let c = await Client.findOne({ _id: decoded._id, isDeleted: false });
@@ -528,7 +528,7 @@ router.post('/logout', async (req, res) => {
             Logger.log.warn('JWT - Auth-Token not set in header for Logout Call');
             return res.status(401).send({ message: 'Auth-Token not set in header' });
         }
-        let decoded = jwt.verify(token, config.jwtSecret);
+        let decoded = jwt.verify(token, config.jwt.secret);
         await Client.updateOne({ _id: decoded._id }, { $pull: { fcmToken: req.body.fcmToken } });
         res.status(200).json({
             status: 'SUCCESS',
