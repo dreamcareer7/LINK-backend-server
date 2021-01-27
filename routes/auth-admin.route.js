@@ -134,18 +134,15 @@ router.post('/verify-2fa', async (req, res) => {
 logout admin
 */
 
-router.post('/logout', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+router.post('/logout', async (req, res) => {
     try {
-        let admin = await Admin.findOne({ _id: req.admin._id, isDeleted: false });
-        if (!admin) {
-            return res.status(400).send({
-                status: 'ADMIN_NOT_FOUND',
-                message: 'admin is not found.',
-            });
+        let token = req.header('authorization');
+        if (!token) {
+            Logger.log.warn('JWT - Auth-Token not set in header for Logout Call');
+            return res.status(401).send({ message: 'Auth-Token not set in header' });
         }
-
-        admin.jwtToken.splice(admin.jwtToken.indexOf(req.admin.token), 1);
-        admin.save();
+        let decoded = jwt.verify(token, config.jwtSecret);
+        await Admin.updateOne({ _id: decoded._id }, { $pull: { jwtToken: token } });
         res.status(200).json({
             status: 'SUCCESS',
             message: 'Admin is Successfully logout.',
@@ -160,7 +157,7 @@ router.post('/logout', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
 });
 
 /**
- logout from all devices
+ logout from all devices => not in use for now
  */
 router.post('/logout-all-devices', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {

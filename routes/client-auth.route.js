@@ -514,11 +514,22 @@ router.put('/cancel-subscription', authMiddleWare.clientAuthMiddleWare, async (r
 logout Client
 */
 
-router.post('/logout', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+router.post('/logout', async (req, res) => {
     try {
-        if (req.body.fcmToken) {
-            await Client.updateOne({ _id: req.client._id }, { $pull: { fcmToken: req.body.fcmToken } });
+        if (!req.body.fcmToken) {
+            Logger.log.warn('No FCM Token Present at time of Logout');
+            return res.status(200).send({
+                status: 'SUCCESS',
+                message: 'Client is Successfully logout.',
+            });
         }
+        let token = req.header('authorization');
+        if (!token) {
+            Logger.log.warn('JWT - Auth-Token not set in header for Logout Call');
+            return res.status(401).send({ message: 'Auth-Token not set in header' });
+        }
+        let decoded = jwt.verify(token, config.jwtSecret);
+        await Client.updateOne({ _id: decoded._id }, { $pull: { fcmToken: req.body.fcmToken } });
         res.status(200).json({
             status: 'SUCCESS',
             message: 'Client is Successfully logout.',
@@ -533,31 +544,31 @@ router.post('/logout', authMiddleWare.clientAuthMiddleWare, async (req, res) => 
 });
 
 /**
- logout from all devices
+ logout from all devices Not in use for now
  */
-router.post('/logout-all-devices', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
-    try {
-        let client = await Client.findOne({ _id: req.client._id, isDeleted: false });
-        if (!client) {
-            return res.status(400).send({
-                status: 'CLIENT_NOT_FOUND',
-                message: 'Client is not found.',
-            });
-        }
-        // client.jwtToken = [];
-        client.save();
-        res.status(200).json({
-            status: 'SUCCESS',
-            message: 'Client is Successfully logout from all devices.',
-        });
-    } catch (e) {
-        Logger.log.error('Error in logout Client from all devices API call', e.message || e);
-        res.status(500).json({
-            status: 'ERROR',
-            message: e.message,
-        });
-    }
-});
+// router.post('/logout-all-devices', async (req, res) => {
+//     try {
+//         let client = await Client.findOne({ _id: req.client._id, isDeleted: false });
+//         if (!client) {
+//             return res.status(400).send({
+//                 status: 'CLIENT_NOT_FOUND',
+//                 message: 'Client is not found.',
+//             });
+//         }
+//         // client.jwtToken = [];
+//         client.save();
+//         res.status(200).json({
+//             status: 'SUCCESS',
+//             message: 'Client is Successfully logout from all devices.',
+//         });
+//     } catch (e) {
+//         Logger.log.error('Error in logout Client from all devices API call', e.message || e);
+//         res.status(500).json({
+//             status: 'ERROR',
+//             message: e.message,
+//         });
+//     }
+// });
 
 /**
  * Export Router
