@@ -44,7 +44,7 @@ package-lock.json
 
 #Save files
 *.save
-
+upload/**
 upload/organization.json
 !upload/.gitkeep
 !upload/admin-data/.gitkeep
