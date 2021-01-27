@@ -14,7 +14,13 @@ const Schema = mongoose.Schema;
 const organizationSchema = new Schema(
     {
         organizationId: Schema.Types.String,
-        errorMessages: [{ title: Schema.Types.String, text: Schema.Types.String }],
+        errorMessages: [
+            {
+                title: Schema.Types.String,
+                text: Schema.Types.String,
+                description: Schema.Types.String,
+            },
+        ],
         industries: Schema.Types.Array,
         companySize: Schema.Types.Array,
         quote: {
