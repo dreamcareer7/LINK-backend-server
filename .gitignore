@@ -52,6 +52,7 @@ upload/organization.json
 !upload/admin-data/profile-pic/.gitkeep
 demo.js
 !upload/mail-images/*
+upload/linkedin-signin.html
 
 #Key files
 keys/*
