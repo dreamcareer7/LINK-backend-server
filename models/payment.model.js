@@ -13,20 +13,21 @@ const Schema = mongoose.Schema;
  */
 const paymentSchema = new Schema(
     {
+        stripeSubscriptionId: { type: Schema.Types.String },
+        stripePlanId: { type: Schema.Types.String },
         paymentAmount: { type: Schema.Types.Number },
-        paymentDate: Schema.Types.Date,
-        paymentStatus: {
-            type: Schema.Types.String,
-            enum: ['PAID', 'PAYMENT_REQUESTED', 'PENDING', 'FAILED'],
-            default: 'PENDING',
-        },
-        plan: { type: Schema.Types.String, enum: ['FREE_TRIAL', 'MONTHLY', 'YEARLY'] },
-        planStartDate: Schema.Types.Date,
-        planEndDate: Schema.Types.Date,
+        planType: { type: Schema.Types.String, enum: ['FREE_TRIAL', 'MONTHLY', 'YEARLY'] },
         client: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'client',
         },
+        stripeNotification: [
+            {
+                subscriptionStatus: Schema.Types.String,
+                subscriptionInterval: Schema.Types.String,
+                receivedAt: Schema.Types.Date,
+            },
+        ],
     },
     { timestamps: true },
 );
