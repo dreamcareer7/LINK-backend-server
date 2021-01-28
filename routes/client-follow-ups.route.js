@@ -57,14 +57,8 @@ router.put('/filters', async (req, res) => {
             ]).allowDiskUse(true),
         );
         let data = await Promise.all(promiseArr);
-        console.log(JSON.stringify(data, null, 3));
-        if (
-            data[0].dealSize[0] &&
-            data[0].dealSize[0].minDealValue &&
-            data[0].dealSize[0].maxDealValue &&
-            data[0].dealSize[0].minDealValue === data.dealSize[0].maxDealValue
-        )
-            data.dealSize[0].minDealValue = 0;
+        if (data[1] && data[1].minDealValue && data[1].maxDealValue && data[1].minDealValue === data[1].maxDealValue)
+            data[1].minDealValue = 0;
         res.status(200).send({
             status: 'SUCCESS',
             data: {
