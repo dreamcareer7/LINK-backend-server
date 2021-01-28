@@ -7,6 +7,7 @@ const config = require('../config');
  * Services
  * */
 const Logger = require('./../services/logger');
+const clientFollowUps = require('./../static-files/client-follow-ups.template');
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.sendgrid.net',
@@ -57,13 +58,12 @@ const sendMail = ({ toAddress, subject, text, html, mailFor }) => {
             case 'client-follow-ups':
                 //TODO Attach template
 
-                // html = adminForgotPassword({
-                //     firstName: text.firstName,
-                //     lastName: text.lastName,
-                //     linkedInLink: text.linkedInLink,
-                //     email: text.email,
-                //     phone: text.phone,
-                // });
+                html = clientFollowUps({
+                    firstName: text.firstName,
+                    lastName: text.lastName,
+                    opportunities: text.opportunities,
+                    dashboardUrl: text.dashboardUrl,
+                });
                 break;
             //TODO Consider this case on successful payment
             case 'client-on-boarding':
