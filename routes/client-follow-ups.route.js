@@ -58,10 +58,10 @@ router.put('/filters', async (req, res) => {
         );
         let data = await Promise.all(promiseArr);
         if (
-            data.dealSize[0] &&
-            data.dealSize[0].minDealValue &&
-            data.dealSize[0].maxDealValue &&
-            data.dealSize[0].minDealValue === data.dealSize[0].maxDealValue
+            data[0].dealSize[0] &&
+            data[0].dealSize[0].minDealValue &&
+            data[0].dealSize[0].maxDealValue &&
+            data[0].dealSize[0].minDealValue === data.dealSize[0].maxDealValue
         )
             data.dealSize[0].minDealValue = 0;
         res.status(200).send({
