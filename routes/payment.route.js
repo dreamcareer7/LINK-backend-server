@@ -74,8 +74,17 @@ router.post('/stripe-webhook', async (req, res) => {
                         paymentAmount: reqData.plan.amount,
                         stripePlanId: reqData.plan.id,
                     });
+                    // let linkedInSignUpLink =
+                    //     config.backEndBaseUrl + 'client-auth/sign-up?subscription_id=' + reqData.id;
+                    // https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=776gktki6ukrgj&redirect_uri=https://4266a98bc90c.ngrok.io/client-auth/sign-up-extension&state=fooobar&scope=r_emailaddress,r_liteprofile
                     let linkedInSignUpLink =
-                        config.backEndBaseUrl + 'client-auth/sign-up?subscription_id=' + reqData.id;
+                        'https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=' +
+                        config.linkedIn.clientId +
+                        '&redirect_uri=' +
+                        config.backEndBaseUrl +
+                        'client-auth/sign-up?subscription_id=' +
+                        reqData.id +
+                        '&state=fooobar&scope=r_emailaddress,r_liteprofile';
                     let mailObj = {
                         toAddress: [client.email],
                         subject: 'Onboarding to Jayla App',

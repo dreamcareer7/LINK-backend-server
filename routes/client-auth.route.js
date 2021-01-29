@@ -34,20 +34,32 @@ router.get('/sign-up', async (req, res) => {
         if (!client) {
             // TODO check for the SubscriptionId query Params
             //  if not, then redirect to payment page
-            let newClient = new Client({
-                firstName: user.localizedFirstName,
-                lastName: user.localizedLastName,
-                linkedInID: user.id,
-                profilePicUrl: user.hasOwnProperty('profilePicture')
-                    ? user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier
-                    : null,
-            });
-            await newClient.save();
-            Logger.log.info('New Client is Created...');
-            return res.status(200).send({
-                message: 'New Client is created.',
-                status: 'SUCCESS',
-            });
+            let subscriptionId = req.query.subscription_id;
+            if (!subscriptionId) {
+                return res.redirect(config.linkFluencerUrls.paymentPageUrl);
+            }
+            let payment = Payment.findOne({
+                stripeSubscriptionId: subscriptionId,
+                isDeleted: false,
+            }).populate('clientId');
+            if (!payment || !payment.clientId || !payment.clientId._id) {
+                return res.redirect(config.linkFluencerUrls.paymentPageUrl);
+            }
+            client = payment.clientId;
+            // let newClient = new Client({
+            //     firstName: user.localizedFirstName,
+            //     lastName: user.localizedLastName,
+            //     linkedInID: user.id,
+            //     profilePicUrl: user.hasOwnProperty('profilePicture')
+            //         ? user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier
+            //         : null,
+            // });
+            // await newClient.save();
+            // Logger.log.info('New Client is Created...');
+            // return res.status(200).send({
+            //     message: 'New Client is created.',
+            //     status: 'SUCCESS',
+            // });
         }
         client.firstName = user.localizedFirstName;
         client.lastName = user.localizedLastName;
