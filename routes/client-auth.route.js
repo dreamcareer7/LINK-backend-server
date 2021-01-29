@@ -40,7 +40,7 @@ router.get('/sign-up', async (req, res) => {
             if (!subscriptionId) {
                 return res.redirect(config.linkFluencerUrls.paymentPageUrl);
             }
-            let payment = Payment.findOne({
+            let payment = await Payment.findOne({
                 stripeSubscriptionId: subscriptionId,
                 isDeleted: false,
             }).populate('clientId');
