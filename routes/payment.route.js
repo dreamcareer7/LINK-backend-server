@@ -5,6 +5,7 @@ const Client = mongoose.model('client');
 const Payment = mongoose.model('payment');
 const Logger = require('../services/logger');
 const config = require('../config');
+const mailHelper = require('./../helper/mailer.helper');
 
 /**
  * Stripe Webhook
