@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const Client = mongoose.model('client');
 const Conversation = mongoose.model('conversation');
+const Payment = mongoose.model('payment');
 const config = require('../config');
 const authMiddleWare = require('../middleware/authenticate');
 const linkedInHelper = require('../helper/linkedin.helper');
