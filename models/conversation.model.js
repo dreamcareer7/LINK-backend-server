@@ -20,6 +20,7 @@ const conversationSchema = new Schema(
                 publicIdentifier: Schema.Types.String,
             },
         ],
+        isDeleted: { type: Schema.Types.Boolean, default: false },
     },
     { timestamps: true },
 );

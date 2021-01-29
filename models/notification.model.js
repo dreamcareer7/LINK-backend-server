@@ -22,6 +22,7 @@ const notificationSchema = new Schema(
             ref: 'opportunity',
         },
         isRead: { type: Schema.Types.Boolean, default: false },
+        isDeleted: { type: Schema.Types.Boolean, default: false },
     },
     { timestamps: true },
 );
