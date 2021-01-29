@@ -61,12 +61,16 @@ router.get('/activity-breakdown', async (req, res) => {
                 break;
             }
         }
-        for (let i = 0; i < data.length; i++) {
-            data[i]._id = stageMap[data[i]._id];
+        let orderedData = [];
+        Object.keys(stageMap).forEach((key) => {
+            orderedData.push(data.filter((stage) => stage._id === key).pop());
+        });
+        for (let i = 0; i < orderedData.length; i++) {
+            orderedData[i]._id = stageMap[orderedData[i]._id];
         }
         return res.status(200).send({
             status: 'SUCCESS',
-            data: data,
+            data: orderedData,
         });
     } catch (e) {
         Logger.log.error('Error in client-reporting activity breakdown API call', e.message || e);
