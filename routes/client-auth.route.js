@@ -44,6 +44,8 @@ router.get('/sign-up', async (req, res) => {
                 stripeSubscriptionId: subscriptionId,
                 isDeleted: false,
             }).populate('clientId');
+            console.log('subscriptionId::', subscriptionId);
+            console.log('payment::', JSON.stringify(payment, null, 3));
             if (!payment || !payment.clientId || !payment.clientId._id) {
                 return res.redirect(config.linkFluencerUrls.paymentPageUrl);
             }
