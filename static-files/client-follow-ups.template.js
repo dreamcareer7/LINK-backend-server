@@ -3,7 +3,6 @@
  * */
 const config = require('../config');
 module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
-    console.log(opportunities);
     let mailTemplate = `<html>
 <head>
   <meta charset='utf-8' />
@@ -52,7 +51,7 @@ module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
                   <div
                     style='padding: 10px 40px; font-size: 14px; line-height: 24px; font-weight: 400; color: #666666'
                   >
-                    Hello ${firstName ? firstName : ''} ${lastName ? lastName : ''},
+                    Hey ${firstName ? firstName : ''} ${lastName ? lastName : ''},
                   </div>
                 </td>
               </tr>
@@ -115,10 +114,11 @@ module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
 
     mailTemplate += `<tr>
                 <td align='left' valign='center'>
-                  <a href="${dashboardUrl}"
-                    style='width: 150px; margin: 10px 0 20px 40px; padding: 7px 10px; font-size: 14px; font-weight: 400; color: #FFFFFF; background-color: #469A20; border-radius: 20px; border: none; outline: none'>
-                    ACTION NOW
-                  </a>
+                  <button
+                          style='width: 150px; margin: 10px 0 0 40px; padding: 7px 10px; background-color: #469A20; border-radius: 20px; border: none; outline: none'>
+                    <a href="${dashboardUrl}" style="font-size: 14px; font-weight: 400; color: #FFFFFF; text-decoration: none"> ACTION NOW</a>
+                  </button>
+
                 </td>
               </tr>
 
@@ -163,9 +163,9 @@ module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
 
               <tr>
                 <td align='center' valign='center'>
-                  <img style='width: 40px; margin: 20px 2px' src='facebook.svg' />
-                  <img style='width: 40px; margin: 20px 2px' src='linkedin.svg' />
-                  <img style='width: 40px; margin: 20px 2px' src='youtube.svg' />
+                  <a href="/" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/facebook.svg' /></a>
+                  <a href="/" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/linkedin.svg' /></a>
+                  <a href="/" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/youtube.svg' /></a>
                 </td>
               </tr>
 

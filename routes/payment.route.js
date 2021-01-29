@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const Client = mongoose.model('client');
 const Payment = mongoose.model('payment');
 const Logger = require('../services/logger');
+const config = require('../config');
 
 /**
  * Stripe Webhook
@@ -72,8 +73,23 @@ router.post('/stripe-webhook', async (req, res) => {
                         paymentAmount: reqData.plan.amount,
                         stripePlanId: reqData.plan.id,
                     });
-                    await payment.save();
-                    await client.save();
+                    let linkedInSignUpLink =
+                        config.backEndBaseUrl + 'client-auth/sign-up?subscription_id=' + reqData.id;
+                    let mailObj = {
+                        toAddress: [client.email],
+                        subject: 'Onboarding to Jayla App',
+                        text: {
+                            linkedInSignUpLink,
+                            firstName: client.firstName,
+                            lastName: client.lastName,
+                        },
+                        mailFor: 'client-on-boarding',
+                    };
+                    let promiseArr = [];
+                    promiseArr.push(payment.save());
+                    promiseArr.push(client.save());
+                    promiseArr.push(mailHelper.sendMail(mailObj));
+                    await Promise.all(promiseArr);
                 }
                 break;
             case 'customer.subscription.updated':

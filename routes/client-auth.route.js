@@ -32,6 +32,8 @@ router.get('/sign-up', async (req, res) => {
         let user = await linkedInHelper.getLinkedInUserData(token);
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
         if (!client) {
+            // TODO check for the SubscriptionId query Params
+            //  if not, then redirect to payment page
             let newClient = new Client({
                 firstName: user.localizedFirstName,
                 lastName: user.localizedLastName,

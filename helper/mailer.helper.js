@@ -7,7 +7,11 @@ const config = require('../config');
  * Services
  * */
 const Logger = require('./../services/logger');
+const clientInvitation = require('./../static-files/client-invitation.template');
+const clientOnBoard = require('./../static-files/client-on-boarding.template');
 const clientFollowUps = require('./../static-files/client-follow-ups.template');
+const adminOnBoard = require('./../static-files/admin-on-board.template');
+const adminForgotPassword = require('./../static-files/admin-forgot-password.template');
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.sendgrid.net',
@@ -27,37 +31,29 @@ const sendMail = ({ toAddress, subject, text, html, mailFor }) => {
         toAddressStr.substr(0, toAddressStr.lastIndexOf(','));
         switch (mailFor) {
             case 'admin-forgot-password':
-                //TODO Attach template
-
-                // html = adminForgotPassword({
-                //     firstName: text.firstName,
-                //     lastName: text.lastName,
-                //     resetPasswordLink: text.resetPasswordLink,
-                // });
+                html = adminForgotPassword({
+                    firstName: text.firstName,
+                    lastName: text.lastName,
+                    resetPasswordLink: text.resetPasswordLink,
+                });
                 break;
             case 'admin-on-board':
-                //TODO Attach template
-
-                // html = adminForgotPassword({
-                //     firstName: text.firstName,
-                //     lastName: text.lastName,
-                //     setPasswordLink: text.setPasswordLink,
-                // });
+                html = adminOnBoard({
+                    firstName: text.firstName,
+                    lastName: text.lastName,
+                    setPasswordLink: text.setPasswordLink,
+                });
                 break;
             case 'client-invitation':
-                //TODO Attach template
-
-                // html = adminForgotPassword({
-                //     firstName: text.firstName,
-                //     lastName: text.lastName,
-                //     linkedInLink: text.linkedInLink,
-                //     email: text.email,
-                //     phone: text.phone,
-                // });
+                html = clientInvitation({
+                    linkFluencerLink: text.linkFluencerLink,
+                    firstName: text.firstName,
+                    lastName: text.lastName,
+                    email: text.email,
+                    phone: text.phone,
+                });
                 break;
             case 'client-follow-ups':
-                //TODO Attach template
-
                 html = clientFollowUps({
                     firstName: text.firstName,
                     lastName: text.lastName,
@@ -65,14 +61,11 @@ const sendMail = ({ toAddress, subject, text, html, mailFor }) => {
                     dashboardUrl: text.dashboardUrl,
                 });
                 break;
-            //TODO Consider this case on successful payment
             case 'client-on-boarding':
-                html = adminForgotPassword({
+                html = clientOnBoard({
+                    linkedInSignUpLink: text.linkedInSignUpLink,
                     firstName: text.firstName,
                     lastName: text.lastName,
-                    linkedInLink: text.linkedInLink,
-                    email: text.email,
-                    phone: text.phone,
                 });
                 break;
         }
