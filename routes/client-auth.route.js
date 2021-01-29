@@ -25,16 +25,17 @@ router.get('/sign-up', async (req, res) => {
                 message: 'Code is not Found',
             });
         }
-        let token = await linkedInHelper.genLinkedInAccessToken(
-            req.query.code,
-            config.backEndBaseUrl + 'client-auth/sign-up',
-        );
+        let subscriptionId = req.query.subscription_id;
+        let redirectUrl = config.backEndBaseUrl + 'client-auth/sign-up';
+        if (subscriptionId) {
+            redirectUrl += '?subscription_id=' + subscriptionId;
+        }
+        let token = await linkedInHelper.genLinkedInAccessToken(req.query.code, redirectUrl);
         let user = await linkedInHelper.getLinkedInUserData(token);
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
         if (!client) {
             // TODO check for the SubscriptionId query Params
             //  if not, then redirect to payment page
-            let subscriptionId = req.query.subscription_id;
             if (!subscriptionId) {
                 return res.redirect(config.linkFluencerUrls.paymentPageUrl);
             }

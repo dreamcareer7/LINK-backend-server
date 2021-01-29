@@ -100,6 +100,7 @@ router.post('/stripe-webhook', async (req, res) => {
                     promiseArr.push(client.save());
                     promiseArr.push(mailHelper.sendMail(mailObj));
                     await Promise.all(promiseArr);
+                    console.log('linkedInSignUpLink::', linkedInSignUpLink);
                 }
                 break;
             case 'customer.subscription.updated':
