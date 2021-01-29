@@ -7,6 +7,7 @@ const Logger = require('../services/logger');
  */
 const genLinkedInAccessToken = async (code, redirectUri) => {
     try {
+        console.log('In gen acc. token', code, redirectUri);
         let data = {
             method: 'POST',
             url: `https://www.linkedin.com/oauth/v2/accessToken?grant_type=authorization_code&code=${code}&redirect_uri=${redirectUri}&client_id=${config.linkedIn.clientId}&client_secret=${config.linkedIn.clientSecret}`,
@@ -20,7 +21,7 @@ const genLinkedInAccessToken = async (code, redirectUri) => {
 
         return response.data.access_token;
     } catch (e) {
-        Logger.log.error('Error in Generate access token from linkedin', e || e);
+        Logger.log.error('Error in Generate access token from linkedin', e.message || e);
         return Promise.reject({ message: 'Error in Generate access token from linkedin' });
     }
 };
