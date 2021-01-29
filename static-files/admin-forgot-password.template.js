@@ -118,7 +118,7 @@ module.exports = ({ firstName, lastName, resetPasswordLink }) => {
                   <a style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${
                       config.backEndBaseUrl
                   }mail-images/linkedin.svg' /></a>
-                  <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${
+                  <a href="https://www.youtube.com" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${
                       config.backEndBaseUrl
                   }mail-images/youtube.svg' /></a>
                 </td>
