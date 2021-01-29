@@ -163,9 +163,9 @@ module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
 
               <tr>
                 <td align='center' valign='center'>
-                  <a href="/" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/facebook.svg' /></a>
-                  <a href="/" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/linkedin.svg' /></a>
-                  <a href="/" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/youtube.svg' /></a>
+                  <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/facebook.svg' /></a>
+                  <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/linkedin.svg' /></a>
+                  <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/youtube.svg' /></a>
                 </td>
               </tr>
 

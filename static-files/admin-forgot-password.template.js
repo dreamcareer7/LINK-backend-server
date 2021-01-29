@@ -112,13 +112,13 @@ module.exports = ({ firstName, lastName, resetPasswordLink }) => {
 
               <tr>
                 <td align='center' valign='center'>
-                  <a style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${
+                  <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${
                       config.backEndBaseUrl
                   }mail-images/facebook.svg' /></a>
-                  <a style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${
+                  <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${
                       config.backEndBaseUrl
                   }mail-images/linkedin.svg' /></a>
-                  <a href="https://www.youtube.com" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${
+                  <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${
                       config.backEndBaseUrl
                   }mail-images/youtube.svg' /></a>
                 </td>
