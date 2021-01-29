@@ -45,10 +45,10 @@ const clientSchema = new Schema(
             email: { type: Schema.Types.Boolean, default: false },
             browser: { type: Schema.Types.Boolean, default: false },
         },
-        notificationPeriod: {
-            interval: { type: Schema.Types.String, enum: ['DAILY', 'WEEKLY', 'MONTHLY', 'CUSTOM'] },
-            customDate: { type: Schema.Types.Date, default: null },
-        },
+        // notificationPeriod: {
+        //     interval: { type: Schema.Types.String, enum: ['DAILY', 'WEEKLY', 'MONTHLY', 'CUSTOM'] },
+        //     customDate: { type: Schema.Types.Date, default: null },
+        // },
         tags: [
             {
                 type: mongoose.Schema.Types.ObjectId,
@@ -56,11 +56,12 @@ const clientSchema = new Schema(
             },
         ],
         isDeleted: { type: Schema.Types.Boolean, default: false },
-        isSubscribed: { type: Schema.Types.Boolean, default: true },
-        isFreeTrialUsed: { type: Schema.Types.Boolean, default: false },
+        isSubscribed: { type: Schema.Types.Boolean, default: false },
+        stripeCustomerId: { type: Schema.Types.String },
         selectedPlan: {
-            currentPlan: { type: Schema.Types.String, enum: ['FREE_TRIAL', 'MONTHLY', 'YEARLY'] },
+            planSelected: { type: Schema.Types.String, enum: ['MONTHLY', 'YEARLY'] },
             status: { type: Schema.Types.String, enum: ['FREE_TRIAL', 'MONTHLY', 'YEARLY', 'PAUSED', 'CANCELLED'] },
+            trialEndDate: Schema.Types.Date,
             planStartDate: Schema.Types.Date,
             planEndDate: Schema.Types.Date,
         },

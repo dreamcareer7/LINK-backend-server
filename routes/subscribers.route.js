@@ -166,7 +166,7 @@ router.put('/paused-subscription/:id', async (req, res) => {
         if (req.body.isSubscriptionPaused === true) {
             client.selectedPlan.status = 'PAUSED';
         } else {
-            client.selectedPlan.status = client.selectedPlan.currentPlan;
+            client.selectedPlan.status = client.selectedPlan.planSelected;
         }
 
         await client.save();
@@ -199,7 +199,7 @@ router.put('/cancel-subscription/:id', async (req, res) => {
         if (req.body.isSubscriptionCancelled === true) {
             client.selectedPlan.status = 'CANCELLED';
         } else {
-            client.selectedPlan.status = client.selectedPlan.currentPlan;
+            client.selectedPlan.status = client.selectedPlan.planSelected;
         }
         await client.save();
         return res.status(200).send({

@@ -27,6 +27,9 @@ module.exports = {
         clientFrontEndBaseUrl: process.env.CLIENT_FRONTEND_BASE_URL || 'http://localhost:4700/',
         forgotPasswordPage: 'forgot/',
     },
+    linkFluencerUrls: {
+        paymentPageUrl: 'https://linkfluencer.com/order',
+    },
     environment: process.env.ENVIRONMENT || 'local',
     mailer: {
         fromAddress: process.env.FROM_EMAIL_ADDRESS || 'pratik.rajkotiya@kevit.io',

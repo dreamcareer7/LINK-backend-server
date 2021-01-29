@@ -371,8 +371,8 @@ router.post('/update', authMiddleWare.clientAuthMiddleWare, async (req, res) => 
         client.companyLocation = req.body.companyLocation;
         client['notificationType']['email'] = req.body.notificationType.email;
         client['notificationType']['browser'] = req.body.notificationType.browser;
-        client['notificationPeriod']['interval'] = req.body.notificationPeriod.interval;
-        client['notificationPeriod']['customDate'] = req.body.notificationPeriod.customDate;
+        // client['notificationPeriod']['interval'] = req.body.notificationPeriod.interval;
+        // client['notificationPeriod']['customDate'] = req.body.notificationPeriod.customDate;
 
         await client.save();
         return res.status(200).send({
@@ -461,7 +461,7 @@ router.put('/paused-subscription', authMiddleWare.clientAuthMiddleWare, async (r
         if (req.body.isSubscriptionPaused === true) {
             client.selectedPlan.status = 'PAUSED';
         } else {
-            client.selectedPlan.status = client.selectedPlan.currentPlan;
+            client.selectedPlan.status = client.selectedPlan.planSelected;
         }
 
         await client.save();
@@ -494,7 +494,7 @@ router.put('/cancel-subscription', authMiddleWare.clientAuthMiddleWare, async (r
         if (req.body.isSubscriptionCancelled === true) {
             client.selectedPlan.status = 'CANCELLED';
         } else {
-            client.selectedPlan.status = client.selectedPlan.currentPlan;
+            client.selectedPlan.status = client.selectedPlan.planSelected;
         }
         await client.save();
         return res.status(200).send({
