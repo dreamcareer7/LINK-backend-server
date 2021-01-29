@@ -17,7 +17,7 @@ const paymentSchema = new Schema(
         stripePlanId: { type: Schema.Types.String },
         paymentAmount: { type: Schema.Types.Number },
         planType: { type: Schema.Types.String, enum: ['FREE_TRIAL', 'MONTHLY', 'YEARLY'] },
-        client: {
+        clientId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'client',
         },

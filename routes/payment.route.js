@@ -4,11 +4,6 @@ const mongoose = require('mongoose');
 const Client = mongoose.model('client');
 const Payment = mongoose.model('payment');
 const Logger = require('../services/logger');
-const opportunityHelper = require('../helper/opportunity.helper');
-const cookieHelper = require('../helper/cookie.helper');
-const firebaseHelper = require('../helper/firebase-notification');
-const conversationHelper = require('../helper/conversation.helper');
-const authMiddleWare = require('../middleware/authenticate');
 
 /**
  * Stripe Webhook
@@ -108,12 +103,13 @@ router.post('/stripe-webhook', async (req, res) => {
                             subscriptionInterval: reqData.plan.interval,
                             receivedAt: new Date(),
                         });
+                        await payment.save();
+                        await client.save();
                     }
-                    await payment.save();
-                    await client.save();
                 }
                 break;
         }
+        Logger.log.info('Successfully processed the Stripe Webhook for event:', eventType);
         return res.status(200).send();
     } catch (e) {
         Logger.log.error('Error in add opportunity API call.', e.message || e);
