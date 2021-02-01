@@ -234,9 +234,31 @@ router.put('/gender', async (req, res) => {
         data = data.filter(function(value, index, arr) {
             return value._id !== null;
         });
+        let addedGenders = data.map((gender) => gender._id);
+        let genders = ['MALE', 'FEMALE', 'OTHER'];
+        genders.forEach((gender) => {
+            if (addedGenders.indexOf(gender) === -1) {
+                data.push({
+                    _id: gender,
+                    total: 0,
+                });
+            }
+        });
+        let genderMap = {
+            MALE: 'Male',
+            FEMALE: 'Female',
+            OTHER: 'Other',
+        };
+        let orderedData = [];
+        Object.keys(genderMap).forEach((key) => {
+            orderedData.push(data.filter((gender) => gender._id === key).pop());
+        });
+        for (let i = 0; i < orderedData.length; i++) {
+            orderedData[i]._id = genderMap[orderedData[i]._id];
+        }
         return res.status(200).send({
             status: 'SUCCESS',
-            data: data,
+            data: orderedData,
         });
     } catch (e) {
         Logger.log.error('Error in gender  admin analytics call', e.message || e);
