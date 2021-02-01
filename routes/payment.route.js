@@ -104,6 +104,7 @@ router.post('/stripe-webhook', async (req, res) => {
                 }
                 break;
             case 'customer.subscription.updated':
+                //TODO add received amount to totalReceivedAmount
                 if (reqData.status === 'active') {
                     Logger.log.info('Subscription changed to active:', reqData.id);
                     let payment = await Payment.findOne({

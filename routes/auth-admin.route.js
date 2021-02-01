@@ -284,6 +284,8 @@ router.put('/reset-password/:token', async (req, res) => {
                 if (decoded.expiredTime > d.getTime()) {
                     admin.password = req.body.password;
                     admin.forgotOrSetPasswordToken = null;
+                    // Note on password reset 2FA is disabled
+                    admin.isTwoFAEnabled = false;
                     await admin.save();
                     return res.status(200).send({
                         status: 'SUCCESS',
