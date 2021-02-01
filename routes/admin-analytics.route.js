@@ -290,10 +290,7 @@ router.put('/subscription', async (req, res) => {
                 },
             ],
         ]).allowDiskUse(true);
-        data = data.filter(function(value, index, arr) {
-            return value._id !== null;
-        });
-        let addedPlans = data.map((stage) => stage._id);
+        let addedPlans = data.map((plan) => plan._id);
         let plans = ['FREE_TRIAL', 'MONTHLY', 'YEARLY', 'VIC', 'CANCELLED'];
         plans.forEach((plan) => {
             if (addedPlans.indexOf(plan) === -1) {
@@ -304,15 +301,15 @@ router.put('/subscription', async (req, res) => {
             }
         });
         let orderedData = [];
-        plans.forEach((plan) => {
-            orderedData.push(data.filter((stage) => stage._id === plan).pop());
+        plans.forEach((totalPlan) => {
+            orderedData.push(data.filter((plan) => plan._id === totalPlan).pop());
         });
         for (let i = 0; i < orderedData.length; i++) {
-            orderedData[i]._id = getPlanStr[orderedData[i]._id];
+            orderedData[i]._id = getPlanStr(orderedData[i]._id);
         }
         return res.status(200).send({
             status: 'SUCCESS',
-            data: data,
+            data: orderedData,
         });
     } catch (e) {
         Logger.log.error('Error in subscription admin analytics call', e.message || e);
@@ -452,8 +449,8 @@ router.put('/company-size', async (req, res) => {
     }
 });
 
-let getPlanStr = () => {
-    switch (data._id) {
+let getPlanStr = (plan) => {
+    switch (plan) {
         case 'FREE_TRIAL':
             return 'Free Trial';
         case 'MONTHLY':
