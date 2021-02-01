@@ -1,10 +1,20 @@
 {
     "errorMessages": [
         {
-            "text": "Browser_Not_Supported",
-            "message": "You're not currently in Google Chrome Web Browser. If you haven't already installed it. click download button below to start using Jayla."
+            "title": "browser_not_supported",
+            "text": "Whoopsss, Jayla only works on Chrome Browser :)",
+            "description": "Message is displayed when Browser is other than Chrome"
         },
-        { "text": "Not_Installed", "message": "Please Install Jayla Google Chrome Web Extension to use Jayla App." }
+        {
+            "title": "extension_not_installed",
+            "text": "Uhh ohh! Please install the Chrome Extension and Sign In with LinkedIn to access the Jayla App.",
+            "description": "Message is displayed when Chrome Extension is not Installed"
+        },
+        {
+            "title": "device_not_desktop",
+            "text": "Sorry, Jayla only works on Desktop Device :)",
+            "description": "Message is displayed when Device is not Desktop"
+        }
     ],
     "industries": [
         "Accounting",
