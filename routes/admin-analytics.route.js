@@ -294,7 +294,7 @@ router.put('/subscription', async (req, res) => {
             return value._id !== null;
         });
         let addedPlans = data.map((stage) => stage._id);
-        let plans = ['FREE_TRIAL', 'MONTHLY', 'YEARLY', 'CANCELLED'];
+        let plans = ['FREE_TRIAL', 'MONTHLY', 'YEARLY', 'VIC', 'CANCELLED'];
         plans.forEach((plan) => {
             if (addedPlans.indexOf(plan) === -1) {
                 data.push({
@@ -303,8 +303,12 @@ router.put('/subscription', async (req, res) => {
                 });
             }
         });
+        let orderedData = [];
+        plans.forEach((plan) => {
+            orderedData.push(data.filter((stage) => stage._id === plan).pop());
+        });
         for (let i = 0; i < orderedData.length; i++) {
-            orderedData[i]._id = stageMap[orderedData[i]._id];
+            orderedData[i]._id = getPlanStr[orderedData[i]._id];
         }
         return res.status(200).send({
             status: 'SUCCESS',
@@ -456,6 +460,8 @@ let getPlanStr = () => {
             return 'Monthly';
         case 'YEARLY':
             return 'Yearly';
+        case 'VIC':
+            return 'VIC';
         case 'CANCELLED':
             return 'Cancelled';
     }
