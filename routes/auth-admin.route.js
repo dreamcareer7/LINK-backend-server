@@ -46,7 +46,7 @@ router.post('/login', async (req, res) => {
 
             admin.jwtToken.push(token);
             await admin.save();
-            res.status(200).json({
+            res.status(200).send({
                 status: 'SUCCESS',
                 data: {
                     isTwoFAEnabled: admin.isTwoFAEnabled,
@@ -55,7 +55,7 @@ router.post('/login', async (req, res) => {
                     email: admin.email,
                     phone: admin.phone,
                     _id: admin._id,
-                    profileUrl: admin.profileUrl,
+                    profileUrl: getProfileUrl(admin.profilePic),
                     token: token,
                 },
             });
@@ -110,7 +110,7 @@ router.post('/verify-2fa', async (req, res) => {
 
         admin.jwtToken.push(token);
         await admin.save();
-        res.status(200).json({
+        res.status(200).send({
             status: 'SUCCESS',
             data: {
                 firstName: admin.firstName,
@@ -118,7 +118,7 @@ router.post('/verify-2fa', async (req, res) => {
                 email: admin.email,
                 phone: admin.phone,
                 _id: admin._id,
-                profileUrl: admin.profileUrl,
+                profileUrl: getProfileUrl(admin.profilePic),
                 token: token,
             },
         });
@@ -476,6 +476,19 @@ router.put('/set-password/:token', async (req, res) => {
     }
 });
 
+/**
+ * Helper Functions
+ */
+function getProfileImagePath() {
+    return config.uploadLocations.admin.base + config.uploadLocations.admin.profile;
+}
+
+function getProfileUrl(imageName) {
+    if (imageName)
+        if (imageName.indexOf(config.backEndBaseUrl + getProfileImagePath()) !== -1) return imageName;
+        else return config.backEndBaseUrl + getProfileImagePath() + imageName;
+    return '';
+}
 /**
  * Export Router
  */
