@@ -34,9 +34,6 @@ router.get('/activity-breakdown', async (req, res) => {
                 },
             ],
         ]).allowDiskUse(true);
-        data = data.filter(function(value, index, arr) {
-            return value._id !== null;
-        });
         let addedStages = data.map((stage) => stage._id);
         let stages = ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED', 'LOST'];
         stages.forEach((stage) => {

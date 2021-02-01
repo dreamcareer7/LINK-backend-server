@@ -352,29 +352,35 @@ router.put('/opportunities', async (req, res) => {
                 },
             ],
         ]).allowDiskUse(true);
-        data = data.filter(function(value, index, arr) {
-            return value._id !== null;
-        });
-        data.forEach((data) => {
-            if (data._id === 'INITIAL_CONTACT') {
-                data._id = 'Initial Contact';
-            } else if (data._id === 'IN_CONVERSION') {
-                data._id = 'In Conversion';
-            } else if (data._id === 'MEETING_BOOKED') {
-                data._id = 'Meeting Booked';
-            } else if (data._id === 'FOLLOW_UP') {
-                data._id = 'Follow Up';
-            } else if (data._id === 'CLOSED') {
-                data._id = 'Closed';
-            } else if (data._id === 'LOST') {
-                data._id = 'Lost';
-            } else if (data._id === 'POTENTIAL') {
-                data._id = 'Potential';
+        let addedStages = data.map((stage) => stage._id);
+        let stages = ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'POTENTIAL', 'CLOSED', 'LOST'];
+        stages.forEach((stage) => {
+            if (addedStages.indexOf(stage) === -1) {
+                data.push({
+                    _id: stage,
+                    total: 0,
+                });
             }
         });
+        let stageMap = {
+            INITIAL_CONTACT: 'Initial Contact',
+            IN_CONVERSION: 'In Conversation',
+            POTENTIAL: 'Potential Deals',
+            FOLLOW_UP: 'Follow Up',
+            MEETING_BOOKED: 'Meeting Booked',
+            CLOSED: 'Closed',
+            LOST: 'Lost',
+        };
+        let orderedData = [];
+        Object.keys(stageMap).forEach((key) => {
+            orderedData.push(data.filter((stage) => stage._id === key).pop());
+        });
+        for (let i = 0; i < orderedData.length; i++) {
+            orderedData[i]._id = stageMap[orderedData[i]._id];
+        }
         return res.status(200).send({
             status: 'SUCCESS',
-            data: data,
+            data: orderedData,
         });
     } catch (e) {
         Logger.log.error('Error in opportunities  admin analytics call', e.message || e);
