@@ -3,7 +3,9 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const Client = mongoose.model('client');
 const Opportunity = mongoose.model('opportunity');
+const Organization = mongoose.model('organization');
 const Logger = require('../services/logger');
+const config = require('../config');
 
 router.put('/deal-value', async (req, res) => {
     try {
@@ -398,8 +400,8 @@ router.put('/company-size', async (req, res) => {
                 message: 'Required field is missing',
             });
         }
-
-        let data = await Client.aggregate([
+        let promiseArr = [];
+        let aggregationPipeline = [
             [
                 {
                     $match: {
@@ -426,10 +428,31 @@ router.put('/company-size', async (req, res) => {
                     },
                 },
             ],
-        ]).allowDiskUse(true);
+        ];
+        promiseArr.push(Client.aggregate(aggregationPipeline).allowDiskUse(true));
+        promiseArr.push(
+            Organization.findOne({
+                organizationId: config.organization.organizationId,
+            })
+                .select({ companySize: 1 })
+                .lean(),
+        );
+        let responses = await Promise.all(promiseArr);
+        let data = responses[0];
         data = data.filter(function(value, index, arr) {
             return value._id !== null;
         });
+        let allSizes = responses[1].companySize;
+        let addedSizes = data.map((size) => size._id);
+        allSizes.forEach((size) => {
+            if (addedSizes.indexOf(size) === -1) {
+                data.push({
+                    _id: size,
+                    total: 0,
+                });
+            }
+        });
+
         data.sort((a, b) => {
             return (
                 a._id
