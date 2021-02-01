@@ -16,9 +16,15 @@ router.get('/get-subscribers', async (req, res) => {
     try {
         let page = parseInt(req.query.page);
         let limit = parseInt(req.query.limit);
+        let queryObj = {
+            isDeleted: false,
+            isSubscribed: true,
+        };
+        if (req.query.subscriptionType) {
+            queryObj.selectedPlan.status = req.query.subscriptionType;
+        }
         let startDate;
         let endDate;
-        let subscriptionType = req.query.subscriptionType;
         let sortOrder = req.query.sortOrder;
         if (req.query.startDate) {
             startDate = new Date(req.query.startDate);
@@ -28,29 +34,18 @@ router.get('/get-subscribers', async (req, res) => {
         }
         if (req.query.endDate) {
             endDate = new Date(req.query.endDate);
-            // = req.query.endDate ? new Date(req.query.endDate) : new Date();
         } else {
             endDate = new Date();
             endDate.setHours(23, 59, 59);
         }
-        // let client = await Client.find({ isDeleted: false }).select(
-        //     '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
-        // );
-        let client = await Client.paginate(
-            {
-                isDeleted: false,
-                isSubscribed: true,
-                createdAt: { $gte: startDate, $lte: endDate },
-                'selectedPlan.status': subscriptionType,
-            },
-            {
-                page,
-                limit,
-                sort: { createdAt: sortOrder === 'ASC' ? 1 : -1 },
-                select:
-                    '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
-            },
-        );
+        queryObj.createdAt = { $gte: startDate, $lte: endDate };
+        let client = await Client.paginate(queryObj, {
+            page,
+            limit,
+            sort: { createdAt: sortOrder === 'ASC' ? 1 : -1 },
+            select:
+                '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
+        });
 
         if (!client) {
             return res.status(400).json({
