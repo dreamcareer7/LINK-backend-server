@@ -46,7 +46,6 @@ router.post('/login', async (req, res) => {
 
             admin.jwtToken.push(token);
             await admin.save();
-            let profileUrl = getProfileUrl(admin.profilePic);
             res.status(200).send({
                 status: 'SUCCESS',
                 data: {
@@ -56,7 +55,7 @@ router.post('/login', async (req, res) => {
                     email: admin.email,
                     phone: admin.phone,
                     _id: admin._id,
-                    profileUrl: profileUrl,
+                    profilePic: getProfileUrl(admin.profilePic),
                     token: token,
                 },
             });
