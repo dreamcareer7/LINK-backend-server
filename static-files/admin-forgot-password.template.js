@@ -120,7 +120,7 @@ module.exports = ({ firstName, lastName, resetPasswordLink }) => {
                   }mail-images/linkedin.svg' /></a>
                   <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${
                       config.backEndBaseUrl
-                  }mail-images/youtube.svg' /></a>
+                  }mail-images/youtube.png' /></a>
                 </td>
               </tr>
 
