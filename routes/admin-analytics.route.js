@@ -258,7 +258,7 @@ router.put('/subscription', async (req, res) => {
                     $match: {
                         $and: [
                             {
-                                'selectedPlan.planStartDate': {
+                                'selectedPlan.startDate': {
                                     $gte: new Date(req.body.startDate),
                                     $lte: new Date(req.body.endDate),
                                 },
@@ -268,8 +268,21 @@ router.put('/subscription', async (req, res) => {
                     },
                 },
                 {
+                    $project: {
+                        groupTo: {
+                            $cond: {
+                                if: {
+                                    $eq: ['$vicSub', true],
+                                },
+                                then: 'VIC',
+                                else: '$selectedPlan.status',
+                            },
+                        },
+                    },
+                },
+                {
                     $group: {
-                        _id: '$selectedPlan.status',
+                        _id: '$groupTo',
                         total: {
                             $sum: 1,
                         },
@@ -280,19 +293,19 @@ router.put('/subscription', async (req, res) => {
         data = data.filter(function(value, index, arr) {
             return value._id !== null;
         });
-        data.forEach((data) => {
-            if (data._id === 'FREE_TRIAL') {
-                data._id = 'Free Trial';
-            } else if (data._id === 'MONTHLY') {
-                data._id = 'Monthly';
-            } else if (data._id === 'YEARLY') {
-                data._id = 'Yearly';
-            } else if (data._id === 'PAUSED') {
-                data._id = 'Paused';
-            } else if (data._id === 'CANCELLED') {
-                data._id = 'Cancelled';
+        let addedPlans = data.map((stage) => stage._id);
+        let plans = ['FREE_TRIAL', 'MONTHLY', 'YEARLY', 'CANCELLED'];
+        plans.forEach((plan) => {
+            if (addedPlans.indexOf(plan) === -1) {
+                data.push({
+                    _id: plan,
+                    total: 0,
+                });
             }
         });
+        for (let i = 0; i < orderedData.length; i++) {
+            orderedData[i]._id = stageMap[orderedData[i]._id];
+        }
         return res.status(200).send({
             status: 'SUCCESS',
             data: data,
@@ -434,6 +447,20 @@ router.put('/company-size', async (req, res) => {
         });
     }
 });
+
+let getPlanStr = () => {
+    switch (data._id) {
+        case 'FREE_TRIAL':
+            return 'Free Trial';
+        case 'MONTHLY':
+            return 'Monthly';
+        case 'YEARLY':
+            return 'Yearly';
+        case 'CANCELLED':
+            return 'Cancelled';
+    }
+};
+
 /**
  * Export Router
  */
