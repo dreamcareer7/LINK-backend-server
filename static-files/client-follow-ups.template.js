@@ -40,7 +40,7 @@ module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
                     />
                     <img style='position: absolute; top: 30px; left: 40px; height: 30px' src='${
                         config.backEndBaseUrl
-                    }mail-images/link-logo.svg'/>
+                    }mail-images/link-logo.png'/>
                   </div>
 
                 </td>
@@ -163,8 +163,8 @@ module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
 
               <tr>
                 <td align='center' valign='center'>
-                  <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/facebook.svg' /></a>
-                  <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/linkedin.svg' /></a>
+                  <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/facebook.png' /></a>
+                  <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/linkedin.png' /></a>
                   <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/youtube.png' /></a>
                 </td>
               </tr>

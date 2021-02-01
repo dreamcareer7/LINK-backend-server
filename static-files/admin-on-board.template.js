@@ -37,7 +37,7 @@ module.exports = ({ firstName, lastName, setPasswordLink }) => {
                 }mail-images/link-bg.png')">
                     <img style='margin: 30px 0 0 40px; height: 30px' src='${
                         config.backEndBaseUrl
-                    }mail-images/link-logo.svg'/>
+                    }mail-images/link-logo.png'/>
                 </td>
               </tr>
 
@@ -114,10 +114,10 @@ module.exports = ({ firstName, lastName, setPasswordLink }) => {
                 <td align='center' valign='center'>
                   <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${
                       config.backEndBaseUrl
-                  }mail-images/facebook.svg' /></a>
+                  }mail-images/facebook.png' /></a>
                   <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${
                       config.backEndBaseUrl
-                  }mail-images/linkedin.svg' /></a>
+                  }mail-images/linkedin.png' /></a>
                   <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${
                       config.backEndBaseUrl
                   }mail-images/youtube.png' /></a>
