@@ -21,7 +21,7 @@ router.get('/get-subscribers', async (req, res) => {
             isSubscribed: true,
         };
         if (req.query.subscriptionType) {
-            queryObj.selectedPlan.status = req.query.subscriptionType;
+            queryObj['selectedPlan.status'] = req.query.subscriptionType;
         }
         let startDate;
         let endDate;
