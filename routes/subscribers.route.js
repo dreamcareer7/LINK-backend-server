@@ -259,12 +259,9 @@ router.delete('/delete-subscription/:id', async (req, res) => {
 router.put('/update-subscriber/:id', async (req, res) => {
     try {
         if (
-            !req.body.firstName ||
-            !req.body.lastName ||
-            !req.body.email ||
-            !req.body.industry ||
-            !req.body.companyLocation ||
-            !req.body.gender
+            !req.body.hasOwnProperty('firstName') ||
+            !req.body.hasOwnProperty('lastName') ||
+            !req.body.hasOwnProperty('email')
         ) {
             return res.status(400).json({
                 status: 'ERROR',
@@ -284,8 +281,10 @@ router.put('/update-subscriber/:id', async (req, res) => {
         client.firstName = req.body.firstName;
         client.lastName = req.body.lastName;
         client.email = req.body.email;
+        client.phone = req.body.phone;
         client.industry = req.body.industry;
         client.companyLocation = req.body.companyLocation;
+        client.companySize = req.body.companySize;
         client.gender = req.body.gender;
         if (req.body.subscriberImportance) client.subscriberImportance = req.body.subscriberImportance;
         if (req.body.hasOwnProperty('vicSub')) client.vicSub = req.body.vicSub;
