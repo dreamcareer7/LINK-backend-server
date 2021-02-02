@@ -64,7 +64,7 @@ const clientSchema = new Schema(
             trialEndDate: Schema.Types.Date,
             startDate: Schema.Types.Date,
         },
-        totalReceivedAmount: Schema.Types.Number,
+        totalReceivedAmount: { type: Schema.Types.Number, default: 0 },
         cookie: Schema.Types.String,
         //  ajaxToken: Schema.Types.String,
         fcmToken: [Schema.Types.String],
