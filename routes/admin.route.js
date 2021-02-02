@@ -351,7 +351,6 @@ router.get('/all-admin', authMiddleWare.adminAuthMiddleWare, async (req, res) =>
             admins[i].profilePic = getProfileUrl(admins[i].profilePic);
             if (req.admin._id.toString() == admins[i]._id.toString()) {
                 admins[i].isLoggedIn = true;
-                break;
             }
         }
         res.status(200).json({
