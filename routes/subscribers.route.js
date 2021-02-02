@@ -119,9 +119,11 @@ router.get('/get-subscriber/:id', async (req, res) => {
     try {
         let promiseArr = [];
         promiseArr.push(
-            Client.findOne({ _id: req.params.id, isDeleted: false }).select(
-                '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
-            ),
+            Client.findOne({ _id: req.params.id, isDeleted: false })
+                .select(
+                    '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
+                )
+                .lean(),
         );
         promiseArr.push(
             Opportunity.aggregate([
@@ -130,7 +132,11 @@ router.get('/get-subscriber/:id', async (req, res) => {
             ]).allowDiskUse(true),
         );
         let data = await Promise.all(promiseArr);
-
+        let activePlans = ['FREE_TRIAL', 'MONTHLY', 'YEARLY'];
+        data[0].isActive =
+            data[0].selectedPlan &&
+            data[0].selectedPlan.status &&
+            activePlans.indexOf(data[0].selectedPlan.status) !== -1;
         res.status(200).send({
             status: 'SUCCESS',
             data: {
