@@ -236,8 +236,7 @@ router.post('/forgot-password', async (req, res) => {
             });
         }
         let token = admin.getTokenForPassword();
-        let resetPasswordLink =
-            config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.resetPasswordPage + `?token=${token}`;
+        let resetPasswordLink = config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.resetPasswordPage + { token };
         admin.forgotOrSetPasswordToken = token;
         await admin.save();
         let mailObj = {

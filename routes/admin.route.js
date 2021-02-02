@@ -118,8 +118,7 @@ router.post('/sign-up', async (req, res) => {
         await newAdmin.save();
         let admin = await Admin.findOne({ email: req.body.email, isDeleted: false });
         let token = admin.getTokenForPassword();
-        let setPasswordLink =
-            config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.setPasswordPage + `?token=${token}`;
+        let setPasswordLink = config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.setPasswordPage + token;
         admin.forgotOrSetPasswordToken = token;
         await admin.save();
         let mailObj = {

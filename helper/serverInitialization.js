@@ -32,8 +32,7 @@ let createAdmin = () => {
             let admin = await Admin.findOne({ email: config.organization.adminEmail });
             Logger.log.trace('Admin did not existed, created one with email:', config.organization.adminEmail);
             let token = admin.getTokenForPassword();
-            let setPasswordLink =
-                config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.setPasswordPage + `?token=${token}`;
+            let setPasswordLink = config.adminUrls.adminFrontEndBaseUrl + config.adminUrls.setPasswordPage + token;
             admin.forgotOrSetPasswordToken = token;
 
             await admin.save();

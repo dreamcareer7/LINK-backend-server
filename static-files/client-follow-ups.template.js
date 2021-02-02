@@ -154,18 +154,18 @@ module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
                       Follow our blogs for all the recent updates, features and strategies on LinkedIn.
                     </div>
                     <button
-                      style='width: 150px; margin: 10px 0; padding: 7px 10px; font-size: 14px; font-weight: 400; color: #FFFFFF; background-color: #469A20; border-radius: 20px; border: none; outline: none'>
-                      READ MORE
-                    </button>
+                                style='width: 150px; margin: 10px 0; padding: 7px 10px; background-color: #469A20; border-radius: 20px; border: none; outline: none'>
+                          <a href="https://linkfluencer.com/blog" style="font-size: 14px; font-weight: 400; color: #FFFFFF; text-decoration: none"> READ MORE</a>
+                        </button>
                   </div>
                 </td>
               </tr>
 
               <tr>
                 <td align='center' valign='center'>
-                  <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/facebook.png' /></a>
-                  <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/linkedin.png' /></a>
-                  <a href="#" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/youtube.png' /></a>
+                  <a href="https://www.facebook.com/au.linkfluencer/" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/facebook.png' /></a>
+                  <a href="https://www.linkedin.com/company/linkfluencer-pty-ltd/" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/linkedin.png' /></a>
+                  <a href="https://www.youtube.com/channel/UC8ff9YC96plcIo47biGcYSg" style="text-decoration: none"><img style='width: 40px; margin: 20px 2px' src='${config.backEndBaseUrl}mail-images/youtube.png' /></a>
                 </td>
               </tr>
 
