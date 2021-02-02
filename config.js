@@ -20,8 +20,8 @@ module.exports = {
     uploadLocations: uploadLocations,
     adminUrls: {
         adminFrontEndBaseUrl: process.env.ADMIN_FRONTEND_BASE_URL || 'http://localhost:4200/',
-        forgotPasswordPage: 'forgot/',
-        setPasswordPage: 'setPassword/',
+        resetPasswordPage: 'authAdmin/reset-password/',
+        setPasswordPage: 'authAdmin/set-password/',
     },
     clientUrls: {
         clientFrontEndBaseUrl: process.env.CLIENT_FRONTEND_BASE_URL || 'http://localhost:4700/',
