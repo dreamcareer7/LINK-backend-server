@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const Client = mongoose.model('client');
 const Payment = mongoose.model('payment');
+const Invoice = mongoose.model('invoice');
 const Logger = require('../services/logger');
 const config = require('../config');
 const mailHelper = require('./../helper/mailer.helper');
@@ -73,7 +74,7 @@ router.post('/stripe-webhook', async (req, res) => {
                     let payment = new Payment({
                         stripeSubscriptionId: reqData.id,
                         clientId: client._id,
-                        planType: client.selectedPlan.status,
+                        planType: client.selectedPlan.planSelected,
                         paymentAmount: reqData.plan.amount,
                         stripePlanId: reqData.plan.id,
                     });
@@ -104,7 +105,6 @@ router.post('/stripe-webhook', async (req, res) => {
                 }
                 break;
             case 'customer.subscription.updated':
-                //TODO add received amount to totalReceivedAmount
                 if (reqData.status === 'active') {
                     Logger.log.info('Subscription changed to active:', reqData.id);
                     let payment = await Payment.findOne({
@@ -117,6 +117,8 @@ router.post('/stripe-webhook', async (req, res) => {
                             _id: payment.clientId,
                         });
                         client.isSubscribed = true;
+                        client.selectedPlan.startDate = new Date();
+                        client.totalReceivedAmount += reqData.plan.amount / 100;
                         if (reqData.plan.interval === 'month') {
                             client.selectedPlan.status = 'MONTHLY';
                             client.selectedPlan.planSelected = 'MONTHLY';
@@ -135,6 +137,49 @@ router.post('/stripe-webhook', async (req, res) => {
                         await client.save();
                     }
                 }
+                break;
+            case 'invoice.created':
+                let payment = await Payment.findOne({
+                    _id: reqData.subscription,
+                })
+                    .select({ clientId: 1 })
+                    .lean();
+                let invoice = new Invoice({
+                    paymentId: payment._id,
+                    clientId: payment.clientId,
+                    stripeInvoiceId: reqData.id,
+                    amountPaid: reqData.amount_paid,
+                    amountDue: reqData.amount_due,
+                    amountRemaining: reqData.amount_remaining,
+                    currentStatus: reqData.status,
+                    receiptNumber: reqData.number,
+                    hostUrl: reqData.hosted_invoice_url,
+                    downloadUrl: reqData.invoice_pdf,
+                    stripeNotification: [
+                        {
+                            status: reqData.status,
+                            eventType: eventType,
+                            receivedAt: new Date(),
+                        },
+                    ],
+                });
+                await invoice.save();
+                break;
+            case 'invoice.updated':
+                let existingInvoice = await Invoice.findOne({ stripeInvoiceId: reqData.id });
+                existingInvoice.amountPaid = reqData.amount_paid;
+                existingInvoice.amountDue = reqData.amount_due;
+                existingInvoice.amountRemaining = reqData.amount_remaining;
+                existingInvoice.currentStatus = reqData.status;
+                existingInvoice.receiptNumber = reqData.number;
+                existingInvoice.hostUrl = reqData.hosted_invoice_url;
+                existingInvoice.downloadUrl = reqData.invoice_pdf;
+                existingInvoice.stripeNotification.push({
+                    status: reqData.status,
+                    eventType: eventType,
+                    receivedAt: new Date(),
+                });
+                existingInvoice.save();
                 break;
         }
         Logger.log.info('Successfully processed the Stripe Webhook for event:', eventType);
