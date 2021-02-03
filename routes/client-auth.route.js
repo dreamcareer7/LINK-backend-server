@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const { Parser } = require('json2csv');
 const mongoose = require('mongoose');
 const Client = mongoose.model('client');
 const Conversation = mongoose.model('conversation');
 const Payment = mongoose.model('payment');
+const Invoice = mongoose.model('invoice');
 const config = require('../config');
 const authMiddleWare = require('../middleware/authenticate');
 const linkedInHelper = require('../helper/linkedin.helper');
@@ -338,7 +340,7 @@ router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) 
     try {
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false })
             .select(
-                'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan',
+                'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType',
             )
             .lean();
         if (!client) {
@@ -367,10 +369,10 @@ router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) 
 /*
  update client data
  */
-router.post('/update', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+router.put('/update', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
-            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
+            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType',
         );
         if (!client) {
             return res.status(400).send({
@@ -387,10 +389,6 @@ router.post('/update', authMiddleWare.clientAuthMiddleWare, async (req, res) => 
         client.companyName = req.body.companyName;
         client.companySize = req.body.companySize;
         client.companyLocation = req.body.companyLocation;
-        client['notificationType']['email'] = req.body.notificationType.email;
-        client['notificationType']['browser'] = req.body.notificationType.browser;
-        // client['notificationPeriod']['interval'] = req.body.notificationPeriod.interval;
-        // client['notificationPeriod']['customDate'] = req.body.notificationPeriod.customDate;
 
         await client.save();
         return res.status(200).send({
@@ -399,6 +397,123 @@ router.post('/update', authMiddleWare.clientAuthMiddleWare, async (req, res) => 
         });
     } catch (e) {
         Logger.log.error('Error in update Client API call', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+/*
+ update Notification Types
+ */
+router.put('/notification-type', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+    try {
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
+            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType',
+        );
+        if (!client) {
+            return res.status(400).send({
+                status: 'CLIENT_NOT_FOUND',
+                message: 'Client is not found.',
+            });
+        }
+        client['notificationType']['email'] = req.body.notificationType.email;
+        client['notificationType']['browser'] = req.body.notificationType.browser;
+
+        await client.save();
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: client,
+        });
+    } catch (e) {
+        Logger.log.error('Error in update notification types for Client API call', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+/*
+ Get Invoices
+ */
+router.get('/invoices', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+    try {
+        let page = parseInt(req.query.page);
+        let limit = parseInt(req.query.limit);
+        let queryObj = {
+            clientId: req.client._id,
+            isDeleted: false,
+        };
+        let options = {
+            page,
+            limit,
+            lean: true,
+            populate: {
+                path: 'paymentId',
+                select: { planType: 1 },
+            },
+            select: {
+                paymentId: 1,
+                totalAmount: 1,
+                createdAt: 1,
+                receiptNumber: 1,
+                hostUrl: 1,
+                downloadUrl: 1,
+            },
+        };
+        if (req.query.startDate && req.query.endDate) {
+            let startDate = new Date(req.query.startDate);
+            let endDate = new Date(req.query.endDate);
+            queryObj.createdAt = { $gte: startDate, $lte: endDate };
+        }
+        let invoices = await Invoice.paginate(queryObj, options);
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: invoices,
+        });
+    } catch (e) {
+        Logger.log.error('Error in get Invoices API call', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+/*
+ Download All Invoices
+ */
+router.get('/invoices-download', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+    try {
+        let invoices = await Invoice.find({ clientId: req.client._id, isDeleted: false })
+            .select({
+                totalAmount: 1,
+                createdAt: 1,
+                receiptNumber: 1,
+                hostUrl: 1,
+            })
+            .populate({
+                path: 'paymentId',
+                select: { planType: 1 },
+            })
+            .lean();
+        let fields = ['date', 'amount', 'receipt-number', 'plan-type', 'invoice-url'];
+        const rawJson = invoices.map((x) => {
+            return {
+                date: x.createdAt.toLocaleString(),
+                amount: x.totalAmount,
+                'receipt-number': x.receiptNumber,
+                'plan-type': x.paymentId.planType,
+                'invoice-url': x.hostUrl,
+            };
+        });
+        const json2csvParser = new Parser({ fields });
+        const csvData = json2csvParser.parse(rawJson);
+        res.header('Content-Type', 'text/csv');
+        res.send(csvData);
+    } catch (e) {
+        Logger.log.error('Error in get Invoices API call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,

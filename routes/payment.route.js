@@ -71,13 +71,18 @@ router.post('/stripe-webhook', async (req, res) => {
                             client.selectedPlan.planSelected = 'YEARLY';
                         }
                     }
-                    let payment = new Payment({
+                    let payment = await Payment.findOne({
                         stripeSubscriptionId: reqData.id,
-                        clientId: client._id,
-                        planType: client.selectedPlan.planSelected,
-                        paymentAmount: reqData.plan.amount,
-                        stripePlanId: reqData.plan.id,
                     });
+                    if (!payment) {
+                        payment = new Payment({
+                            stripeSubscriptionId: reqData.id,
+                        });
+                    }
+                    payment.clientId = client._id;
+                    payment.planType = client.selectedPlan.planSelected;
+                    payment.paymentAmount = reqData.plan.amount;
+                    payment.stripePlanId = reqData.plan.id;
                     let linkedInSignUpLink =
                         'https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=' +
                         config.linkedIn.clientId +
@@ -140,10 +145,18 @@ router.post('/stripe-webhook', async (req, res) => {
                 break;
             case 'invoice.created':
                 let payment = await Payment.findOne({
-                    _id: reqData.subscription,
-                })
-                    .select({ clientId: 1 })
-                    .lean();
+                    stripeSubscriptionId: reqData.subscription,
+                }).select({ clientId: 1 });
+                if (!payment) {
+                    let client = await Client.findOne({ stripeCustomerId: reqData.customer })
+                        .select({ stripeCustomerId: 1 })
+                        .lean();
+                    payment = new Payment({
+                        stripeSubscriptionId: reqData.subscription,
+                        clientId: client._id,
+                    });
+                    await payment.save();
+                }
                 let invoice = new Invoice({
                     paymentId: payment._id,
                     clientId: payment.clientId,
@@ -151,6 +164,7 @@ router.post('/stripe-webhook', async (req, res) => {
                     amountPaid: reqData.amount_paid,
                     amountDue: reqData.amount_due,
                     amountRemaining: reqData.amount_remaining,
+                    totalAmount: reqData.total,
                     currentStatus: reqData.status,
                     receiptNumber: reqData.number,
                     hostUrl: reqData.hosted_invoice_url,

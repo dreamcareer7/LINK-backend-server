@@ -6,6 +6,7 @@
  * System and 3rd Party libs
  */
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate');
 const Schema = mongoose.Schema;
 
 /**
@@ -25,6 +26,7 @@ const invoiceSchema = new Schema(
         amountPaid: Schema.Types.Number,
         amountDue: Schema.Types.Number,
         amountRemaining: Schema.Types.Number,
+        totalAmount: Schema.Types.Number,
         currentStatus: Schema.Types.String,
         receiptNumber: Schema.Types.String,
         hostUrl: Schema.Types.String,
@@ -41,6 +43,7 @@ const invoiceSchema = new Schema(
     },
     { timestamps: true },
 );
+invoiceSchema.plugin(mongoosePaginate);
 
 /**
  * Export Schema
