@@ -340,7 +340,7 @@ router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) 
     try {
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false })
             .select(
-                'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType',
+                'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType stripeCustomerId',
             )
             .lean();
         if (!client) {
@@ -372,7 +372,7 @@ router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) 
 router.put('/update', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
-            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType',
+            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType stripeCustomerId',
         );
         if (!client) {
             return res.status(400).send({
@@ -409,7 +409,7 @@ router.put('/update', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
 router.put('/notification-type', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
-            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType',
+            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType stripeCustomerId',
         );
         if (!client) {
             return res.status(400).send({
