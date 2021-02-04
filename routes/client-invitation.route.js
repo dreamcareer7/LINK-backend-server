@@ -118,15 +118,33 @@ router.get('/get-invitations', async (req, res) => {
     try {
         let page = parseInt(req.query.page);
         let limit = parseInt(req.query.limit);
-        let clients = await Client.paginate(
-            { isInvited: true, isSubscribed: false },
-            {
-                page,
-                limit,
-                select:
-                    '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
-            },
-        );
+        let queryObj = {
+            isInvited: true,
+            isSubscribed: false,
+            isDeleted: false,
+        };
+        if (req.query.startDate && req.query.endDate) {
+            let startDate = new Date(req.query.startDate);
+            let endDate = new Date(req.query.endDate);
+            queryObj.createdAt = { $gte: startDate, $lte: endDate };
+        }
+        if (req.query.searchText) {
+            let name = req.query.searchText
+                .replace(/  +/g, ' ')
+                .split(' ')
+                .slice(0, 2);
+
+            queryObj.$or = [
+                { $and: [{ firstName: new RegExp(name[0], 'i') }, { lastName: new RegExp(name[1], 'i') }] },
+                { $and: [{ firstName: new RegExp(name[1], 'i') }, { lastName: new RegExp(name[0], 'i') }] },
+                { email: new RegExp(name[0], 'i') },
+            ];
+        }
+        let clients = await Client.paginate(queryObj, {
+            page,
+            limit,
+            select: 'firstName lastName email phone createdAt',
+        });
         if (!clients) {
             return res.status(400).send({
                 status: 'NOT_FOUND',
