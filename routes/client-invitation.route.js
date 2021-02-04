@@ -165,6 +165,64 @@ router.get('/get-invitations', async (req, res) => {
 });
 
 /**
+ * get invitation of client by id
+ */
+router.get('/get-invitations/:id', async (req, res) => {
+    try {
+        if (!req.params.id) {
+            return res.status(400).send({
+                status: 'ERROR',
+                message: 'Client id not found.',
+            });
+        }
+        let client = await Client.findOne({ _id: req.params.id })
+            .select('firstName lastName email phone createdAt')
+            .lean();
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: client,
+        });
+    } catch (e) {
+        Logger.log.error('Error in Get Invited Client by id API call.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+/**
+ * get invitation of client by id
+ */
+router.put('/update-invitations/:id', async (req, res) => {
+    try {
+        if (!req.params.id) {
+            return res.status(400).send({
+                status: 'ERROR',
+                message: 'Client id not found.',
+            });
+        }
+        let updateObj = {
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            email: req.body.email,
+            phone: req.body.phone,
+        };
+        await Client.updateOne({ _id: req.params.id }, updateObj);
+        return res.status(200).send({
+            status: 'SUCCESS',
+            message: 'Invited Client Updated',
+        });
+    } catch (e) {
+        Logger.log.error('Error in update Invited Client by id API call.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+/**
  * Download subscribers by admin
  */
 router.get('/get-invitations/download', async (req, res) => {
