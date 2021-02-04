@@ -144,6 +144,7 @@ router.get('/get-invitations', async (req, res) => {
             page,
             limit,
             select: 'firstName lastName email phone createdAt',
+            sort: { createdAt: req.query.sortOrder === 'ASC' ? 1 : -1 },
         });
         if (!clients) {
             return res.status(400).send({
