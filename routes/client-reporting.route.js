@@ -113,6 +113,16 @@ router.get('/pipeline-value', async (req, res) => {
         data = data.filter(function(value, index, arr) {
             return value._id !== null;
         });
+        let addedPipelines = data.map((pipeline) => pipeline._id);
+        let pipelines = ['LIKELY', 'VERY_LIKELY', 'NOT_LIKELY'];
+        pipelines.forEach((pipeline) => {
+            if (addedPipelines.indexOf(pipeline) === -1) {
+                data.push({
+                    _id: pipeline,
+                    total: 0,
+                });
+            }
+        });
         return res.status(200).send({
             status: 'SUCCESS',
             data: data,
