@@ -35,7 +35,6 @@ const clientSchema = new Schema(
         loggedInIdentifier: Schema.Types.String,
         companyLocation: Schema.Types.String,
         gender: { type: Schema.Types.String, enum: ['MALE', 'FEMALE', 'OTHER'] },
-        subscriberImportance: Schema.Types.String,
         isConversationAdded: { type: Schema.Types.Boolean, default: false },
         vicSub: { type: Schema.Types.Boolean, default: false },
         isInvited: { type: Schema.Types.Boolean, default: false },
@@ -66,6 +65,9 @@ const clientSchema = new Schema(
         },
         totalReceivedAmount: { type: Schema.Types.Number, default: 0 },
         cookie: Schema.Types.String,
+        isCookieExpired: { type: Schema.Types.Boolean },
+        isExtensionInstalled: { type: Schema.Types.Boolean, default: false },
+
         //  ajaxToken: Schema.Types.String,
         fcmToken: [Schema.Types.String],
     },

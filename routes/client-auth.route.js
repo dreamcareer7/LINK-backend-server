@@ -111,32 +111,44 @@ router.get('/sign-up', async (req, res) => {
 /**
  * checks the cookie is valid or not / also checks for client is loged in or not in crome extension
  */
-router.get(
-    '/checking-for-cookie',
-    authMiddleWare.clientAuthMiddleWare,
-
-    async (req, res) => {
-        try {
-            let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
-            await opportunityHelper.getProfile(req.client.publicIdentifier, cookieStr, ajaxToken);
-            if (req.client.hasOwnProperty('publicIdentifier') && req.client.hasOwnProperty('cookie')) {
-                return res.status(200).send({
-                    message: req.client,
-                    status: 'SUCCESS',
-                });
-            } else {
-                throw new Error('publicIdentifier or cookie is not found in db.');
-            }
-        } catch (e) {
-            console.log(e);
-            Logger.log.error('Error in checking-for-cookie API call.', e.message || e);
+router.get('/checking-for-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+    try {
+        if (!req.client.cookie || !req.client.isExtensionInstalled) {
+            Logger.log.error('Extension is not installed yet.');
             res.status(500).json({
-                status: e.status || 'ERROR',
-                message: e.message,
+                status: 'READ_ERROR_MESSAGE',
+                message: 'extension_not_installed',
             });
         }
-    },
-);
+        if (!req.client.cookie || req.client.isCookieExpired) {
+            Logger.log.error('Cookie is expired.');
+            res.status(500).json({
+                status: 'READ_ERROR_MESSAGE',
+                message: 'cookie_expired',
+            });
+        }
+        let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
+        await opportunityHelper.getProfile(req.client.publicIdentifier, cookieStr, ajaxToken);
+        if (req.client.publicIdentifier && req.client.cookie) {
+            return res.status(200).send({
+                message: req.client,
+                status: 'SUCCESS',
+            });
+        }
+        return res.status(200).send({
+            message: req.client,
+            status: 'SUCCESS',
+        });
+    } catch (e) {
+        req.client.isCookieExpired = true;
+        await req.client.save();
+        Logger.log.error('Error in checking-for-cookie API call.', e.message || e);
+        res.status(500).json({
+            status: 'READ_ERROR_MESSAGE',
+            message: 'cookie_expired',
+        });
+    }
+});
 
 /**
  *  sign-up from LinkedIn
@@ -150,16 +162,17 @@ router.get('/sign-up-extension', async (req, res) => {
                 message: 'Code is not Found',
             });
         }
-        console.log(req.query.code);
         let token = await linkedInHelper.genLinkedInAccessToken(
             req.query.code,
             config.backEndBaseUrl + 'client-auth/sign-up-extension',
         );
         let user = await linkedInHelper.getLinkedInUserData(token);
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
-        console.log('client::', client);
         if (client) {
             if (client.isSubscribed) {
+                if (!client.isExtensionInstalled) {
+                    client.isExtensionInstalled = true;
+                }
                 let token = client.getAuthToken();
                 // client.jwtToken.push(token);
                 // await client.save();
@@ -170,6 +183,7 @@ router.get('/sign-up-extension', async (req, res) => {
                 // return res.redirect(`https://www.linkedin.com/`);
             }
         } else {
+            //TODO confirm for Open Sign Up
             return res.redirect(`${config.backEndBaseUrl}linkedin-signin.html?token=${token}&is=0`);
             // return res.redirect(`https://www.linkedin.com/`);
         }
@@ -210,6 +224,7 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
         client.publicIdentifier = req.body.publicIdentifier;
         if (client.isConversationAdded === false) {
             client.isConversationAdded = true;
+            client.isCookieExpired = false;
             await client.save();
             try {
                 let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.body.cookie);
@@ -232,23 +247,26 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
                         publicIdentifier: conversations[i].publicIdentifier,
                     });
                 }
-
                 await newConversation.save();
             } catch (e) {
                 client.isConversationAdded = false;
                 await client.save();
+                return res.status(200).json({
+                    status: 'SUCCESS',
+                    message: 'Cookie Successfully saved without fetching chats.',
+                });
             }
+        } else {
+            client.isCookieExpired = false;
+            await client.save();
         }
-
-        await client.save();
-
         return res.status(200).send({
             status: 'SUCCESS',
-            message: 'Cookie Sucessfully saved.',
+            message: 'Cookie Successfully saved.',
         });
     } catch (e) {
         Logger.log.error('Error in get cookie and token call.', e.message || e);
-        res.status(500).json({
+        return res.status(500).json({
             status: e.status || 'ERROR',
             message: e.message,
         });

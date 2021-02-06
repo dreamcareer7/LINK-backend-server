@@ -11,6 +11,11 @@
             "description": "Message is displayed when Chrome Extension is not Installed"
         },
         {
+            "title": "cookie_expired",
+            "text": "Uhh ohh! Please click below to allow Jayla extension to Sync the data.",
+            "description": "Message is displayed when Chrome Extension is not able to fetch data"
+        },
+        {
             "title": "device_not_desktop",
             "text": "Sorry, Jayla only works on Desktop Device :)",
             "description": "Message is displayed when Device is not Desktop"

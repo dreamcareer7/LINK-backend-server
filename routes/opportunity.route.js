@@ -115,7 +115,6 @@ router.put('/fetch-conversation/:id', authMiddleWare.linkedInLoggedInChecked, as
                 message: 'opportunitys is not Found!',
             });
         }
-        console.log('opportunity::', opportunity);
         let dbConversation = await Conversation.findOne({
             clientId: req.client._id,
             'conversations.publicIdentifier': opportunity.publicIdentifier,
@@ -133,7 +132,7 @@ router.put('/fetch-conversation/:id', authMiddleWare.linkedInLoggedInChecked, as
                     data: [],
                 });
             }
-            console.log('Adding the conversation...', conversation[0]);
+            Logger.log.info("Conversation wasn't present, adding it.");
             dbConversation = await Conversation.findOneAndUpdate(
                 {
                     clientId: req.client._id,
@@ -172,10 +171,12 @@ router.put('/fetch-conversation/:id', authMiddleWare.linkedInLoggedInChecked, as
             data: conversationData,
         });
     } catch (e) {
+        req.client.isCookieExpired = true;
+        await req.client.save();
         Logger.log.error('Error in fetch-conversation API call.', e.message || e);
         res.status(500).json({
-            status: e.status || 'ERROR',
-            message: e.message,
+            status: 'READ_ERROR_MESSAGE',
+            message: 'cookie_expired',
         });
     }
 });
@@ -298,10 +299,12 @@ router.post('/sync-with-linkedIn/:id', authMiddleWare.linkedInLoggedInChecked, a
             data: opportunity,
         });
     } catch (e) {
+        req.client.isCookieExpired = true;
+        await req.client.save();
         Logger.log.error('Error in sync with linkedIn API call.', e.message || e);
         res.status(500).json({
-            status: e.status || 'ERROR',
-            message: e.message,
+            status: 'READ_ERROR_MESSAGE',
+            message: 'cookie_expired',
         });
     }
 });
