@@ -175,7 +175,7 @@ router.get('/sign-up-extension', async (req, res) => {
                 }
                 let token = client.getAuthToken();
                 // client.jwtToken.push(token);
-                // await client.save();
+                await client.save();
 
                 return res.redirect(`${config.backEndBaseUrl}linkedin-signin.html?token=${token}&is=1`);
             } else {
