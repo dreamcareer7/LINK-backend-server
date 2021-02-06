@@ -78,7 +78,7 @@ app.use('/', index);
 app.use('/admin', authMiddleWare.adminAuthMiddleWare, admin);
 app.use('/quote', authMiddleWare.adminAuthMiddleWare, quote);
 app.use('/error-message', authMiddleWare.adminAuthMiddleWare, errorMessage);
-app.use('/client-error-message', authMiddleWare.clientAuthMiddleWare, clientErrorMessage);
+app.use('/client-error-message', clientErrorMessage);
 app.use('/client-auth', clientAuth);
 app.use('/authAdmin', authAdmin);
 app.use('/opportunity', authMiddleWare.clientAuthMiddleWare, opportunity);
