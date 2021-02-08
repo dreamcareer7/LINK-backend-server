@@ -65,7 +65,7 @@ let createOrganization = () => {
                 organizationId: config.organization.organizationId,
             });
             if (existingOrganization) {
-                existingOrganization.errorMessages = org.errorMessages;
+                // existingOrganization.errorMessages = org.errorMessages;
                 existingOrganization.industries = org.industries;
                 existingOrganization.gender = org.gender;
                 existingOrganization.companySize = org.companySize;

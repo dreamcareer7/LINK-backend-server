@@ -45,22 +45,27 @@ router.post('/add-message', async function(req, res) {
  * update message by id
  */
 
-router.put('/update-message/:id', async function(req, res) {
+router.put('/update-messages/', async function(req, res) {
     try {
-        if (!req.body.title || !req.body.text || !req.params.id) {
+        if (!req.body.errorMessages || req.body.errorMessages.length === 0) {
             return res.status(400).json({
                 status: 'REQUIRE_FIELD_EMPTY',
                 message: 'Error Title and Text and Id is Required !',
             });
         }
 
-        await Organization.updateOne(
-            { organizationId: config.organization.organizationId, 'errorMessages._id': req.params.id },
-            { $set: { 'errorMessages.$.text': req.body.text } },
-        );
-        let org = await Organization.findOne({
-            organizationId: config.organization.organizationId,
+        let organization = await Organization.findOne({ organizationId: config.organization.organizationId }).select({
+            errorMessages: 1,
         });
+        for (let i = 0; i < req.body.errorMessages.length; i++) {
+            for (let j = 0; j < organization.errorMessages.length; j++) {
+                if (req.body.errorMessages[i]._id.toString() === organization.errorMessages[j]._id.toString()) {
+                    organization.errorMessages[j].text = req.body.errorMessages[i].text;
+                    break;
+                }
+            }
+        }
+        await organization.save();
         res.status(200).send({
             status: 'SUCCESS',
             data: org.errorMessages,
