@@ -333,20 +333,20 @@ router.get('/generate-2fa', authMiddleWare.adminAuthMiddleWare, async (req, res)
             var secret = speakeasy.generateSecret().base32;
             admin.twoFASecretKey = secret;
         }
-        let secretUrl = `otpauth://totp/${admin.email}?secret=${secret}&issuer=${config.twoFA.generatorName}`;
-        qrCode.toDataURL(secretUrl, async function(err, data_url) {
-            var data = data_url.replace(/^data:image\/\w+;base64,/, '');
-            var buf = Buffer.from(data, 'base64');
-            fs.writeFileSync('image.png', buf);
-            await admin.save();
-            res.status(200).json({
-                status: 'SUCCESS',
-                data: {
-                    twoFASecretKey: admin.twoFASecretKey,
-                    qrCode: config.backEndBaseUrl + 'authAdmin/fetch-qr-code/' + admin._id,
-                },
-            });
+        await admin.save();
+        // let secretUrl = `otpauth://totp/${admin.email}?secret=${secret}&issuer=${config.twoFA.generatorName}`;
+        // qrCode.toDataURL(secretUrl, async function(err, data_url) {
+        // var data = data_url.replace(/^data:image\/\w+;base64,/, '');
+        // var buf = Buffer.from(data, 'base64');
+        // fs.writeFileSync('image.png', buf);
+        res.status(200).json({
+            status: 'SUCCESS',
+            data: {
+                twoFASecretKey: admin.twoFASecretKey,
+                qrCode: config.backEndBaseUrl + 'authAdmin/fetch-qr-code/' + admin._id,
+            },
         });
+        // });
     } catch (e) {
         Logger.log.error('Error in login API call', e.message || e);
         res.status(500).json({
@@ -490,6 +490,7 @@ function getProfileUrl(imageName) {
         else return config.backEndBaseUrl + getProfileImagePath() + imageName;
     return '';
 }
+
 /**
  * Export Router
  */
