@@ -9,7 +9,7 @@ const config = require('../config');
 
 router.put('/deal-value', async (req, res) => {
     try {
-        if (!req.body.endDate || !req.body.startDate) {
+        if (!req.body.endDate || !req.body.startDate || !req.body.selectedPlan) {
             return res.status(400).json({
                 status: 'ERROR',
                 message: 'Required field is missing',
@@ -21,6 +21,9 @@ router.put('/deal-value', async (req, res) => {
             {
                 $match: {
                     $and: [
+                        {
+                            'selectedPlan.status': req.body.selectedPlan,
+                        },
                         {
                             createdAt: {
                                 $gte: new Date(req.body.startDate),
@@ -94,6 +97,9 @@ router.put('/deal-value', async (req, res) => {
             {
                 $match: {
                     $and: [
+                        {
+                            'selectedPlan.status': req.body.selectedPlan,
+                        },
                         {
                             createdAt: {
                                 $gte: new Date(req.body.startDate),
@@ -345,7 +351,7 @@ router.put('/subscription', async (req, res) => {
 });
 router.put('/opportunities', async (req, res) => {
     try {
-        if (!req.body.endDate || !req.body.startDate) {
+        if (!req.body.endDate || !req.body.startDate || !req.body.selectedPlan) {
             return res.status(400).json({
                 status: 'ERROR',
                 message: 'Required field is missing',
@@ -356,6 +362,9 @@ router.put('/opportunities', async (req, res) => {
                 {
                     $match: {
                         $and: [
+                            {
+                                'selectedPlan.status': req.body.selectedPlan,
+                            },
                             {
                                 updatedAt: {
                                     $gte: new Date(req.body.startDate),
