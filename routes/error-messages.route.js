@@ -45,7 +45,7 @@ router.post('/add-message', async function(req, res) {
  * update message by id
  */
 
-router.put('/update-messages/', async function(req, res) {
+router.put('/update-messages', async function(req, res) {
     try {
         if (!req.body.errorMessages || req.body.errorMessages.length === 0) {
             return res.status(400).json({
@@ -68,10 +68,10 @@ router.put('/update-messages/', async function(req, res) {
         await organization.save();
         res.status(200).send({
             status: 'SUCCESS',
-            data: org.errorMessages,
+            data: organization.errorMessages,
         });
     } catch (e) {
-        Logger.log.error('Error in Add Message API call', e.message || e);
+        Logger.log.error('Error in update Message API call', e.message || e);
         res.status(500).json({
             status: 'ERROR',
             message: e.message,
