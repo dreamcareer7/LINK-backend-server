@@ -166,6 +166,38 @@ router.get('/get-invitations', async (req, res) => {
 });
 
 /**
+ * Download subscribers by admin
+ */
+router.get('/get-invitations/download', async (req, res) => {
+    try {
+        let clients = await Client.find({ isDeleted: false, isInvited: true, isSubscribed: false })
+            .select(
+                'firstName lastName email phone title industry companyName linkedInUrl companySize companyLocation selectedPlan',
+            )
+            .lean();
+        let fields = ['first-name', 'last-name', 'email', 'phone'];
+        const rawJson = clients.map((x) => {
+            return {
+                'first-name': x.firstName,
+                'last-name': x.lastName,
+                email: x.email,
+                phone: x.phone,
+            };
+        });
+        const json2csvParser = new Parser({ fields });
+        const csvData = json2csvParser.parse(rawJson);
+        res.header('Content-Type', 'text/csv');
+        res.send(csvData);
+    } catch (e) {
+        Logger.log.error('Error in download invited users API call', e.message || e);
+        return res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
+/**
  * get invitation of client by id
  */
 router.get('/get-invitations/:id', async (req, res) => {
@@ -218,38 +250,6 @@ router.put('/update-invitations/:id', async (req, res) => {
         Logger.log.error('Error in update Invited Client by id API call.', e.message || e);
         res.status(500).json({
             status: e.status || 'ERROR',
-            message: e.message,
-        });
-    }
-});
-
-/**
- * Download subscribers by admin
- */
-router.get('/get-invitations/download', async (req, res) => {
-    try {
-        let clients = await Client.find({ isDeleted: false, isInvited: true, isSubscribed: false })
-            .select(
-                'firstName lastName email phone title industry companyName linkedInUrl companySize companyLocation selectedPlan',
-            )
-            .lean();
-        let fields = ['first-name', 'last-name', 'email', 'phone'];
-        const rawJson = clients.map((x) => {
-            return {
-                'first-name': x.firstName,
-                'last-name': x.lastName,
-                email: x.email,
-                phone: x.phone,
-            };
-        });
-        const json2csvParser = new Parser({ fields });
-        const csvData = json2csvParser.parse(rawJson);
-        res.header('Content-Type', 'text/csv');
-        res.send(csvData);
-    } catch (e) {
-        Logger.log.error('Error in download invited users API call', e.message || e);
-        return res.status(500).json({
-            status: 'ERROR',
             message: e.message,
         });
     }
