@@ -17,17 +17,21 @@ router.put('/deal-value', async (req, res) => {
         }
         let maxDealValue;
         let minDealValue;
+        req.body.startDate = new Date(req.body.startDate);
+        req.body.endDate = new Date(req.body.endDate);
+        req.body.startDate.setHours(0, 0, 0, 0);
+        req.body.endDate.setHours(23, 59, 59, 0);
         let dealRange = await Opportunity.aggregate([
             {
                 $match: {
                     $and: [
-                        {
-                            'selectedPlan.status': req.body.selectedPlan,
-                        },
+                        // {
+                        //     'selectedPlan.status': req.body.selectedPlan,
+                        // },
                         {
                             createdAt: {
-                                $gte: new Date(req.body.startDate),
-                                $lte: new Date(req.body.endDate),
+                                $gte: req.body.startDate,
+                                $lte: req.body.endDate,
                             },
                         },
                         { isDeleted: false },
@@ -98,12 +102,9 @@ router.put('/deal-value', async (req, res) => {
                 $match: {
                     $and: [
                         {
-                            'selectedPlan.status': req.body.selectedPlan,
-                        },
-                        {
                             createdAt: {
-                                $gte: new Date(req.body.startDate),
-                                $lte: new Date(req.body.endDate),
+                                $gte: req.body.startDate,
+                                $lte: req.body.endDate,
                             },
                         },
                         { isDeleted: false },
@@ -126,6 +127,7 @@ router.put('/deal-value', async (req, res) => {
                 },
             },
         ]).allowDiskUse(true);
+        console.log('dealValue::', dealValue);
         dealValue = dealValue.filter(function(value, index, arr) {
             return value._id !== '';
         });
@@ -362,9 +364,9 @@ router.put('/opportunities', async (req, res) => {
                 {
                     $match: {
                         $and: [
-                            {
-                                'selectedPlan.status': req.body.selectedPlan,
-                            },
+                            // {
+                            //     'selectedPlan.status': req.body.selectedPlan,
+                            // },
                             {
                                 updatedAt: {
                                     $gte: new Date(req.body.startDate),
