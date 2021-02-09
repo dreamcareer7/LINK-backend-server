@@ -169,15 +169,35 @@ router.get('/sign-up-extension', async (req, res) => {
         let user = await linkedInHelper.getLinkedInUserData(token);
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
         if (client) {
-            if (client.isSubscribed) {
+            if (client.isSubscribed && !client.isSubscriptionCancelled) {
                 if (!client.isExtensionInstalled) {
                     client.isExtensionInstalled = true;
                 }
                 let token = client.getAuthToken();
                 // client.jwtToken.push(token);
                 await client.save();
-
-                return res.redirect(`${config.backEndBaseUrl}linkedin-signin.html?token=${token}&is=1`);
+                let additionalQueryParamsAObj = {};
+                let additionalQueryParams = '';
+                if (client.firstName || client.lastName) {
+                    additionalQueryParamsAObj['profileName'] =
+                        (client.firstName ? client.firstName : '') + (client.lastName ? ' ' + client.lastName : '');
+                }
+                if (client.profilePicUrl) {
+                    additionalQueryParamsAObj['profilePicture'] = client.profilePicUrl;
+                }
+                if (client.title) {
+                    additionalQueryParamsAObj['profileTitle'] = client.title;
+                }
+                if (Object.keys(additionalQueryParamsAObj).length > 0) {
+                    additionalQueryParams = '&';
+                    Object.keys(additionalQueryParamsAObj).forEach((key) => {
+                        additionalQueryParams += key + '=' + additionalQueryParamsAObj[key] + '&';
+                    });
+                    additionalQueryParams = additionalQueryParams.splice(0, additionalQueryParams.length - 1);
+                }
+                return res.redirect(
+                    `${config.backEndBaseUrl}linkedin-signin.html?token=${token}&is=1${additionalQueryParams}`,
+                );
             } else {
                 return res.redirect(`${config.backEndBaseUrl}linkedin-signin.html?token=${token}&is=0`);
                 // return res.redirect(`https://www.linkedin.com/`);
