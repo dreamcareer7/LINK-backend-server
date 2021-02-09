@@ -115,14 +115,14 @@ router.get('/checking-for-cookie', authMiddleWare.clientAuthMiddleWare, async (r
     try {
         if (!req.client.cookie || !req.client.isExtensionInstalled) {
             Logger.log.error('Extension is not installed yet.');
-            res.status(500).json({
+            return res.status(400).json({
                 status: 'READ_ERROR_MESSAGE',
                 message: 'extension_not_installed',
             });
         }
         if (!req.client.cookie || req.client.isCookieExpired) {
             Logger.log.error('Cookie is expired.');
-            res.status(500).json({
+            return res.status(400).json({
                 status: 'READ_ERROR_MESSAGE',
                 message: 'cookie_expired',
             });
@@ -143,7 +143,7 @@ router.get('/checking-for-cookie', authMiddleWare.clientAuthMiddleWare, async (r
         req.client.isCookieExpired = true;
         await req.client.save();
         Logger.log.error('Error in checking-for-cookie API call.', e.message || e);
-        res.status(500).json({
+        return res.status(500).json({
             status: 'READ_ERROR_MESSAGE',
             message: 'cookie_expired',
         });
@@ -740,7 +740,7 @@ router.post('/logout', async (req, res) => {
 /*
  Add Invited User
  */
-router.put('/add-fcm-token', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
+router.put('/add-user-as-invited', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
     try {
         if (!req.body.publicIdentifier) {
             return res.status(400).send({
