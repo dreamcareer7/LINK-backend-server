@@ -71,9 +71,8 @@ let linkedInLoggedInChecked = async (req, res, next) => {
                     next();
                 } else {
                     Logger.log.error('Subscription is cancelled.');
-                    res.status(401).send('Auth-Token is not valid');
+                    return res.status(401).send('Auth-Token is not valid');
                 }
-                next();
             } else {
                 return res.status(401).json({
                     status: 'NOT_AUTHORIZED',
