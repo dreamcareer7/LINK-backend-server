@@ -176,28 +176,26 @@ router.get('/sign-up-extension', async (req, res) => {
                 let token = client.getAuthToken();
                 // client.jwtToken.push(token);
                 await client.save();
-                let additionalQueryParamsAObj = {};
-                let additionalQueryParams = '';
-                if (client.firstName || client.lastName) {
-                    additionalQueryParamsAObj['profileName'] =
-                        (client.firstName ? client.firstName : '') + (client.lastName ? ' ' + client.lastName : '');
-                }
-                if (client.profilePicUrl) {
-                    additionalQueryParamsAObj['profilePicture'] = client.profilePicUrl;
-                }
-                if (client.title) {
-                    additionalQueryParamsAObj['profileTitle'] = client.title;
-                }
-                if (Object.keys(additionalQueryParamsAObj).length > 0) {
-                    additionalQueryParams = '&';
-                    Object.keys(additionalQueryParamsAObj).forEach((key) => {
-                        additionalQueryParams += key + '=' + additionalQueryParamsAObj[key] + '&';
-                    });
-                    additionalQueryParams = additionalQueryParams.slice(0, additionalQueryParams.length - 1);
-                }
-                return res.redirect(
-                    `${config.backEndBaseUrl}linkedin-signin.html?token=${token}&is=1${additionalQueryParams}`,
-                );
+                // let additionalQueryParamsAObj = {};
+                // let additionalQueryParams = '';
+                // if (client.firstName || client.lastName) {
+                //     additionalQueryParamsAObj['profileName'] =
+                //         (client.firstName ? client.firstName : '') + (client.lastName ? ' ' + client.lastName : '');
+                // }
+                // if (client.profilePicUrl) {
+                //     additionalQueryParamsAObj['profilePicture'] = client.profilePicUrl;
+                // }
+                // if (client.title) {
+                //     additionalQueryParamsAObj['profileTitle'] = client.title;
+                // }
+                // if (Object.keys(additionalQueryParamsAObj).length > 0) {
+                //     additionalQueryParams = '&';
+                //     Object.keys(additionalQueryParamsAObj).forEach((key) => {
+                //         additionalQueryParams += key + '=' + additionalQueryParamsAObj[key] + '&';
+                //     });
+                //     additionalQueryParams = additionalQueryParams.slice(0, additionalQueryParams.length - 1);
+                // }
+                return res.redirect(`${config.backEndBaseUrl}linkedin-signin.html?token=${token}&is=1`);
             } else {
                 return res.redirect(`${config.backEndBaseUrl}linkedin-signin.html?token=${token}&is=0`);
                 // return res.redirect(`https://www.linkedin.com/`);
@@ -209,6 +207,31 @@ router.get('/sign-up-extension', async (req, res) => {
         }
     } catch (e) {
         Logger.log.error('Error in SignUp API call.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
+/**
+ *  Get Profile For Chrome Extension
+ *
+ */
+router.get('/get-profile-for-extension', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
+    try {
+        let dataObj = {
+            profileTitle: req.client.title ? req.client.title : '',
+            profileName:
+                (req.client.firstName ? req.client.firstName : '') +
+                (req.client.lastName ? ' ' + req.client.lastName : ''),
+            profilePicture: req.client.profilePicUrl,
+        };
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: dataObj,
+        });
+    } catch (e) {
+        Logger.log.error('Error in get profile for Extension API call.', e.message || e);
         res.status(500).json({
             status: e.status || 'ERROR',
             message: e.message,
