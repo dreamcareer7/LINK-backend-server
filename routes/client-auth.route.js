@@ -193,7 +193,7 @@ router.get('/sign-up-extension', async (req, res) => {
                     Object.keys(additionalQueryParamsAObj).forEach((key) => {
                         additionalQueryParams += key + '=' + additionalQueryParamsAObj[key] + '&';
                     });
-                    additionalQueryParams = additionalQueryParams.splice(0, additionalQueryParams.length - 1);
+                    additionalQueryParams = additionalQueryParams.slice(0, additionalQueryParams.length - 1);
                 }
                 return res.redirect(
                     `${config.backEndBaseUrl}linkedin-signin.html?token=${token}&is=1${additionalQueryParams}`,
