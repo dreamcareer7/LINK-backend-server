@@ -21,7 +21,9 @@ module.exports = ({ firstName, lastName, setPasswordLink }) => {
       <td align='center' valign='center' width="740" style="background-color: #F3F3F5;">
             <table width="740" cellspacing='0' cellpadding='0' style="background-color: white">
               <tr>
-                <td align='left' valign='top' height="300" style="position: relative; height: 300px; padding: 30px 0 0 40px; background-image: url('https://link.dev.gradlesol.com/app/mail-images/link-bg.png'); background-repeat:no-repeat; background-size:cover;">
+                <td align='left' valign='top' height="300" style="position: relative; height: 300px; padding: 30px 0 0 40px; background-image: url('${
+                    config.backEndBaseUrl
+                }mail-images/link-bg.png'); background-repeat:no-repeat; background-size:cover;">
                   <img style='height: 30px' height="30" src='${config.backEndBaseUrl}mail-images/link-logo.png'/>
                 </td>
               </tr>

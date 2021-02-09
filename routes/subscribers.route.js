@@ -148,7 +148,7 @@ router.get('/get-subscriber/:id', async (req, res) => {
         Logger.log.error('Error in get-subscriber API call', e.message || e);
         return res.status(500).json({
             status: 'ERROR',
-            message: error.message,
+            message: e.message,
         });
     }
 });
