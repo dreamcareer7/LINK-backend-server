@@ -37,10 +37,16 @@ let clientAuthMiddleWare = async (req, res, next) => {
         try {
             let client = await Client.findByToken(token);
             if (client) {
-                req.client = client;
-                req.client.token = token;
-                next();
+                if (!client.isSubscriptionCancelled) {
+                    req.client = client;
+                    req.client.token = token;
+                    next();
+                } else {
+                    Logger.log.error('Subscription is cancelled.');
+                    res.status(401).send('Auth-Token is not valid');
+                }
             } else {
+                Logger.log.error('Auth-Token is not valid.');
                 res.status(401).send('Auth-Token is not valid');
             }
         } catch (e) {
@@ -59,15 +65,21 @@ let linkedInLoggedInChecked = async (req, res, next) => {
     if (token) {
         try {
             let client = await Client.findByToken(token);
-            req.client = client;
-            // if (client.publicIdentifier === client.loggedInIdentifier) {
-            next();
-            // } else {
-            //     return res.status(401).json({
-            //         status: 'NOT_AUTHORIZED',
-            //         message: 'LinkedIn account is not registered.',
-            //     });
-            // }
+            if (client.publicIdentifier === client.loggedInIdentifier) {
+                if (!client.isSubscriptionCancelled) {
+                    req.client = client;
+                    next();
+                } else {
+                    Logger.log.error('Subscription is cancelled.');
+                    res.status(401).send('Auth-Token is not valid');
+                }
+                next();
+            } else {
+                return res.status(401).json({
+                    status: 'NOT_AUTHORIZED',
+                    message: 'LinkedIn account is not registered.',
+                });
+            }
         } catch (e) {
             Logger.log.error('Error occurred.', e.message || e);
             return res.status(401).send({ message: 'Invalid Auth-Token' });

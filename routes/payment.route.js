@@ -143,6 +143,30 @@ router.post('/stripe-webhook', async (req, res) => {
                     }
                 }
                 break;
+            case 'customer.subscription.deleted':
+                if (reqData.status === 'canceled') {
+                    reqData.id = 'sub_ItDOLQjA4rlGrt';
+                    Logger.log.info('Subscription status changed to canceled:', reqData.id);
+                    let payment = await Payment.findOne({
+                        stripeSubscriptionId: reqData.id,
+                    });
+                    if (!payment) {
+                        Logger.log.error('Subscription not found with the Stripe Subscription Id:', reqData.id);
+                    } else {
+                        let client = await Client.findOne({
+                            _id: payment.clientId,
+                        });
+                        client.isSubscriptionCancelled = true;
+                        client.selectedPlan.status = 'CANCELLED';
+                        payment.stripeNotification.push({
+                            subscriptionStatus: reqData.status,
+                            receivedAt: new Date(),
+                        });
+                        await payment.save();
+                        await client.save();
+                    }
+                }
+                break;
             case 'invoice.created':
                 let payment = await Payment.findOne({
                     stripeSubscriptionId: reqData.subscription,
