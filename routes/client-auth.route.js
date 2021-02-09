@@ -737,6 +737,33 @@ router.post('/logout', async (req, res) => {
     }
 });
 
+/*
+ Add Invited User
+ */
+router.put('/add-fcm-token', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
+    try {
+        if (!req.body.publicIdentifier) {
+            return res.status(400).send({
+                status: 'PUBLIC_IDENTIFIER_NOT_FOUND',
+                message: 'Public Identifier not found',
+            });
+        }
+        //TODO Add the Business logic here
+        console.log('client.publicIdentifier::', req.client.publicIdentifier);
+        console.log('Add in Invited count::', req.body.publicIdentifier);
+        return res.status(200).send({
+            status: 'SUCCESS',
+            message: 'Public Identifier added successfully',
+        });
+    } catch (e) {
+        Logger.log.error('Error in adding Invited Public Identifier', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
 /**
  logout from all devices Not in use for now
  */
