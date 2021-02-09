@@ -120,7 +120,7 @@ clientSchema.methods.getAuthToken = function() {
         .sign(
             {
                 _id: c._id.toHexString(),
-                expiredTime: parseInt(config.jwt.clientExpireTimeInHours) * 3600 * 1000 + d.getTime(),
+                expiredTime: parseFloat(config.jwt.clientExpireTimeInHours) * 3600 * 1000 + d.getTime(),
                 access,
             },
             jwtSecret,
