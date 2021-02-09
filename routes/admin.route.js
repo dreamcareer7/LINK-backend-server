@@ -123,7 +123,7 @@ router.post('/sign-up', async (req, res) => {
         await admin.save();
         let mailObj = {
             toAddress: [admin.email],
-            subject: 'Set Password Link',
+            subject: 'Invited as Admin for Jayla',
             text: {
                 setPasswordLink,
                 firstName: admin.firstName,

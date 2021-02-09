@@ -39,7 +39,7 @@ let createAdmin = () => {
             //TODO add mailFor
             let mailObj = {
                 toAddress: [admin.email],
-                subject: 'Set Password Link',
+                subject: 'Invited as Admin for Jayla',
                 text: {
                     setPasswordLink,
                     firstName: admin.firstName,

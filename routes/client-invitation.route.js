@@ -49,7 +49,7 @@ router.post('/send-invitation', async (req, res) => {
         // let linkedInLink = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${config.linkedIn.clientId}&redirect_uri=${config.backEndBaseUrl}client-auth/sign-up-invitation?requestedToken=${newClient.invitedToken}&&state=fooobar&scope=r_emailaddress,r_liteprofile`;
         let mailObj = {
             toAddress: [newClient.email],
-            subject: 'Link Fluencer Invitation link.',
+            subject: "You've been invited to start using Jayla",
             text: {
                 linkFluencerLink,
                 firstName: newClient.firstName,
