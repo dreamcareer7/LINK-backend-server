@@ -211,12 +211,10 @@ router.put('/update-opportunity/:id', async (req, res) => {
         );
         if (opportunity.stage !== req.body.stage) {
             req.body.stageLogs = opportunity.stageLogs;
-            opportunityData.stageLogs = [
-                {
-                    value: req.body.stage,
-                    changedAt: new Date(),
-                },
-            ];
+            req.body.stageLogs.push({
+                value: req.body.stage,
+                changedAt: new Date(),
+            });
         }
         opportunity = await Opportunity.findOneAndUpdate(
             { _id: req.params.id, clientId: req.client._id, isDeleted: false },
