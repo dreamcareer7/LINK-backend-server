@@ -65,14 +65,14 @@ let linkedInLoggedInChecked = async (req, res, next) => {
     if (token) {
         try {
             let client = await Client.findByToken(token);
-            if (client.publicIdentifier === client.loggedInIdentifier) {
-                if (!client.isSubscriptionCancelled) {
-                    req.client = client;
-                    next();
-                } else {
-                    Logger.log.error('Subscription is cancelled.');
-                    return res.status(401).send('Auth-Token is not valid');
-                }
+            // if (client.publicIdentifier === client.loggedInIdentifier) {
+            if (!client.isSubscriptionCancelled) {
+                req.client = client;
+                next();
+                // } else {
+                //     Logger.log.error('Subscription is cancelled.');
+                //     return res.status(401).send('Auth-Token is not valid');
+                // }
             } else {
                 return res.status(401).json({
                     status: 'NOT_AUTHORIZED',
