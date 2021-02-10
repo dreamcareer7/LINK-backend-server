@@ -3,6 +3,7 @@ const router = express.Router();
 const moment = require('moment-timezone');
 const mongoose = require('mongoose');
 const Opportunity = mongoose.model('opportunity');
+const Invitee = mongoose.model('invitee');
 const Logger = require('../services/logger');
 
 router.get('/activity-breakdown', async (req, res) => {
@@ -15,27 +16,78 @@ router.get('/activity-breakdown', async (req, res) => {
         }
         let startDate = new Date(req.query.startDate);
         let endDate = new Date(req.query.endDate);
-        let data = await Opportunity.aggregate([
-            [
+        let promiseArr = [];
+        promiseArr.push(
+            Invitee.aggregate([
                 {
                     $match: {
                         clientId: req.client._id,
                         isDeleted: false,
-                        createdAt: { $gte: startDate, $lte: endDate },
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$invitees',
+                    },
+                },
+                {
+                    $match: {
+                        clientId: req.client._id,
+                        isDeleted: false,
+                        sentAt: { $gte: startDate, $lte: endDate },
                     },
                 },
                 {
                     $group: {
-                        _id: '$stage',
+                        _id: '$invitees.isAccepted',
                         total: {
                             $sum: 1,
                         },
                     },
                 },
-            ],
-        ]).allowDiskUse(true);
-        let addedStages = data.map((stage) => stage._id);
-        let stages = ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED', 'LOST'];
+                {
+                    $project: {
+                        _id: {
+                            $cond: {
+                                if: {
+                                    $eq: ['$_id', true],
+                                },
+                                then: 'ACCEPTED',
+                                else: 'INVITED',
+                            },
+                        },
+                        total: '$total',
+                    },
+                },
+            ]),
+        );
+        promiseArr.push(
+            Opportunity.aggregate([
+                [
+                    {
+                        $match: {
+                            clientId: req.client._id,
+                            isDeleted: false,
+                            createdAt: { $gte: startDate, $lte: endDate },
+                        },
+                    },
+                    {
+                        $group: {
+                            _id: '$stage',
+                            total: {
+                                $sum: 1,
+                            },
+                        },
+                    },
+                ],
+            ]).allowDiskUse(true),
+        );
+        let responses = await Promise.all(promiseArr);
+        let data = responses[0];
+        let inviteeData = responses[1];
+        data = [...data, ...inviteeData];
+        let addedStages = data.map((stage) => stage._id.toString());
+        let stages = ['ACCEPTED', 'INVITED', 'IN_CONVERSION', 'MEETING_BOOKED', 'CLOSED', 'LOST'];
         stages.forEach((stage) => {
             if (addedStages.indexOf(stage) === -1) {
                 data.push({
@@ -45,19 +97,14 @@ router.get('/activity-breakdown', async (req, res) => {
             }
         });
         let stageMap = {
-            INITIAL_CONTACT: 'INVITED',
-            FOLLOW_UP: 'ACCEPTED',
+            ACCEPTED: 'ACCEPTED',
+            INVITED: 'INVITED',
             IN_CONVERSION: 'CONVERSATIONS',
             MEETING_BOOKED: 'MEETINGS',
             CLOSED: 'DEALS CLOSED',
             LOST: 'DEALS LOST',
         };
-        for (let i = 0; i < data.length; i++) {
-            if (data[i]._id === 'POTENTIAL') {
-                data[i].splice(i, 1);
-                break;
-            }
-        }
+        data = data.filter((d) => d._id !== 'POTENTIAL' || d._id !== 'INITIAL_CONTACT' || d._id !== 'FOLLOW_UP');
         let orderedData = [];
         Object.keys(stageMap).forEach((key) => {
             orderedData.push(data.filter((stage) => stage._id === key).pop());
