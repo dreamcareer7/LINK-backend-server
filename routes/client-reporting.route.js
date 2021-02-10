@@ -269,6 +269,7 @@ router.get('/total-sales', async (req, res) => {
                 {
                     $match: {
                         'stageLogs.value': 'CLOSED',
+                        'stageLogs.changedAt': { $gte: startDate, $lte: endDate },
                     },
                 },
                 {
