@@ -257,8 +257,29 @@ router.get('/total-sales', async (req, res) => {
                     $match: {
                         clientId: req.client._id,
                         isDeleted: false,
-                        createdAt: { $gte: startDate, $lte: endDate },
-                        stage: 'CLOSED',
+                        // createdAt: { $gte: startDate, $lte: endDate },
+                        // stage: 'CLOSED',
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$stageLogs',
+                    },
+                },
+                {
+                    $match: {
+                        'stageLogs.value': 'CLOSED',
+                    },
+                },
+                {
+                    $group: {
+                        _id: '$_id',
+                        changedAt: {
+                            $last: '$stageLogs.changedAt',
+                        },
+                        dealSize: {
+                            $last: '$dealSize',
+                        },
                     },
                 },
                 {
@@ -266,17 +287,17 @@ router.get('/total-sales', async (req, res) => {
                         _id: {
                             month: {
                                 $month: {
-                                    date: '$createdAt',
+                                    date: '$changedAt',
                                 },
                             },
                             day: {
                                 $dayOfMonth: {
-                                    date: '$createdAt',
+                                    date: '$changedAt',
                                 },
                             },
                             year: {
                                 $year: {
-                                    date: '$createdAt',
+                                    date: '$changedAt',
                                 },
                             },
                         },
