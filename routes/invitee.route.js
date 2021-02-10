@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const Invitee = mongoose.model('invitee');
 
+const InviteeHelper = require('../helper/invitee.helper');
 const Logger = require('../services/logger');
 
 /*
@@ -16,8 +17,6 @@ router.put('/add-user', async (req, res) => {
                 message: 'Public Identifier not found',
             });
         }
-        console.log('client.publicIdentifier::', req.client.publicIdentifier);
-        console.log('Add in Invited count::', req.body.publicIdentifier);
         let invitee = await Invitee.findOne({ clientId: req.client._id });
         if (!invitee) {
             invitee = new Invitee({
@@ -30,14 +29,11 @@ router.put('/add-user', async (req, res) => {
                     },
                 ],
             });
-            console.log('invitee::', invitee);
         } else {
-            console.log('invitee in else::', invitee);
             let inviteePresent = false;
             for (let i = 0; i < invitee.invitees.length; i++) {
                 console.log('invitee.invitees[i].publicIdentifier', invitee.invitees[i].publicIdentifier);
                 if (invitee.invitees[i].publicIdentifier === req.body.publicIdentifier) {
-                    console.log('in if to add...');
                     Logger.log.info('Invitee already added');
                     invitee.invitees[i].sentAt = new Date();
                     invitee.invitees[i].isAccepted = false;
@@ -46,7 +42,6 @@ router.put('/add-user', async (req, res) => {
                 }
             }
             if (!inviteePresent) {
-                console.log('in if to add...');
                 invitee.invitees.push({
                     publicIdentifier: req.body.publicIdentifier,
                     sentAt: new Date(),

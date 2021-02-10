@@ -13,13 +13,14 @@ const Schema = mongoose.Schema;
  */
 const inviteeSchema = new Schema(
     {
-        clientId: mongoose.Schema.Types.ObjectId,
+        clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'client' },
         lastSyncedAt: mongoose.Schema.Types.Date,
         invitees: [
             {
+                publicIdentifier: Schema.Types.String,
                 sentAt: Schema.Types.Date,
                 isAccepted: { type: Schema.Types.Boolean, default: false },
-                publicIdentifier: Schema.Types.String,
+                acceptedAt: Schema.Types.Date,
             },
         ],
         isDeleted: { type: Schema.Types.Boolean, default: false },

@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const Client = mongoose.model('client');
 const Opportunity = mongoose.model('opportunity');
 const Conversation = mongoose.model('conversation');
+const Invitee = mongoose.model('invitee');
 const Payment = mongoose.model('payment');
 const Notification = mongoose.model('notification');
 const Logger = require('../services/logger');
@@ -236,7 +237,8 @@ router.delete('/delete-subscription/:id', async (req, res) => {
         let promiseArr = [];
         promiseArr.push(client.save());
         promiseArr.push(Opportunity.updateMany({ clientId: client._id, isDeleted: false }, { isDeleted: true }));
-        promiseArr.push(Conversation.updateMany({ clientId: client._id, isDeleted: false }, { isDeleted: true }));
+        promiseArr.push(Conversation.updateOne({ clientId: client._id, isDeleted: false }, { isDeleted: true }));
+        promiseArr.push(Invitee.updateOne({ clientId: client._id, isDeleted: false }, { isDeleted: true }));
         promiseArr.push(Payment.updateMany({ clientId: client._id, isDeleted: false }, { isDeleted: true }));
         promiseArr.push(Notification.updateMany({ clientId: client._id, isDeleted: false }, { isDeleted: true }));
         await Promise.all(promiseArr);

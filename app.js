@@ -110,8 +110,10 @@ ServerInitializer.createOrganization();
 
 let SchedulerHelper = require('./services/cron.schedular.service');
 let notificationHelper = require('./helper/notification.helper');
+let inviteeHelper = require('./helper/invitee.helper');
 notificationHelper.scheduleNotification();
 SchedulerHelper.scheduler();
+inviteeHelper.syncInvitees();
 
 /**
  * Catch 404 routes
