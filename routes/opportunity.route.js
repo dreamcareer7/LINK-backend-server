@@ -204,11 +204,7 @@ router.put('/update-opportunity/:id', async (req, res) => {
                 message: 'Require field is Missing.',
             });
         }
-        let opportunity = await Opportunity.findOneAndUpdate(
-            { _id: req.params.id, clientId: req.client._id, isDeleted: false },
-            req.body,
-            { new: true },
-        );
+        let opportunity = await Opportunity.findOne({ _id: req.params.id, clientId: req.client._id, isDeleted: false });
         if (opportunity.stage !== req.body.stage) {
             req.body.stageLogs = opportunity.stageLogs;
             req.body.stageLogs.push({
