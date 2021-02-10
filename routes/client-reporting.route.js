@@ -18,6 +18,39 @@ router.get('/activity-breakdown', async (req, res) => {
         let endDate = new Date(req.query.endDate);
         let promiseArr = [];
         promiseArr.push(
+            Opportunity.aggregate([
+                [
+                    {
+                        $match: {
+                            clientId: req.client._id,
+                            isDeleted: false,
+                            // createdAt: { $gte: startDate, $lte: endDate },
+                        },
+                    },
+                    {
+                        $unwind: {
+                            path: '$stageLogs',
+                        },
+                    },
+                    {
+                        $match: {
+                            clientId: req.client._id,
+                            isDeleted: false,
+                            'stageLogs.changedAt': { $gte: startDate, $lte: endDate },
+                        },
+                    },
+                    {
+                        $group: {
+                            _id: '$stageLogs.value',
+                            total: {
+                                $sum: 1,
+                            },
+                        },
+                    },
+                ],
+            ]).allowDiskUse(true),
+        );
+        promiseArr.push(
             Invitee.aggregate([
                 {
                     $match: {
@@ -34,58 +67,71 @@ router.get('/activity-breakdown', async (req, res) => {
                     $match: {
                         clientId: req.client._id,
                         isDeleted: false,
-                        sentAt: { $gte: startDate, $lte: endDate },
+                        'invitees.sentAt': { $gte: startDate, $lte: endDate },
                     },
                 },
                 {
                     $group: {
-                        _id: '$invitees.isAccepted',
+                        _id: 'INVITED',
                         total: {
                             $sum: 1,
                         },
                     },
                 },
+            ]),
+        );
+        promiseArr.push(
+            Invitee.aggregate([
                 {
-                    $project: {
-                        _id: {
-                            $cond: {
-                                if: {
-                                    $eq: ['$_id', true],
-                                },
-                                then: 'ACCEPTED',
-                                else: 'INVITED',
-                            },
+                    $match: {
+                        clientId: req.client._id,
+                        isDeleted: false,
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$invitees',
+                    },
+                },
+                {
+                    $match: {
+                        clientId: req.client._id,
+                        isDeleted: false,
+                        'invitees.isAccepted': true,
+                        'invitees.acceptedAt': { $gte: startDate, $lte: endDate },
+                    },
+                },
+                {
+                    $group: {
+                        _id: 'ACCEPTED',
+                        total: {
+                            $sum: 1,
                         },
-                        total: '$total',
                     },
                 },
             ]),
         );
-        promiseArr.push(
-            Opportunity.aggregate([
-                [
-                    {
-                        $match: {
-                            clientId: req.client._id,
-                            isDeleted: false,
-                            createdAt: { $gte: startDate, $lte: endDate },
-                        },
-                    },
-                    {
-                        $group: {
-                            _id: '$stage',
-                            total: {
-                                $sum: 1,
-                            },
-                        },
-                    },
-                ],
-            ]).allowDiskUse(true),
-        );
         let responses = await Promise.all(promiseArr);
         let data = responses[0];
-        let inviteeData = responses[1];
-        data = [...data, ...inviteeData];
+        let invitedData = responses[1];
+        let acceptedData = responses[2];
+        if (invitedData.length === 0) {
+            invitedData = [
+                {
+                    _id: 'INVITED',
+                    total: 0,
+                },
+            ];
+        }
+        if (acceptedData.length === 0) {
+            acceptedData = [
+                {
+                    _id: 'ACCEPTED',
+                    total: 0,
+                },
+            ];
+        }
+        data = [...data, ...invitedData, ...acceptedData];
         let addedStages = data.map((stage) => stage._id.toString());
         let stages = ['ACCEPTED', 'INVITED', 'IN_CONVERSION', 'MEETING_BOOKED', 'CLOSED', 'LOST'];
         stages.forEach((stage) => {

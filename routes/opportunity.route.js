@@ -35,6 +35,12 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
                 );
                 Logger.log.info('Opportunity updated.');
             } else {
+                opportunityData.stageLogs = [
+                    {
+                        value: 'INITIAL_CONTACT',
+                        changedAt: new Date(),
+                    },
+                ];
                 opportunity = new Opportunity(opportunityData);
                 await opportunity.save();
                 Logger.log.info('New Opportunity added.');
@@ -83,6 +89,12 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
                 );
                 Logger.log.info('Opportunity updated.');
             } else {
+                opportunityData.stageLogs = [
+                    {
+                        value: 'INITIAL_CONTACT',
+                        changedAt: new Date(),
+                    },
+                ];
                 opportunity = new Opportunity(opportunityData);
                 await opportunity.save();
                 Logger.log.info('New Opportunity added.');
@@ -193,6 +205,20 @@ router.put('/update-opportunity/:id', async (req, res) => {
             });
         }
         let opportunity = await Opportunity.findOneAndUpdate(
+            { _id: req.params.id, clientId: req.client._id, isDeleted: false },
+            req.body,
+            { new: true },
+        );
+        if (opportunity.stage !== req.body.stage) {
+            req.body.stageLogs = opportunity.stageLogs;
+            opportunityData.stageLogs = [
+                {
+                    value: req.body.stage,
+                    changedAt: new Date(),
+                },
+            ];
+        }
+        opportunity = await Opportunity.findOneAndUpdate(
             { _id: req.params.id, clientId: req.client._id, isDeleted: false },
             req.body,
             { new: true },
