@@ -330,30 +330,116 @@ router.get('/conversions', async (req, res) => {
         }
         let startDate = new Date(req.query.startDate);
         let endDate = new Date(req.query.endDate);
-        let data = await Opportunity.aggregate([
-            [
+        let promiseArr = [];
+        promiseArr.push(
+            Opportunity.aggregate([
+                [
+                    {
+                        $match: {
+                            clientId: req.client._id,
+                            isDeleted: false,
+                            createdAt: { $gte: startDate, $lte: endDate },
+                        },
+                    },
+                    {
+                        $unwind: {
+                            path: '$stageLogs',
+                        },
+                    },
+                    {
+                        $match: {
+                            clientId: req.client._id,
+                            isDeleted: false,
+                            'stageLogs.changedAt': { $gte: startDate, $lte: endDate },
+                        },
+                    },
+                    {
+                        $group: {
+                            _id: '$stageLogs.value',
+                            total: {
+                                $sum: 1,
+                            },
+                        },
+                    },
+                ],
+            ]).allowDiskUse(true),
+        );
+        promiseArr.push(
+            Invitee.aggregate([
                 {
                     $match: {
                         clientId: req.client._id,
                         isDeleted: false,
-                        createdAt: { $gte: startDate, $lte: endDate },
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$invitees',
+                    },
+                },
+                {
+                    $match: {
+                        clientId: req.client._id,
+                        isDeleted: false,
+                        'invitees.sentAt': { $gte: startDate, $lte: endDate },
                     },
                 },
                 {
                     $group: {
-                        _id: '$stage',
+                        _id: 'INVITED',
                         total: {
                             $sum: 1,
                         },
                     },
                 },
-            ],
-        ]).allowDiskUse(true);
+            ]),
+        );
+        promiseArr.push(
+            Invitee.aggregate([
+                {
+                    $match: {
+                        clientId: req.client._id,
+                        isDeleted: false,
+                    },
+                },
+                {
+                    $unwind: {
+                        path: '$invitees',
+                    },
+                },
+                {
+                    $match: {
+                        clientId: req.client._id,
+                        isDeleted: false,
+                        'invitees.isAccepted': true,
+                        'invitees.acceptedAt': { $gte: startDate, $lte: endDate },
+                    },
+                },
+                {
+                    $group: {
+                        _id: 'ACCEPTED',
+                        total: {
+                            $sum: 1,
+                        },
+                    },
+                },
+            ]),
+        );
+        let responses = await Promise.all(promiseArr);
+        let data = responses[0];
+        let invitedData = responses[1];
+        let acceptedData = responses[2];
+        let invitedCount = invitedData.length !== 0 ? invitedData[0].total : 0;
+        let acceptedCount = acceptedData.length !== 0 ? acceptedData[0].total : 0;
+        let ar = 0;
+        if (invitedCount !== 0) {
+            ar = (acceptedCount / invitedCount) * 100;
+        }
         data = data.filter(function(value, index, arr) {
             return value._id !== null;
         });
         let addedStages = data.map((stage) => stage._id);
-        let stages = ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED', 'LOST', 'POTENTIAL'];
+        let stages = ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'CLOSED'];
         stages.forEach((stage) => {
             if (addedStages.indexOf(stage) === -1) {
                 data.push({
@@ -366,30 +452,12 @@ router.get('/conversions', async (req, res) => {
         data.forEach((dataElement) => {
             dataObj[dataElement._id] = dataElement.total;
         });
-        let passedInitialContact =
-            dataObj['INITIAL_CONTACT'] +
-            dataObj['IN_CONVERSION'] +
-            dataObj['MEETING_BOOKED'] +
-            dataObj['FOLLOW_UP'] +
-            dataObj['POTENTIAL'] +
-            dataObj['LOST'] +
-            dataObj['CLOSED'];
-        let passedInConversion =
-            dataObj['IN_CONVERSION'] +
-            dataObj['MEETING_BOOKED'] +
-            dataObj['FOLLOW_UP'] +
-            dataObj['POTENTIAL'] +
-            dataObj['LOST'] +
-            dataObj['CLOSED'];
-        let passedMeetingBooked =
-            dataObj['MEETING_BOOKED'] +
-            dataObj['FOLLOW_UP'] +
-            dataObj['POTENTIAL'] +
-            dataObj['LOST'] +
-            dataObj['CLOSED'];
+        let passedInitialContact = dataObj['INITIAL_CONTACT'];
+        let passedInConversion = dataObj['IN_CONVERSION'];
+        let passedMeetingBooked = dataObj['MEETING_BOOKED'];
         let passedSale = dataObj['CLOSED'];
         let responseObj = {
-            ar: 0,
+            ar: ar,
             aToC: (passedInConversion / passedInitialContact) * 100,
             cToM: (passedMeetingBooked / passedInConversion) * 100,
             MToS: (passedSale / passedMeetingBooked) * 100,
