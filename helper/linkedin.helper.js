@@ -1,6 +1,7 @@
 const axios = require('axios');
 const config = require('../config');
 const Logger = require('../services/logger');
+const jwt = require('jsonwebtoken');
 
 /**
  * generate linkedIn access token when clien is logged in with linnkedIn
@@ -82,8 +83,29 @@ const getContactInfo = async (token) => {
     }
 };
 
+/**
+ * Generates token at the time of Login call
+ */
+getLinkedInIdToken = function(linkedInId) {
+    let d = new Date();
+    let jwtSecret = config.jwt.secret;
+    let access = 'auth';
+    let token = jwt
+        .sign(
+            {
+                linkedInId: linkedInId,
+                expiredTime: parseFloat(config.jwt.clientExpireTimeInHours) * 3600 * 1000 + d.getTime(),
+                access,
+            },
+            jwtSecret,
+        )
+        .toString();
+    return token;
+};
+
 module.exports = {
     genLinkedInAccessToken,
     getLinkedInUserData,
     getContactInfo,
+    getLinkedInIdToken,
 };

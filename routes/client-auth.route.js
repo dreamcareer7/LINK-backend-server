@@ -162,48 +162,31 @@ router.get('/sign-up-extension', async (req, res) => {
                 message: 'Code is not Found',
             });
         }
-        let token = await linkedInHelper.genLinkedInAccessToken(
+        let linkedInToken = await linkedInHelper.genLinkedInAccessToken(
             req.query.code,
             config.backEndBaseUrl + 'client-auth/sign-up-extension',
         );
-        let user = await linkedInHelper.getLinkedInUserData(token);
+        let user = await linkedInHelper.getLinkedInUserData(linkedInToken);
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
+        let token = client.getAuthToken();
+        let linkedInIdToken = linkedInHelper.getLinkedInIdToken(linkedInToken);
         if (client) {
             if (client.isSubscribed && !client.isSubscriptionCancelled) {
                 if (!client.isExtensionInstalled) {
                     client.isExtensionInstalled = true;
                 }
-                let token = client.getAuthToken();
-                // client.jwtToken.push(token);
                 await client.save();
-                // let additionalQueryParamsAObj = {};
-                // let additionalQueryParams = '';
-                // if (client.firstName || client.lastName) {
-                //     additionalQueryParamsAObj['profileName'] =
-                //         (client.firstName ? client.firstName : '') + (client.lastName ? ' ' + client.lastName : '');
-                // }
-                // if (client.profilePicUrl) {
-                //     additionalQueryParamsAObj['profilePicture'] = client.profilePicUrl;
-                // }
-                // if (client.title) {
-                //     additionalQueryParamsAObj['profileTitle'] = client.title;
-                // }
-                // if (Object.keys(additionalQueryParamsAObj).length > 0) {
-                //     additionalQueryParams = '&';
-                //     Object.keys(additionalQueryParamsAObj).forEach((key) => {
-                //         additionalQueryParams += key + '=' + additionalQueryParamsAObj[key] + '&';
-                //     });
-                //     additionalQueryParams = additionalQueryParams.slice(0, additionalQueryParams.length - 1);
-                // }
-                return res.redirect(`${config.backEndBaseUrl}linkedin-signin.html?token=${token}&is=1`);
+                return res.redirect(
+                    `${config.backEndBaseUrl}linkedin-signin.html?token=${token}&lToken=${linkedInIdToken}&is=1`,
+                );
             } else {
-                return res.redirect(`${config.backEndBaseUrl}linkedin-signin.html?token=${token}&is=0`);
-                // return res.redirect(`https://www.linkedin.com/`);
+                return res.redirect(
+                    `${config.backEndBaseUrl}linkedin-signin.html?token=${token}&lToken=${linkedInIdToken}&is=0`,
+                );
             }
         } else {
             //TODO confirm for Open Sign Up
-            return res.redirect(`${config.backEndBaseUrl}linkedin-signin.html?token=${token}&is=0`);
-            // return res.redirect(`https://www.linkedin.com/`);
+            return res.redirect(`${config.backEndBaseUrl}linkedin-signin.html?token=&lToken=${linkedInIdToken}&is=0`);
         }
     } catch (e) {
         Logger.log.error('Error in SignUp API call.', e.message || e);
@@ -217,19 +200,48 @@ router.get('/sign-up-extension', async (req, res) => {
  *  Get Profile For Chrome Extension
  *
  */
-router.get('/get-profile-for-extension', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
+router.get('/get-profile-for-extension', async (req, res) => {
     try {
-        let dataObj = {
-            profileTitle: req.client.title ? req.client.title : '',
-            profileName:
-                (req.client.firstName ? req.client.firstName : '') +
-                (req.client.lastName ? ' ' + req.client.lastName : ''),
-            profilePicture: req.client.profilePicUrl,
-        };
-        return res.status(200).send({
-            status: 'SUCCESS',
-            data: dataObj,
-        });
+        let lToken = req.header('authorization');
+        if (!lToken) {
+            Logger.log.warn('L Token not set in header');
+            return res.status(401).send({ message: 'L Token not set in header' });
+        }
+        let decoded;
+        let jwtSecret = config.jwt.secret;
+        let d = new Date();
+        try {
+            decoded = jwt.verify(lToken, jwtSecret);
+            if (!decoded.linkedInId || decoded.expiredTime < d.getTime()) {
+                return res.status(401).send({ message: 'Invalid Token or expired' });
+            }
+            let user = await linkedInHelper.getLinkedInUserData(decoded.linkedInId);
+            let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
+            let dataObj = {};
+            if (client) {
+                dataObj = {
+                    profileTitle: client.title ? client.title : '',
+                    profileName:
+                        (client.firstName ? client.firstName : '') + (client.lastName ? ' ' + client.lastName : ''),
+                    profilePicture: client.profilePicUrl,
+                };
+            } else {
+                dataObj = {
+                    profileTitle: '',
+                    profileName: user.localizedFirstName + (user.localizedLastName ? ' ' + user.localizedLastName : ''),
+                    profilePicture: user.hasOwnProperty('profilePicture')
+                        ? user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier
+                        : null,
+                };
+            }
+            return res.status(200).send({
+                status: 'SUCCESS',
+                data: dataObj,
+            });
+        } catch (e) {
+            Logger.log.error('Error occurred.', e.message || e);
+            return res.status(401).send({ message: 'Invalid Auth-Token' });
+        }
     } catch (e) {
         Logger.log.error('Error in get profile for Extension API call.', e.message || e);
         res.status(500).json({
