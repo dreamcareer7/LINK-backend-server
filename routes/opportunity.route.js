@@ -118,7 +118,7 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
     }
 });
 
-router.put('/fetch-conversation/:id', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
+router.put('/fetch-conversation/:id', async (req, res) => {
     try {
         let opportunity = await Opportunity.findOne({ _id: req.params.id, clientId: req.client._id, isDeleted: false });
         if (!opportunity) {
