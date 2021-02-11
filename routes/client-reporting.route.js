@@ -16,6 +16,7 @@ router.get('/activity-breakdown', async (req, res) => {
         }
         let startDate = new Date(req.query.startDate);
         let endDate = new Date(req.query.endDate);
+        endDate.setHours(23, 59, 59, 0);
         let promiseArr = [];
         promiseArr.push(
             Opportunity.aggregate([
@@ -181,6 +182,7 @@ router.get('/pipeline-value', async (req, res) => {
         }
         let startDate = new Date(req.query.startDate);
         let endDate = new Date(req.query.endDate);
+        endDate.setHours(23, 59, 59, 0);
         let data = await Opportunity.aggregate([
             [
                 {
@@ -239,6 +241,7 @@ router.get('/total-sales', async (req, res) => {
         }
         let startDate = new Date(req.query.startDate);
         let endDate = new Date(req.query.endDate);
+        endDate.setHours(23, 59, 59, 0);
         let totalDays = Math.ceil(endDate.getTime() - startDate.getTime()) / (24 * 3600 * 1000);
         let groupOf = Math.ceil(totalDays / 20);
         let completeGroups = Math.floor(totalDays / groupOf);
@@ -352,6 +355,7 @@ router.get('/conversions', async (req, res) => {
         }
         let startDate = new Date(req.query.startDate);
         let endDate = new Date(req.query.endDate);
+        endDate.setHours(23, 59, 59, 0);
         let promiseArr = [];
         promiseArr.push(
             Opportunity.aggregate([
@@ -455,7 +459,7 @@ router.get('/conversions', async (req, res) => {
         let acceptedCount = acceptedData.length !== 0 ? acceptedData[0].total : 0;
         let ar = 0;
         if (invitedCount !== 0) {
-            ar = (acceptedCount / invitedCount) * 100;
+            ar = Math.round((acceptedCount / invitedCount) * 10000) / 100;
         }
         data = data.filter(function(value, index, arr) {
             return value._id !== null;
@@ -480,9 +484,9 @@ router.get('/conversions', async (req, res) => {
         let passedSale = dataObj['CLOSED'];
         let responseObj = {
             ar: ar,
-            aToC: (passedInConversion / passedInitialContact) * 100,
-            cToM: (passedMeetingBooked / passedInConversion) * 100,
-            MToS: (passedSale / passedMeetingBooked) * 100,
+            aToC: Math.round((passedInConversion / passedInitialContact) * 10000) / 100,
+            cToM: Math.round((passedMeetingBooked / passedInConversion) * 10000) / 100,
+            MToS: Math.round((passedSale / passedMeetingBooked) * 10000) / 100,
         };
 
         return res.status(200).send({

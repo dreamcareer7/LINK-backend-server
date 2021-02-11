@@ -168,9 +168,9 @@ router.get('/sign-up-extension', async (req, res) => {
         );
         let user = await linkedInHelper.getLinkedInUserData(linkedInToken);
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
-        let token = client.getAuthToken();
         let linkedInIdToken = linkedInHelper.getLinkedInIdToken(linkedInToken);
         if (client) {
+            let token = client.getAuthToken();
             if (client.isSubscribed && !client.isSubscriptionCancelled) {
                 if (!client.isExtensionInstalled) {
                     client.isExtensionInstalled = true;
