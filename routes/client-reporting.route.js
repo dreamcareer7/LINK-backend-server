@@ -365,7 +365,7 @@ router.get('/conversions', async (req, res) => {
                         $match: {
                             clientId: req.client._id,
                             isDeleted: false,
-                            createdAt: { $gte: startDate, $lte: endDate },
+                            // createdAt: { $gte: startDate, $lte: endDate },
                         },
                     },
                     {
