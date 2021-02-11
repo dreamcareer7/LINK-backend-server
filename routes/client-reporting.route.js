@@ -215,6 +215,7 @@ router.get('/pipeline-value', async (req, res) => {
                 data.push({
                     _id: pipeline,
                     total: 0,
+                    totalDealValue: 0,
                 });
             }
         });
