@@ -134,7 +134,7 @@ router.get('/activity-breakdown', async (req, res) => {
         }
         data = [...data, ...invitedData, ...acceptedData];
         let addedStages = data.map((stage) => stage._id.toString());
-        let stages = ['ACCEPTED', 'INVITED', 'IN_CONVERSION', 'MEETING_BOOKED', 'CLOSED', 'LOST'];
+        let stages = ['INVITED', 'ACCEPTED', 'IN_CONVERSION', 'MEETING_BOOKED', 'CLOSED', 'LOST'];
         stages.forEach((stage) => {
             if (addedStages.indexOf(stage) === -1) {
                 data.push({
@@ -144,8 +144,8 @@ router.get('/activity-breakdown', async (req, res) => {
             }
         });
         let stageMap = {
-            ACCEPTED: 'ACCEPTED',
             INVITED: 'INVITED',
+            ACCEPTED: 'ACCEPTED',
             IN_CONVERSION: 'CONVERSATIONS',
             MEETING_BOOKED: 'MEETINGS',
             CLOSED: 'DEALS CLOSED',
