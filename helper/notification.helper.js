@@ -54,7 +54,7 @@ const scheduleNotification = async () => {
                             let token = clients[i].getAuthToken();
                             let mailObj = {
                                 toAddress: [clients[i].email],
-                                subject: 'Follow Up Notifications',
+                                subject: 'Here are your daily follow-ups to action inside of Jayla',
                                 text: {
                                     firstName: clients[i].firstName,
                                     lastName: clients[i].lastName,

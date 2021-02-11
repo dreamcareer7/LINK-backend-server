@@ -93,7 +93,7 @@ router.post('/stripe-webhook', async (req, res) => {
                         '&state=fooobar&scope=r_emailaddress,r_liteprofile';
                     let mailObj = {
                         toAddress: [client.email],
-                        subject: 'Onboarding to Jayla App',
+                        subject: 'Welcome to Jayla',
                         text: {
                             linkedInSignUpLink,
                             firstName: client.firstName,

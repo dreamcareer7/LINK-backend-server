@@ -241,7 +241,7 @@ router.post('/forgot-password', async (req, res) => {
         await admin.save();
         let mailObj = {
             toAddress: [admin.email],
-            subject: 'Reset Password Link',
+            subject: 'Jayla reset password link',
             text: {
                 resetPasswordLink,
                 firstName: admin.firstName,
