@@ -8,7 +8,7 @@ const Logger = require('../services/logger');
 
 const getProfile = async (publicIdentifier, cookie, ajaxToken) => {
     try {
-        console.log('publicIdentifier::', publicIdentifier);
+        // console.log('publicIdentifier::', publicIdentifier);
         let data = {
             method: 'GET',
             url: `https://www.linkedin.com/voyager/api/identity/dash/profiles?q=memberIdentity&memberIdentity=${publicIdentifier}&decorationId=com.linkedin.voyager.dash.deco.identity.profile.FullProfileWithEntities-57`,
@@ -33,11 +33,11 @@ const getProfile = async (publicIdentifier, cookie, ajaxToken) => {
                 cookie: cookie,
             },
         };
-        console.log('Making an API Call..');
+        // console.log('Making an API Call..');
         let response = await axios(data);
-        console.log('Received the response..');
+        // console.log('Received the response..');
         let p;
-        console.log('response::', JSON.stringify(response.data, null, 3));
+        // console.log('response::', JSON.stringify(response.data, null, 3));
         let companyArr = [];
         let location = '';
         for (let i = 0; i < response.data.included.length; i++) {
@@ -92,7 +92,7 @@ const getProfile = async (publicIdentifier, cookie, ajaxToken) => {
                 : null,
             publicIdentifier: response.data.included[p].publicIdentifier,
         };
-        console.log('response::::', response);
+        // console.log('response::::', response);
         return response;
     } catch (e) {
         Logger.log.error('Error in Get Profile from linkedin', e.message || e);
@@ -102,7 +102,7 @@ const getProfile = async (publicIdentifier, cookie, ajaxToken) => {
 
 const getContactInfo = async (publicIdentifier, cookie, ajaxToken) => {
     try {
-        console.log('publicIdentifier::', publicIdentifier);
+        // console.log('publicIdentifier::', publicIdentifier);
         let data = {
             method: 'GET',
             // url: `https://www.linkedin.com/voyager/api/identity/dash/profiles?q=memberIdentity&memberIdentity=${publicIdentifier}&decorationId=com.linkedin.voyager.dash.deco.identity.profile.FullProfileWithEntities-57`,

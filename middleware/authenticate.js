@@ -18,7 +18,7 @@ let adminAuthMiddleWare = async (req, res, next) => {
                 res.status(401).send('Auth-Token is not valid');
             }
         } catch (e) {
-            Logger.log.error('Error occurred.', e.message || e);
+            Logger.log.warn('Error occurred.', e.message || e);
             return res.status(401).send({ message: 'Invalid Auth-Token' });
         }
     } else {
@@ -42,15 +42,15 @@ let clientAuthMiddleWare = async (req, res, next) => {
                     req.client.token = token;
                     next();
                 } else {
-                    Logger.log.error('Subscription is cancelled.');
+                    Logger.log.warn('Subscription is cancelled for client', client._id);
                     res.status(401).send('Auth-Token is not valid');
                 }
             } else {
-                Logger.log.error('Auth-Token is not valid.');
+                Logger.log.warn('Auth-Token is not valid.');
                 res.status(401).send('Auth-Token is not valid');
             }
         } catch (e) {
-            Logger.log.error('Error occurred.', e.message || e);
+            Logger.log.warn('Error occurred.', e.message || e);
             return res.status(401).send({ message: 'Invalid Auth-Token' });
         }
     } else {
@@ -70,17 +70,18 @@ let linkedInLoggedInChecked = async (req, res, next) => {
                     req.client = client;
                     next();
                 } else {
-                    Logger.log.error('Subscription is cancelled.');
+                    Logger.log.warn('Subscription is cancelled for client', client._id);
                     return res.status(401).send('Auth-Token is not valid');
                 }
             } else {
+                Logger.log.error("Public Identifier & LoggedIn Identifier don't match for client", client._id);
                 return res.status(401).json({
                     status: 'NOT_AUTHORIZED',
                     message: 'LinkedIn account is not registered.',
                 });
             }
         } catch (e) {
-            Logger.log.error('Error occurred.', e.message || e);
+            Logger.log.warn('Error occurred.', e.message || e);
             return res.status(401).send({ message: 'Invalid Auth-Token' });
         }
     } else {

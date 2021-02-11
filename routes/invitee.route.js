@@ -32,7 +32,7 @@ router.put('/add-user', async (req, res) => {
         } else {
             let inviteePresent = false;
             for (let i = 0; i < invitee.invitees.length; i++) {
-                console.log('invitee.invitees[i].publicIdentifier', invitee.invitees[i].publicIdentifier);
+                // console.log('invitee.invitees[i].publicIdentifier', invitee.invitees[i].publicIdentifier);
                 if (invitee.invitees[i].publicIdentifier === req.body.publicIdentifier) {
                     Logger.log.info('Invitee already added');
                     invitee.invitees[i].sentAt = new Date();

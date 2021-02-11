@@ -90,8 +90,8 @@ const getDateForSpecificTimezone = async () => {
     today.setTime(today.getTime() + (timezoneOffset - serverOffset) * 60 * 1000);
     let tomorrow = new Date(today);
     tomorrow.setTime(tomorrow.getTime() + 24 * 3600 * 1000 - 1000);
-    console.log('today::', today);
-    console.log('tomorrow::', tomorrow);
+    // console.log('today::', today);
+    // console.log('tomorrow::', tomorrow);
     return {
         startDate: today,
         endDate: tomorrow,

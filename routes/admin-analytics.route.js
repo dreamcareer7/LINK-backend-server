@@ -127,7 +127,7 @@ router.put('/deal-value', async (req, res) => {
                 },
             },
         ]).allowDiskUse(true);
-        console.log('dealValue::', dealValue);
+        // console.log('dealValue::', dealValue);
         dealValue = dealValue.filter(function(value, index, arr) {
             return value._id !== '';
         });

@@ -55,7 +55,7 @@ router.post('/stripe-webhook', async (req, res) => {
                     if (!client) {
                         Logger.log.error('Customer not found with the Stripe Customer Id:', reqData.customer);
                     } else {
-                        console.log('client exists', client);
+                        // console.log('client exists', client);
                         client.isSubscribed = true;
                         if (!client.selectedPlan) {
                             client.selectedPlan = {};
@@ -106,7 +106,7 @@ router.post('/stripe-webhook', async (req, res) => {
                     promiseArr.push(client.save());
                     promiseArr.push(mailHelper.sendMail(mailObj));
                     await Promise.all(promiseArr);
-                    console.log('linkedInSignUpLink::', linkedInSignUpLink);
+                    // console.log('linkedInSignUpLink::', linkedInSignUpLink);
                 }
                 break;
             case 'customer.subscription.updated':

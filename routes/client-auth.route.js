@@ -47,8 +47,8 @@ router.get('/sign-up', async (req, res) => {
                 stripeSubscriptionId: subscriptionId,
                 isDeleted: false,
             }).populate('clientId');
-            console.log('subscriptionId::', subscriptionId);
-            console.log('payment::', JSON.stringify(payment, null, 3));
+            // console.log('subscriptionId::', subscriptionId);
+            // console.log('payment::', JSON.stringify(payment, null, 3));
             if (!payment || !payment.clientId || !payment.clientId._id) {
                 return res.redirect(config.linkFluencer.paymentPageUrl);
             }
@@ -92,7 +92,7 @@ router.get('/sign-up', async (req, res) => {
             let token = client.getAuthToken();
             // client.jwtToken.push(token);
             // await client.save();
-            console.log('Client Token ::', token);
+            // console.log('Client Token ::', token);
             Logger.log.info('Login Successfully to Client Deshbord.');
             // return res.status(200).send({
             //     message: 'Welcome to Dashbord.',
@@ -341,7 +341,7 @@ router.get('/sign-up-invitation', async (req, res) => {
                 message: 'Code is not Found',
             });
         }
-        console.log(req.query.code);
+        // console.log(req.query.code);
         let token = await linkedInHelper.genLinkedInAccessToken(
             req.query.code,
             config.backEndBaseUrl + `client-auth/sign-up-invitation?requestedToken=${req.query.requestedToken}`,
@@ -388,7 +388,7 @@ router.get('/sign-up-invitation', async (req, res) => {
                 let token = client.getAuthToken();
                 // client.jwtToken.push(token);
                 // await client.save();
-                console.log('Client Token ::', token);
+                // console.log('Client Token ::', token);
                 Logger.log.info('Login Successfully to Client Deshbord.');
                 return res.status(200).send({
                     message: 'Welcome to Dashbord.',
@@ -756,8 +756,8 @@ router.put('/add-user-as-invited', authMiddleWare.linkedInLoggedInChecked, async
             });
         }
         //TODO Add the Business logic here
-        console.log('client.publicIdentifier::', req.client.publicIdentifier);
-        console.log('Add in Invited count::', req.body.publicIdentifier);
+        // console.log('client.publicIdentifier::', req.client.publicIdentifier);
+        // console.log('Add in Invited count::', req.body.publicIdentifier);
         return res.status(200).send({
             status: 'SUCCESS',
             message: 'Public Identifier added successfully',

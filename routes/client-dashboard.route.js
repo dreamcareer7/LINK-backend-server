@@ -114,7 +114,7 @@ router.put('/clear-notifications', async (req, res) => {
 router.get('/get-notifications', async (req, res) => {
     try {
         let notifications = await Notification.find({ clientId: req.client._id, isRead: false });
-        console.log(notifications);
+        // console.log(notifications);
         let showDot = false;
         if (notifications.length !== 0) {
             showDot = true;
