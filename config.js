@@ -27,8 +27,9 @@ module.exports = {
         clientFrontEndBaseUrl: process.env.CLIENT_FRONTEND_BASE_URL || 'http://localhost:4700/',
         forgotPasswordPage: 'forgot/',
     },
-    linkFluencerUrls: {
+    linkFluencer: {
         paymentPageUrl: 'https://linkfluencer.com/order',
+        apiKey: process.env.LINKFLUENCER_API_KEY,
     },
     environment: process.env.ENVIRONMENT || 'local',
     mailer: {

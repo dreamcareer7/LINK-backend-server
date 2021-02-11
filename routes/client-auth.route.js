@@ -12,6 +12,7 @@ const linkedInHelper = require('../helper/linkedin.helper');
 const cookieHelper = require('../helper/cookie.helper');
 const conversationHelper = require('../helper/conversation.helper');
 const opportunityHelper = require('../helper/opportunity.helper');
+const stripeHelper = require('../helper/stripe.helper');
 
 const Logger = require('../services/logger');
 const jwt = require('jsonwebtoken');
@@ -40,7 +41,7 @@ router.get('/sign-up', async (req, res) => {
             // TODO check for the SubscriptionId query Params
             //  if not, then redirect to payment page
             if (!subscriptionId) {
-                return res.redirect(config.linkFluencerUrls.paymentPageUrl);
+                return res.redirect(config.linkFluencer.paymentPageUrl);
             }
             let payment = await Payment.findOne({
                 stripeSubscriptionId: subscriptionId,
@@ -49,7 +50,7 @@ router.get('/sign-up', async (req, res) => {
             console.log('subscriptionId::', subscriptionId);
             console.log('payment::', JSON.stringify(payment, null, 3));
             if (!payment || !payment.clientId || !payment.clientId._id) {
-                return res.redirect(config.linkFluencerUrls.paymentPageUrl);
+                return res.redirect(config.linkFluencer.paymentPageUrl);
             }
             client = payment.clientId;
             // let newClient = new Client({
@@ -688,24 +689,18 @@ router.put('/paused-subscription', authMiddleWare.clientAuthMiddleWare, async (r
  */
 router.put('/cancel-subscription', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
-        let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
-            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
-        );
-        if (!client) {
+        let payment = await Payment.findOne({ clientId: req.client._id, isCancelled: false });
+        if (!payment) {
+            Logger.log.error('Subscription not found for client:', req.client._id);
             return res.status(400).json({
-                status: 'SUBSCRIBER_NOT_FOUND',
-                message: 'subscriber is not found.',
+                status: 'SUBSCRIPTION_NOT_FOUND',
+                message: 'subscription not found.',
             });
         }
-        if (req.body.isSubscriptionCancelled === true) {
-            client.selectedPlan.status = 'CANCELLED';
-        } else {
-            client.selectedPlan.status = client.selectedPlan.planSelected;
-        }
-        await client.save();
+        await stripeHelper.cancelSubscription({ stripeSubscriptionId: payment.stripeSubscriptionId });
         return res.status(200).send({
             status: 'SUCCESS',
-            data: client,
+            message: 'Subscription cancelled successfully.',
         });
     } catch (e) {
         Logger.log.error('Error in cancel-subscription API call', e.message || e);

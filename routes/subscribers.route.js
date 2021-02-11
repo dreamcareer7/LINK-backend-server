@@ -8,6 +8,7 @@ const Conversation = mongoose.model('conversation');
 const Invitee = mongoose.model('invitee');
 const Payment = mongoose.model('payment');
 const Notification = mongoose.model('notification');
+const stripeHelper = require('../helper/stripe.helper');
 const Logger = require('../services/logger');
 
 /**
@@ -192,24 +193,18 @@ router.put('/paused-subscription/:id', async (req, res) => {
  */
 router.put('/cancel-subscription/:id', async (req, res) => {
     try {
-        let client = await Client.findOne({ _id: req.params.id, isDeleted: false }).select(
-            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
-        );
-        if (!client) {
+        let payment = await Payment.findOne({ clientId: req.client._id, isCancelled: false });
+        if (!payment) {
+            Logger.log.error('Subscription not found for client:', req.client._id);
             return res.status(400).json({
-                status: 'SUBSCRIBER_NOT_FOUND',
-                message: 'subscriber is not found.',
+                status: 'SUBSCRIPTION_NOT_FOUND',
+                message: 'subscription not found.',
             });
         }
-        if (req.body.isSubscriptionCancelled === true) {
-            client.selectedPlan.status = 'CANCELLED';
-        } else {
-            client.selectedPlan.status = client.selectedPlan.planSelected;
-        }
-        await client.save();
+        await stripeHelper.cancelSubscription({ stripeSubscriptionId: payment.stripeSubscriptionId });
         return res.status(200).send({
             status: 'SUCCESS',
-            data: client,
+            message: 'Subscription cancelled successfully.',
         });
     } catch (e) {
         Logger.log.error('Error in cancel-subscription API call', e.message || e);

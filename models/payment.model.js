@@ -28,6 +28,7 @@ const paymentSchema = new Schema(
                 receivedAt: Schema.Types.Date,
             },
         ],
+        isCancelled: { type: Schema.Types.Boolean, default: false },
         isDeleted: { type: Schema.Types.Boolean, default: false },
     },
     { timestamps: true },

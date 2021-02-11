@@ -124,8 +124,8 @@ const syncInvitees = async () => {
         ).start();
         Logger.log.info('Successfully set up the cron for Invitee scrapping');
     } catch (e) {
-        Logger.log.error('Error in fetch chat.', e.message || e);
-        return Promise.reject({ message: 'Error in fetch chat.' });
+        Logger.log.error('Error in scrap invitees.', e.message || e);
+        return Promise.reject({ message: 'Error in scrap invitees.' });
     }
 };
 

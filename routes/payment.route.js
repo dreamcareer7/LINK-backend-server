@@ -158,6 +158,7 @@ router.post('/stripe-webhook', async (req, res) => {
                         });
                         client.isSubscriptionCancelled = true;
                         client.selectedPlan.status = 'CANCELLED';
+                        payment.isCancelled = true;
                         payment.stripeNotification.push({
                             subscriptionStatus: reqData.status,
                             receivedAt: new Date(),

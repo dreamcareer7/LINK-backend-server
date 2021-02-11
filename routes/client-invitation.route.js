@@ -45,7 +45,7 @@ router.post('/send-invitation', async (req, res) => {
         let access = 'auth';
         newClient.invitedToken = jwt.sign({ _id: newClient._id.toHexString(), access }, config.jwt.secret).toString();
         await newClient.save();
-        let linkFluencerLink = config.linkFluencerUrls.paymentPageUrl + '?jayla_customer_id=' + newClient._id;
+        let linkFluencerLink = config.linkFluencer.paymentPageUrl + '?jayla_customer_id=' + newClient._id;
         // let linkedInLink = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${config.linkedIn.clientId}&redirect_uri=${config.backEndBaseUrl}client-auth/sign-up-invitation?requestedToken=${newClient.invitedToken}&&state=fooobar&scope=r_emailaddress,r_liteprofile`;
         let mailObj = {
             toAddress: [newClient.email],
