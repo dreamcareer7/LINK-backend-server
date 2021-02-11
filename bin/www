@@ -85,5 +85,6 @@ function onListening() {
     const bind = typeof addr === 'string'
         ? 'pipe ' + addr
         : 'port ' + addr.port;
+    Logger.log.warn('Server started at ', new Date());
     Logger.log.info('Listening on ' + bind);
 }

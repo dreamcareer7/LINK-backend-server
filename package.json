@@ -23,6 +23,7 @@
         }
     },
     "dependencies": {
+        "@kevit/log4js-teams": "^1.0.4",
         "@sendgrid/mail": "^7.4.0",
         "axios": "^0.21.0",
         "body-parser": "^1.18.3",
