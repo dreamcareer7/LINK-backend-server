@@ -28,7 +28,7 @@ router.put('/opportunities', async (req, res) => {
             return value._id !== null;
         });
         let addedStages = data.map((stage) => stage._id);
-        let stages = ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED', 'LOST', 'POTENTIAL'];
+        let stages = ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'POTENTIAL', 'CLOSED', 'LOST'];
         stages.forEach((stage) => {
             if (addedStages.indexOf(stage) === -1) {
                 data.push({
