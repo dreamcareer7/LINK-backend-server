@@ -145,7 +145,6 @@ router.post('/stripe-webhook', async (req, res) => {
                 break;
             case 'customer.subscription.deleted':
                 if (reqData.status === 'canceled') {
-                    reqData.id = 'sub_ItDOLQjA4rlGrt';
                     Logger.log.info('Subscription status changed to canceled:', reqData.id);
                     let payment = await Payment.findOne({
                         stripeSubscriptionId: reqData.id,
