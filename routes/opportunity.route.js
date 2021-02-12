@@ -130,6 +130,7 @@ router.put('/fetch-conversation/:id', async (req, res) => {
         let dbConversation = await Conversation.findOne({
             clientId: req.client._id,
             'conversations.publicIdentifier': opportunity.publicIdentifier,
+            isDeleted: false,
         });
         if (!dbConversation) {
             let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
@@ -145,20 +146,37 @@ router.put('/fetch-conversation/:id', async (req, res) => {
                 });
             }
             Logger.log.info("Conversation wasn't present, adding it.");
-            dbConversation = await Conversation.findOneAndUpdate(
-                {
+            dbConversation = await Conversation.findOne({
+                clientId: req.client._id,
+                isDeleted: false,
+            });
+            if (!dbConversation) {
+                dbConversation = new Conversation({
                     clientId: req.client._id,
-                },
-                {
-                    $push: {
-                        conversations: {
+                    conversations: [
+                        {
                             conversationId: conversation[0].conversationId,
                             publicIdentifier: conversation[0].publicIdentifier,
                         },
+                    ],
+                });
+                await dbConversation.save();
+            } else {
+                dbConversation = await Conversation.findOneAndUpdate(
+                    {
+                        clientId: req.client._id,
                     },
-                },
-                { new: true },
-            );
+                    {
+                        $push: {
+                            conversations: {
+                                conversationId: conversation[0].conversationId,
+                                publicIdentifier: conversation[0].publicIdentifier,
+                            },
+                        },
+                    },
+                    { new: true },
+                );
+            }
         }
         let conversationId;
         let publicIdentifier;
