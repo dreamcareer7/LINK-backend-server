@@ -28,7 +28,7 @@ router.put('/opportunities', async (req, res) => {
             return value._id !== null;
         });
         let addedStages = data.map((stage) => stage._id);
-        let stages = ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED', 'LOST', 'POTENTIAL'];
+        let stages = ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'POTENTIAL', 'CLOSED', 'LOST'];
         stages.forEach((stage) => {
             if (addedStages.indexOf(stage) === -1) {
                 data.push({
@@ -37,9 +37,13 @@ router.put('/opportunities', async (req, res) => {
                 });
             }
         });
+        let orderedData = [];
+        stages.forEach((key) => {
+            orderedData.push(data.filter((stage) => stage._id === key).pop());
+        });
         return res.status(200).send({
             status: 'SUCCESS',
-            data: data,
+            data: orderedData,
         });
     } catch (e) {
         Logger.log.error('Error in client-dashboard opportunities API call', e.message || e);
@@ -75,7 +79,7 @@ router.put('/pipeline-value', async (req, res) => {
             return value._id !== null;
         });
         let addedPipelines = data.map((pipeline) => pipeline._id);
-        let pipelines = ['LIKELY', 'VERY_LIKELY', 'NOT_LIKELY'];
+        let pipelines = ['VERY_LIKELY', 'LIKELY', 'NOT_LIKELY'];
         pipelines.forEach((pipeline) => {
             if (addedPipelines.indexOf(pipeline) === -1) {
                 data.push({
@@ -84,9 +88,13 @@ router.put('/pipeline-value', async (req, res) => {
                 });
             }
         });
+        let orderedData = [];
+        pipelines.forEach((key) => {
+            orderedData.push(data.filter((pipeline) => pipeline._id === key).pop());
+        });
         return res.status(200).send({
             status: 'SUCCESS',
-            data: data,
+            data: orderedData,
         });
     } catch (e) {
         Logger.log.error('Error in client-dashboard pipeline-value API call', e.message || e);

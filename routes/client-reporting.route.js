@@ -209,7 +209,7 @@ router.get('/pipeline-value', async (req, res) => {
             return value._id !== null;
         });
         let addedPipelines = data.map((pipeline) => pipeline._id);
-        let pipelines = ['LIKELY', 'VERY_LIKELY', 'NOT_LIKELY'];
+        let pipelines = ['VERY_LIKELY', 'LIKELY', 'NOT_LIKELY'];
         pipelines.forEach((pipeline) => {
             if (addedPipelines.indexOf(pipeline) === -1) {
                 data.push({
@@ -219,9 +219,13 @@ router.get('/pipeline-value', async (req, res) => {
                 });
             }
         });
+        let orderedData = [];
+        pipelines.forEach((key) => {
+            orderedData.push(data.filter((pipeline) => pipeline._id === key).pop());
+        });
         return res.status(200).send({
             status: 'SUCCESS',
-            data: data,
+            data: orderedData,
         });
     } catch (e) {
         Logger.log.error('Error in client-reporting pipeline value API call', e.message || e);
@@ -365,7 +369,7 @@ router.get('/conversions', async (req, res) => {
                         $match: {
                             clientId: req.client._id,
                             isDeleted: false,
-                            createdAt: { $gte: startDate, $lte: endDate },
+                            // createdAt: { $gte: startDate, $lte: endDate },
                         },
                     },
                     {

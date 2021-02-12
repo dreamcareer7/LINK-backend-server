@@ -118,7 +118,7 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
     }
 });
 
-router.put('/fetch-conversation/:id', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
+router.put('/fetch-conversation/:id', async (req, res) => {
     try {
         let opportunity = await Opportunity.findOne({ _id: req.params.id, clientId: req.client._id, isDeleted: false });
         if (!opportunity) {
@@ -130,6 +130,7 @@ router.put('/fetch-conversation/:id', authMiddleWare.linkedInLoggedInChecked, as
         let dbConversation = await Conversation.findOne({
             clientId: req.client._id,
             'conversations.publicIdentifier': opportunity.publicIdentifier,
+            isDeleted: false,
         });
         if (!dbConversation) {
             let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
@@ -145,20 +146,37 @@ router.put('/fetch-conversation/:id', authMiddleWare.linkedInLoggedInChecked, as
                 });
             }
             Logger.log.info("Conversation wasn't present, adding it.");
-            dbConversation = await Conversation.findOneAndUpdate(
-                {
+            dbConversation = await Conversation.findOne({
+                clientId: req.client._id,
+                isDeleted: false,
+            });
+            if (!dbConversation) {
+                dbConversation = new Conversation({
                     clientId: req.client._id,
-                },
-                {
-                    $push: {
-                        conversations: {
+                    conversations: [
+                        {
                             conversationId: conversation[0].conversationId,
                             publicIdentifier: conversation[0].publicIdentifier,
                         },
+                    ],
+                });
+                await dbConversation.save();
+            } else {
+                dbConversation = await Conversation.findOneAndUpdate(
+                    {
+                        clientId: req.client._id,
                     },
-                },
-                { new: true },
-            );
+                    {
+                        $push: {
+                            conversations: {
+                                conversationId: conversation[0].conversationId,
+                                publicIdentifier: conversation[0].publicIdentifier,
+                            },
+                        },
+                    },
+                    { new: true },
+                );
+            }
         }
         let conversationId;
         let publicIdentifier;
