@@ -37,6 +37,10 @@ router.put('/opportunities', async (req, res) => {
                 });
             }
         });
+        let orderedData = [];
+        stages.forEach((key) => {
+            orderedData.push(data.filter((stage) => stage._id === key).pop());
+        });
         return res.status(200).send({
             status: 'SUCCESS',
             data: data,
