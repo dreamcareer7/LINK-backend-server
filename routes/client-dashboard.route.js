@@ -43,7 +43,7 @@ router.put('/opportunities', async (req, res) => {
         });
         return res.status(200).send({
             status: 'SUCCESS',
-            data: data,
+            data: orderedData,
         });
     } catch (e) {
         Logger.log.error('Error in client-dashboard opportunities API call', e.message || e);
