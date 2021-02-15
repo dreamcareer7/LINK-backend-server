@@ -15,7 +15,7 @@ router.post('/stripe-webhook', async (req, res) => {
     try {
         let eventType = req.body.type;
         let reqData = req.body.data.object;
-        console.log('Webhook Received::', JSON.stringify(req.body, null, 3));
+        Logger.log.info('Webhook Received::', JSON.stringify(req.body, null, 3));
         switch (eventType) {
             case 'customer.created':
                 if (reqData.metadata && reqData.metadata.jayla_customer_id) {
@@ -70,43 +70,43 @@ router.post('/stripe-webhook', async (req, res) => {
                         } else if (reqData.plan.interval === 'year') {
                             client.selectedPlan.planSelected = 'YEARLY';
                         }
-                    }
-                    let payment = await Payment.findOne({
-                        stripeSubscriptionId: reqData.id,
-                    });
-                    if (!payment) {
-                        payment = new Payment({
+                        let payment = await Payment.findOne({
                             stripeSubscriptionId: reqData.id,
                         });
+                        if (!payment) {
+                            payment = new Payment({
+                                stripeSubscriptionId: reqData.id,
+                            });
+                        }
+                        payment.clientId = client._id;
+                        payment.planType = client.selectedPlan.planSelected;
+                        payment.paymentAmount = reqData.plan.amount;
+                        payment.stripePlanId = reqData.plan.id;
+                        let linkedInSignUpLink =
+                            'https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=' +
+                            config.linkedIn.clientId +
+                            '&redirect_uri=' +
+                            config.backEndBaseUrl +
+                            'client-auth/sign-up?subscription_id=' +
+                            reqData.id +
+                            '&state=fooobar&scope=r_emailaddress,r_liteprofile';
+                        let mailObj = {
+                            toAddress: [client.email],
+                            subject: 'Welcome To Jayla',
+                            text: {
+                                linkedInSignUpLink,
+                                firstName: client.firstName,
+                                lastName: client.lastName,
+                            },
+                            mailFor: 'client-on-boarding',
+                        };
+                        let promiseArr = [];
+                        promiseArr.push(payment.save());
+                        promiseArr.push(client.save());
+                        promiseArr.push(mailHelper.sendMail(mailObj));
+                        await Promise.all(promiseArr);
+                        // console.log('linkedInSignUpLink::', linkedInSignUpLink);
                     }
-                    payment.clientId = client._id;
-                    payment.planType = client.selectedPlan.planSelected;
-                    payment.paymentAmount = reqData.plan.amount;
-                    payment.stripePlanId = reqData.plan.id;
-                    let linkedInSignUpLink =
-                        'https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=' +
-                        config.linkedIn.clientId +
-                        '&redirect_uri=' +
-                        config.backEndBaseUrl +
-                        'client-auth/sign-up?subscription_id=' +
-                        reqData.id +
-                        '&state=fooobar&scope=r_emailaddress,r_liteprofile';
-                    let mailObj = {
-                        toAddress: [client.email],
-                        subject: 'Welcome To Jayla',
-                        text: {
-                            linkedInSignUpLink,
-                            firstName: client.firstName,
-                            lastName: client.lastName,
-                        },
-                        mailFor: 'client-on-boarding',
-                    };
-                    let promiseArr = [];
-                    promiseArr.push(payment.save());
-                    promiseArr.push(client.save());
-                    promiseArr.push(mailHelper.sendMail(mailObj));
-                    await Promise.all(promiseArr);
-                    // console.log('linkedInSignUpLink::', linkedInSignUpLink);
                 }
                 break;
             case 'customer.subscription.updated':
@@ -175,6 +175,13 @@ router.post('/stripe-webhook', async (req, res) => {
                     let client = await Client.findOne({ stripeCustomerId: reqData.customer })
                         .select({ stripeCustomerId: 1 })
                         .lean();
+                    if (!client) {
+                        Logger.log.error(
+                            'Client not found for invoice creation with the Stripe Customer Id:',
+                            reqData.customer,
+                        );
+                        return res.status(200).send();
+                    }
                     payment = new Payment({
                         stripeSubscriptionId: reqData.subscription,
                         clientId: client._id,
@@ -205,6 +212,10 @@ router.post('/stripe-webhook', async (req, res) => {
                 break;
             case 'invoice.updated':
                 let existingInvoice = await Invoice.findOne({ stripeInvoiceId: reqData.id });
+                if (!existingInvoice) {
+                    Logger.log.error('Invoice not found for invoice updation with the Stripe Invoice Id:', reqData.id);
+                    return res.status(200).send();
+                }
                 existingInvoice.amountPaid = reqData.amount_paid;
                 existingInvoice.amountDue = reqData.amount_due;
                 existingInvoice.amountRemaining = reqData.amount_remaining;
@@ -223,7 +234,7 @@ router.post('/stripe-webhook', async (req, res) => {
         Logger.log.info('Successfully processed the Stripe Webhook for event:', eventType);
         return res.status(200).send();
     } catch (e) {
-        Logger.log.error('Error in add opportunity API call.', e.message || e);
+        Logger.log.error('Error in processing STRIPE Webhook API call.', e.message || e);
         res.status(500).json({
             status: e.status || 'ERROR',
             message: e.message,
