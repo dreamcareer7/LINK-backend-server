@@ -146,7 +146,7 @@ router.get('/all-quote', async (req, res) => {
             limit,
             populate: 'tags',
         };
-        if (req.query.hasOwnProperty('status') && req.query.status !== '') {
+        if (req.query.hasOwnProperty('status') && (req.query.status === 'true' || req.query.status === 'false')) {
             queryObj.isPublished = req.query.status === 'true';
         }
         if (req.query.sorting && req.query.sorting === 'RECENT') {
