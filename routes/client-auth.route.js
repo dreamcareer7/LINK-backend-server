@@ -38,8 +38,6 @@ router.get('/sign-up', async (req, res) => {
         let user = await linkedInHelper.getLinkedInUserData(token);
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
         if (!client) {
-            // TODO check for the SubscriptionId query Params
-            //  if not, then redirect to payment page
             if (!subscriptionId) {
                 return res.redirect(config.linkFluencer.paymentPageUrl);
             }
@@ -47,26 +45,11 @@ router.get('/sign-up', async (req, res) => {
                 stripeSubscriptionId: subscriptionId,
                 isDeleted: false,
             }).populate('clientId');
-            // console.log('subscriptionId::', subscriptionId);
-            // console.log('payment::', JSON.stringify(payment, null, 3));
+
             if (!payment || !payment.clientId || !payment.clientId._id) {
                 return res.redirect(config.linkFluencer.paymentPageUrl);
             }
             client = payment.clientId;
-            // let newClient = new Client({
-            //     firstName: user.localizedFirstName,
-            //     lastName: user.localizedLastName,
-            //     linkedInID: user.id,
-            //     profilePicUrl: user.hasOwnProperty('profilePicture')
-            //         ? user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier
-            //         : null,
-            // });
-            // await newClient.save();
-            // Logger.log.info('New Client is Created...');
-            // return res.status(200).send({
-            //     message: 'New Client is created.',
-            //     status: 'SUCCESS',
-            // });
         }
         client.firstName = user.localizedFirstName;
         client.lastName = user.localizedLastName;
@@ -289,6 +272,7 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
                 client.companyName = clientInfo.companyName;
                 client.linkedInUrl = clientInfo.linkedInUrl;
                 client.companyLocation = clientInfo.location;
+                client.profilePicUrl = clientInfo.profilePicUrl;
                 await client.save();
                 let conversations = await conversationHelper.extractChats({ cookie: cookieStr, ajaxToken: ajaxToken });
 
@@ -412,16 +396,31 @@ router.get('/sign-up-invitation', async (req, res) => {
 
 router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
-        let client = await Client.findOne({ _id: req.client._id, isDeleted: false })
-            .select(
-                'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType stripeCustomerId',
-            )
-            .lean();
+        let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
+            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType stripeCustomerId isExtensionInstalled isCookieExpired cookie publicIdentifier',
+        );
+        // .lean();
         if (!client) {
             return res.status(400).send({
                 status: 'CLIENT_NOT_FOUND',
                 message: 'client is not found.',
             });
+        }
+        if (client.isExtensionInstalled && !client.isCookieExpired && client.cookie) {
+            Logger.log.info('Extension installed, so fetching the client profile');
+            try {
+                let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(client.cookie);
+                let clientInfo = await opportunityHelper.getProfile(client.publicIdentifier, cookieStr, ajaxToken);
+                client.title = clientInfo.title;
+                client.companyName = clientInfo.companyName;
+                client.linkedInUrl = clientInfo.linkedInUrl;
+                client.companyLocation = clientInfo.location;
+                client.profilePicUrl = clientInfo.profilePicUrl;
+                await client.save();
+                Logger.log.info('Success in fetching client profile from LinkedIn');
+            } catch (e) {
+                Logger.log.warn('Error in fetching client profile from LinkedIn', e);
+            }
         }
         let activeStatus = ['FREE_TRIAL', 'MONTHLY', 'YEARLY'];
         client.isActive =
