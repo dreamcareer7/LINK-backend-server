@@ -25,6 +25,8 @@ const transporter = nodemailer.createTransport({
 const sendMail = ({ toAddress, subject, text, html, mailFor }) => {
     return new Promise((resolve, reject) => {
         let toAddressStr = '';
+        let dt = new Date();
+        dt.setHours(23, 59, 59);
         toAddress.forEach((toAddr) => {
             toAddressStr += toAddr + ', ';
         });

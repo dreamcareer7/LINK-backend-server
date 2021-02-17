@@ -30,7 +30,7 @@ module.exports = ({ firstName, lastName, setPasswordLink }) => {
 
               <tr>
                 <td align='left' valign='center' style='padding: 10px 40px; font-size: 16px; line-height: 24px; font-weight: 400; color: #666666'>
-                    Hey ${firstName ? firstName : ''}${lastName ? ' ' + lastName : ''},
+                    Hey ${firstName ? firstName : ''},
                 </td>
               </tr>
 
