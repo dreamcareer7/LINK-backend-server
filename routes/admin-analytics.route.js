@@ -251,6 +251,12 @@ router.put('/gender', async (req, res) => {
             return value._id !== null;
         });
         let addedGenders = data.map((gender) => gender._id);
+        if (addedGenders.length === 0) {
+            return res.status(200).send({
+                status: 'SUCCESS',
+                data: [],
+            });
+        }
         let genders = ['MALE', 'FEMALE', 'OTHER'];
         genders.forEach((gender) => {
             if (addedGenders.indexOf(gender) === -1) {
@@ -335,6 +341,12 @@ router.put('/subscription', async (req, res) => {
             ],
         ]).allowDiskUse(true);
         let addedPlans = data.map((plan) => plan._id);
+        if (addedPlans.length === 0) {
+            return res.status(200).send({
+                status: 'SUCCESS',
+                data: [],
+            });
+        }
         let plans = ['FREE_TRIAL', 'MONTHLY', 'YEARLY', 'VIC', 'CANCELLED'];
         plans.forEach((plan) => {
             if (addedPlans.indexOf(plan) === -1) {
@@ -404,6 +416,12 @@ router.put('/opportunities', async (req, res) => {
             ],
         ]).allowDiskUse(true);
         let addedStages = data.map((stage) => stage._id);
+        if (addedStages.length === 0) {
+            return res.status(200).send({
+                status: 'SUCCESS',
+                data: [],
+            });
+        }
         let stages = ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'POTENTIAL', 'CLOSED', 'LOST'];
         stages.forEach((stage) => {
             if (addedStages.indexOf(stage) === -1) {
@@ -497,6 +515,12 @@ router.put('/company-size', async (req, res) => {
         });
         let allSizes = responses[1].companySize;
         let addedSizes = data.map((size) => size._id);
+        if (addedSizes.length === 0) {
+            return res.status(200).send({
+                status: 'SUCCESS',
+                data: [],
+            });
+        }
         allSizes.forEach((size) => {
             if (addedSizes.indexOf(size) === -1) {
                 data.push({

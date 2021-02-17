@@ -7,7 +7,7 @@ let uploadLocations = {
 
 module.exports = {
     twoFA: {
-        generatorName: 'Linkfluencer',
+        generatorName: 'Jayla Admin',
     },
     jwt: {
         secret: process.env.JWT_SECRET || 'SimpleJWT',

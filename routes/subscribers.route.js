@@ -318,6 +318,7 @@ router.put('/search-subscriber', async (req, res) => {
 
         let subscribers = await Client.find({
             isDeleted: false,
+            isSubscribed: true,
             $or: [
                 { $and: [{ firstName: new RegExp(name[0], 'i') }, { lastName: new RegExp(name[1], 'i') }] },
                 { $and: [{ firstName: new RegExp(name[1], 'i') }, { lastName: new RegExp(name[0], 'i') }] },
