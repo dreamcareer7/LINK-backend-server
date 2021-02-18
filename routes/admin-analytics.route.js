@@ -337,21 +337,8 @@ router.put('/subscription', async (req, res) => {
                     },
                 },
                 {
-                    $project: {
-                        groupTo: {
-                            $cond: {
-                                if: {
-                                    $eq: ['$vicSub', true],
-                                },
-                                then: 'VIC',
-                                else: '$selectedPlan.status',
-                            },
-                        },
-                    },
-                },
-                {
                     $group: {
-                        _id: '$groupTo',
+                        _id: '$selectedPlan.status',
                         total: {
                             $sum: 1,
                         },
@@ -359,6 +346,44 @@ router.put('/subscription', async (req, res) => {
                 },
             ],
         ]).allowDiskUse(true);
+        // let data = await Client.aggregate([
+        //     [
+        //         {
+        //             $match: {
+        //                 $and: [
+        //                     {
+        //                         'selectedPlan.startDate': {
+        //                             $gte: req.body.startDate,
+        //                             $lte: req.body.endDate,
+        //                         },
+        //                     },
+        //                     { isDeleted: false },
+        //                 ],
+        //             },
+        //         },
+        //         {
+        //             $project: {
+        //                 groupTo: {
+        //                     $cond: {
+        //                         if: {
+        //                             $eq: ['$vicSub', true],
+        //                         },
+        //                         then: 'VIC',
+        //                         else: '$selectedPlan.status',
+        //                     },
+        //                 },
+        //             },
+        //         },
+        //         {
+        //             $group: {
+        //                 _id: '$groupTo',
+        //                 total: {
+        //                     $sum: 1,
+        //                 },
+        //             },
+        //         },
+        //     ],
+        // ]).allowDiskUse(true);
         let addedPlans = data.map((plan) => plan._id);
         if (addedPlans.length === 0) {
             return res.status(200).send({
@@ -366,7 +391,7 @@ router.put('/subscription', async (req, res) => {
                 data: [],
             });
         }
-        let plans = ['FREE_TRIAL', 'MONTHLY', 'YEARLY', 'VIC', 'CANCELLED'];
+        let plans = ['FREE_TRIAL', 'MONTHLY', 'YEARLY', 'CANCELLED'];
         plans.forEach((plan) => {
             if (addedPlans.indexOf(plan) === -1) {
                 data.push({
