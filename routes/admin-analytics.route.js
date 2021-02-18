@@ -15,88 +15,76 @@ router.put('/deal-value', async (req, res) => {
                 message: 'Required field is missing',
             });
         }
-        let maxDealValue;
-        let minDealValue;
         req.body.startDate = new Date(req.body.startDate);
         req.body.endDate = new Date(req.body.endDate);
         req.body.startDate.setHours(0, 0, 0, 0);
         req.body.endDate.setHours(23, 59, 59, 0);
-        let dealRange = await Opportunity.aggregate([
+
+        let concatArr = [
             {
-                $match: {
-                    $and: [
-                        // {
-                        //     'selectedPlan.status': req.body.selectedPlan,
-                        // },
-                        {
-                            createdAt: {
-                                $gte: req.body.startDate,
-                                $lte: req.body.endDate,
-                            },
-                        },
-                        { isDeleted: false },
-                    ],
-                },
+                $cond: [
+                    {
+                        $and: [{ $gte: ['$dealSize', 1] }, { $lte: ['$dealSize', 100] }],
+                    },
+                    `0`,
+                    '',
+                ],
             },
             {
-                $group: {
-                    _id: null,
-                    maxDealValue: { $max: '$dealSize' },
-                    minDealValue: { $min: '$dealSize' },
-                },
+                $cond: [
+                    {
+                        $and: [{ $gte: ['$dealSize', 101] }, { $lte: ['$dealSize', 500] }],
+                    },
+                    `1`,
+                    '',
+                ],
             },
-        ]).allowDiskUse(true);
-
-        if (dealRange.length === 0) {
-            return res.status(200).send({
-                status: 'SUCCESS',
-                data: dealRange,
-            });
-        }
-
-        maxDealValue = Math.ceil(dealRange[0].maxDealValue);
-        minDealValue = Math.floor(dealRange[0].minDealValue);
-
-        let a = minDealValue;
-        let b = Math.pow(maxDealValue / minDealValue, 1 / 7);
-
-        let dealRangeArr = [];
-        for (let i = 0; i <= 7; i++) {
-            dealRangeArr.push(Math.ceil(a * Math.pow(b, i)));
-        }
-
-        let concatArr = [];
-
-        for (let i = 0; i <= 7; i++) {
-            if (i === 0) {
-                concatArr.push({
-                    $cond: [
-                        {
-                            $and: [
-                                { $gte: ['$dealSize', dealRangeArr[i]] },
-                                { $lte: ['$dealSize', dealRangeArr[i + 1]] },
-                            ],
-                        },
-                        `${dealRangeArr[i]}-${dealRangeArr[i + 1]}`,
-                        '',
-                    ],
-                });
-            } else {
-                concatArr.push({
-                    $cond: [
-                        {
-                            $and: [
-                                { $gte: ['$dealSize', dealRangeArr[i] + 1] },
-                                { $lte: ['$dealSize', dealRangeArr[i + 1]] },
-                            ],
-                        },
-                        `${dealRangeArr[i] + 1}-${dealRangeArr[i + 1]}`,
-                        '',
-                    ],
-                });
-            }
-        }
-        concatArr.pop();
+            {
+                $cond: [
+                    {
+                        $and: [{ $gte: ['$dealSize', 501] }, { $lte: ['$dealSize', 1000] }],
+                    },
+                    `2`,
+                    '',
+                ],
+            },
+            {
+                $cond: [
+                    {
+                        $and: [{ $gte: ['$dealSize', 1001] }, { $lte: ['$dealSize', 5000] }],
+                    },
+                    `3`,
+                    '',
+                ],
+            },
+            {
+                $cond: [
+                    {
+                        $and: [{ $gte: ['$dealSize', 5001] }, { $lte: ['$dealSize', 10000] }],
+                    },
+                    `4`,
+                    '',
+                ],
+            },
+            {
+                $cond: [
+                    {
+                        $and: [{ $gte: ['$dealSize', 10001] }, { $lte: ['$dealSize', 20000] }],
+                    },
+                    `5`,
+                    '',
+                ],
+            },
+            {
+                $cond: [
+                    {
+                        $and: [{ $gte: ['$dealSize', 20001] }],
+                    },
+                    `6`,
+                    '',
+                ],
+            },
+        ];
         let dealValue = await Opportunity.aggregate([
             {
                 $match: {
@@ -127,14 +115,45 @@ router.put('/deal-value', async (req, res) => {
                 },
             },
         ]).allowDiskUse(true);
-        // console.log('dealValue::', dealValue);
         dealValue = dealValue.filter(function(value, index, arr) {
             return value._id !== '';
         });
-        dealValue.sort((a, b) => {
-            return a._id.split('-').pop() - b._id.split('-').pop();
+        if (dealValue.length === 0) {
+            return res.status(200).send({
+                status: 'SUCCESS',
+                data: [],
+            });
+        }
+        let addedDealValues = dealValue.map((value) => value._id);
+        if (addedDealValues.length === 0) {
+            return res.status(200).send({
+                status: 'SUCCESS',
+                data: [],
+            });
+        }
+        let dealSizeMap = {
+            '0': '$1 - $100',
+            '1': '$101 - $500',
+            '2': '$501 - $1,000',
+            '3': '$1,001 - $5,000',
+            '4': '$5,001 - $10,000',
+            '5': '$10,001 - $20,000',
+            '6': '$20,000 +',
+        };
+        Object.keys(dealSizeMap).forEach((key) => {
+            if (addedDealValues.indexOf(key) === -1) {
+                dealValue.push({
+                    _id: key,
+                    total: 0,
+                });
+            }
         });
-
+        dealValue.sort((a, b) => {
+            return parseInt(a._id) - parseInt(b._id);
+        });
+        dealValue.forEach((value) => {
+            value._id = dealSizeMap[value._id];
+        });
         return res.status(200).send({
             status: 'SUCCESS',
             data: dealValue,
