@@ -396,7 +396,6 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
  * get Client Data
  *
  */
-
 router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
@@ -442,6 +441,26 @@ router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) 
         });
     }
 });
+
+/**
+ * get Client Data
+ *
+ */
+router.get('/get-login-status', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
+    try {
+        return res.status(200).send({
+            status: 'SUCCESS',
+            message: 'Client is logged in.',
+        });
+    } catch (e) {
+        Logger.log.error('Error in get client API.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
 /*
  update client data
  */
@@ -479,6 +498,7 @@ router.put('/update', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
         });
     }
 });
+
 /*
  update Notification Types
  */
@@ -652,6 +672,7 @@ router.delete('/delete', authMiddleWare.clientAuthMiddleWare, async (req, res) =
         });
     }
 });
+
 /**
  * paused subscribers by client
  */
@@ -686,6 +707,7 @@ router.put('/paused-subscription', authMiddleWare.clientAuthMiddleWare, async (r
         });
     }
 });
+
 /**
  * cancel subscribers by client
  */
@@ -719,20 +741,19 @@ logout Client
 
 router.post('/logout', async (req, res) => {
     try {
-        if (!req.body.fcmToken) {
-            Logger.log.warn('No FCM Token Present at time of Logout');
-            return res.status(200).send({
-                status: 'SUCCESS',
-                message: 'Client is Successfully logout.',
-            });
-        }
         let token = req.header('authorization');
         if (!token) {
             Logger.log.warn('JWT - Auth-Token not set in header for Logout Call');
             return res.status(401).send({ message: 'Auth-Token not set in header' });
         }
         let decoded = jwt.verify(token, config.jwt.secret);
-        await Client.updateOne({ _id: decoded._id }, { $pull: { fcmToken: req.body.fcmToken } });
+        let updateObj = {
+            logoutAllDevicesAt: new Date(),
+        };
+        if (req.body.fcmToken) {
+            updateObj['$pull'] = { fcmToken: req.body.fcmToken };
+        }
+        await Client.updateOne({ _id: decoded._id }, updateObj);
         res.status(200).json({
             status: 'SUCCESS',
             message: 'Client is Successfully logout.',

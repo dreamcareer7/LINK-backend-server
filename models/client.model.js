@@ -69,6 +69,7 @@ const clientSchema = new Schema(
 
         //  ajaxToken: Schema.Types.String,
         fcmToken: [Schema.Types.String],
+        logoutAllDevicesAt: { type: Schema.Types.Date },
     },
     { timestamps: true },
 );
@@ -88,20 +89,14 @@ clientSchema.statics.findByToken = async function(token) {
         clientData = await client.findOne({
             _id: decoded._id,
         });
-        //Note: Commented the checking of token to be present in the Database, because the User can be redirected to dashboard from the email as well
-        //      So it is not advisable to add a token Daily while sending the mail
-
-        // if (clientData.jwtToken.indexOf(token) !== -1) {
-        if (decoded.expiredTime > d.getTime()) {
-            return clientData;
-        } else {
-            // clientData.jwtToken.splice(clientData.jwtToken.indexOf(token), 1);
-            // await clientData.save();
+        if (decoded.generatedAt + parseFloat(config.jwt.clientExpireTimeInHours) * 3600 * 1000 > d.getTime()) {
+            if (!clientData.logoutAllDevicesAt || clientData.logoutAllDevicesAt.getTime() < decoded.generatedAt) {
+                return clientData;
+            }
+            Logger.log.info('User is logged out of all devices');
             return Promise.reject({ status: 'TOKEN_EXPIRED', message: 'JwtToken is expired' });
         }
-        // } else {
-        //     return Promise.reject({ status: 'TOKEN_NOT_FOUND', message: 'JwtToken is not found' });
-        // }
+        return Promise.reject({ status: 'TOKEN_EXPIRED', message: 'JwtToken is expired' });
     } catch (e) {
         return Promise.reject({ status: 'INVALID_TOKEN', message: 'Cannot decode token' });
     }
@@ -119,7 +114,7 @@ clientSchema.methods.getAuthToken = function() {
         .sign(
             {
                 _id: c._id.toHexString(),
-                expiredTime: parseFloat(config.jwt.clientExpireTimeInHours) * 3600 * 1000 + d.getTime(),
+                generatedAt: parseFloat(config.jwt.clientExpireTimeInHours) * 3600 * 1000 + d.getTime(),
                 access,
             },
             jwtSecret,
