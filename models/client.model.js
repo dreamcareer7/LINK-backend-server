@@ -86,6 +86,7 @@ clientSchema.statics.findByToken = async function(token) {
     let clientData;
     try {
         decoded = jwt.verify(token, jwtSecret);
+        console.log(decoded);
         clientData = await client.findOne({
             _id: decoded._id,
         });
@@ -114,7 +115,7 @@ clientSchema.methods.getAuthToken = function() {
         .sign(
             {
                 _id: c._id.toHexString(),
-                generatedAt: parseFloat(config.jwt.clientExpireTimeInHours) * 3600 * 1000 + d.getTime(),
+                generatedAt: d.getTime(),
                 access,
             },
             jwtSecret,
