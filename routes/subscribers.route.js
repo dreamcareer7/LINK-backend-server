@@ -45,8 +45,7 @@ router.get('/get-subscribers', async (req, res) => {
             page,
             limit,
             sort: { createdAt: sortOrder === 'ASC' ? 1 : -1 },
-            select:
-                '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
+            select: '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken',
         });
 
         if (!client) {
@@ -122,9 +121,7 @@ router.get('/get-subscriber/:id', async (req, res) => {
         let promiseArr = [];
         promiseArr.push(
             Client.findOne({ _id: req.params.id, isDeleted: false })
-                .select(
-                    '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
-                )
+                .select('-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken')
                 .lean(),
         );
         promiseArr.push(
@@ -160,7 +157,7 @@ router.get('/get-subscriber/:id', async (req, res) => {
 router.put('/paused-subscription/:id', async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.params.id, isDeleted: false }).select(
-            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
+            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken',
         );
         if (!client) {
             return res.status(400).json({

@@ -37,7 +37,6 @@ const clientSchema = new Schema(
         isConversationAdded: { type: Schema.Types.Boolean, default: false },
         vicSub: { type: Schema.Types.Boolean, default: false },
         isInvited: { type: Schema.Types.Boolean, default: false },
-        invitedToken: { type: Schema.Types.String, default: null },
         jwtToken: [Schema.Types.String],
         notificationType: {
             email: { type: Schema.Types.Boolean, default: false },

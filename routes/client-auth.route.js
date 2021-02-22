@@ -313,81 +313,84 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
     }
 });
 
+/*
+ * Not in Use now
+ * */
 /**
  * sign-up from LinkedIn
  *
  */
-router.get('/sign-up-invitation', async (req, res) => {
-    try {
-        if (!req.query.code) {
-            return res.status(400).send({
-                status: 'CODE_NOT_FOUND',
-                message: 'Code is not Found',
-            });
-        }
-        // console.log(req.query.code);
-        let token = await linkedInHelper.genLinkedInAccessToken(
-            req.query.code,
-            config.backEndBaseUrl + `client-auth/sign-up-invitation?requestedToken=${req.query.requestedToken}`,
-        );
-        let user = await linkedInHelper.getLinkedInUserData(token);
-        decoded = jwt.verify(req.query.requestedToken, config.jwt.secret);
-        let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
-        if (!client) {
-            let c = await Client.findOne({ _id: decoded._id, isDeleted: false });
-            if (c) {
-                if (c.invitedToken == req.query.requestedToken) {
-                    c.firstName = user.localizedFirstName;
-                    c.lastName = user.localizedLastName;
-                    c.linkedInID = user.id;
-                    c.profilePicUrl = user.hasOwnProperty('profilePicture')
-                        ? user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier
-                        : null;
-                    c.invitedToken = null;
-                    await c.save();
-                    return res.status(200).send({
-                        message: 'Client still not Subscribed.',
-                        status: 'SUCCESS',
-                    });
-                } else {
-                    return res.status(400).send({
-                        status: 'NOT_FOUND',
-                        message: 'Client Invitation token is not found.',
-                    });
-                }
-            } else {
-                return res.status(400).send({
-                    status: 'NOT_FOUND',
-                    message: 'Client is not found.',
-                });
-            }
-        } else {
-            if (!client.isSubscribed) {
-                Logger.log.info('Client still not Subscribed.');
-                return res.status(200).send({
-                    message: 'Client still not Subscribed.',
-                    status: 'SUCCESS',
-                });
-            } else {
-                let token = client.getAuthToken();
-                // client.jwtToken.push(token);
-                // await client.save();
-                // console.log('Client Token ::', token);
-                Logger.log.info('Login Successfully to Client Deshbord.');
-                return res.status(200).send({
-                    message: 'Welcome to Dashbord.',
-                    status: 'SUCCESS',
-                });
-            }
-        }
-    } catch (e) {
-        Logger.log.error('Error in SignUp API call.', e.message || e);
-        res.status(500).json({
-            status: e.status || 'ERROR',
-            message: e.message,
-        });
-    }
-});
+// router.get('/sign-up-invitation', async (req, res) => {
+//     try {
+//         if (!req.query.code) {
+//             return res.status(400).send({
+//                 status: 'CODE_NOT_FOUND',
+//                 message: 'Code is not Found',
+//             });
+//         }
+//         // console.log(req.query.code);
+//         let token = await linkedInHelper.genLinkedInAccessToken(
+//             req.query.code,
+//             config.backEndBaseUrl + `client-auth/sign-up-invitation?requestedToken=${req.query.requestedToken}`,
+//         );
+//         let user = await linkedInHelper.getLinkedInUserData(token);
+//         decoded = jwt.verify(req.query.requestedToken, config.jwt.secret);
+//         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
+//         if (!client) {
+//             let c = await Client.findOne({ _id: decoded._id, isDeleted: false });
+//             if (c) {
+//                 if (c.invitedToken == req.query.requestedToken) {
+//                     c.firstName = user.localizedFirstName;
+//                     c.lastName = user.localizedLastName;
+//                     c.linkedInID = user.id;
+//                     c.profilePicUrl = user.hasOwnProperty('profilePicture')
+//                         ? user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier
+//                         : null;
+//                     c.invitedToken = null;
+//                     await c.save();
+//                     return res.status(200).send({
+//                         message: 'Client still not Subscribed.',
+//                         status: 'SUCCESS',
+//                     });
+//                 } else {
+//                     return res.status(400).send({
+//                         status: 'NOT_FOUND',
+//                         message: 'Client Invitation token is not found.',
+//                     });
+//                 }
+//             } else {
+//                 return res.status(400).send({
+//                     status: 'NOT_FOUND',
+//                     message: 'Client is not found.',
+//                 });
+//             }
+//         } else {
+//             if (!client.isSubscribed) {
+//                 Logger.log.info('Client still not Subscribed.');
+//                 return res.status(200).send({
+//                     message: 'Client still not Subscribed.',
+//                     status: 'SUCCESS',
+//                 });
+//             } else {
+//                 let token = client.getAuthToken();
+//                 // client.jwtToken.push(token);
+//                 // await client.save();
+//                 // console.log('Client Token ::', token);
+//                 Logger.log.info('Login Successfully to Client Deshbord.');
+//                 return res.status(200).send({
+//                     message: 'Welcome to Dashbord.',
+//                     status: 'SUCCESS',
+//                 });
+//             }
+//         }
+//     } catch (e) {
+//         Logger.log.error('Error in SignUp API call.', e.message || e);
+//         res.status(500).json({
+//             status: e.status || 'ERROR',
+//             message: e.message,
+//         });
+//     }
+// });
 
 /**
  * get Client Data
@@ -655,7 +658,7 @@ router.delete('/delete', authMiddleWare.clientAuthMiddleWare, async (req, res) =
 router.put('/paused-subscription', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
-            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
+            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken',
         );
         if (!client) {
             return res.status(400).json({

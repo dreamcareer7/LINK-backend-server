@@ -245,9 +245,7 @@ const fetchConversation = async (
 const processConversation = async (response, opportunityPublicIdentifier, clientId) => {
     try {
         let client = await Client.findOne({ _id: clientId, isDeleted: false })
-            .select(
-                '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
-            )
+            .select('-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken')
             .lean();
         let opportunity = await Opportunity.findOne({
             clientId: clientId,

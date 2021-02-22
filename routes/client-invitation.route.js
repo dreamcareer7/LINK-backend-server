@@ -42,11 +42,7 @@ router.post('/send-invitation', async (req, res) => {
             isSubscribed: false,
         });
         await newClient.save();
-        let access = 'auth';
-        newClient.invitedToken = jwt.sign({ _id: newClient._id.toHexString(), access }, config.jwt.secret).toString();
-        await newClient.save();
         let linkFluencerLink = config.linkFluencer.paymentPageUrl + '?jayla_customer_id=' + newClient._id;
-        // let linkedInLink = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${config.linkedIn.clientId}&redirect_uri=${config.backEndBaseUrl}client-auth/sign-up-invitation?requestedToken=${newClient.invitedToken}&&state=fooobar&scope=r_emailaddress,r_liteprofile`;
         let mailObj = {
             toAddress: [newClient.email],
             subject: "You've been invited to start using Jayla",
@@ -81,7 +77,7 @@ router.post('/send-invitation', async (req, res) => {
 router.delete('/delete-invitation/:id', async (req, res) => {
     try {
         let clients = await Client.findOne({ _id: req.params.id, isDeleted: false, isInvited: true }).select(
-            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken -invitedToken',
+            '-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken',
         );
         if (!clients) {
             return res.status(400).send({
