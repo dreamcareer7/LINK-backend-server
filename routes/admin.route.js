@@ -35,7 +35,7 @@ router.post('/upload/profile-pic', upload.single('profile-pic'), async (req, res
                 message: 'Admin not found, please try by logging in again.',
             });
         }
-        await Admin.updateOne({ _id: adminId }, { profilePic: req.file.filename });
+        // await Admin.updateOne({ _id: adminId }, { profilePic: req.file.filename });
         let profilePicUrl = getProfileUrl(req.file.filename);
         res.status(200).send({
             status: 'SUCCESS',
