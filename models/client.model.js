@@ -87,7 +87,6 @@ clientSchema.statics.findByToken = async function(token) {
     let clientData;
     try {
         decoded = jwt.verify(token, jwtSecret);
-        console.log(decoded);
         clientData = await client.findOne({
             _id: decoded._id,
         });
