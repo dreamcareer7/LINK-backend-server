@@ -19,6 +19,11 @@
             "title": "device_not_desktop",
             "text": "Sorry, Jayla only works on Desktop Device :)",
             "description": "Message is displayed when Device is not Desktop"
+        },
+        {
+            "title": "device_mobile",
+            "text": "Sorry, Jayla does not work on Mobile Devices.",
+            "description": "Message is displayed when Device is Mobile"
         }
     ],
     "industries": [
