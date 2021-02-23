@@ -4,7 +4,14 @@ const mongoose = require('mongoose');
 const Opportunity = mongoose.model('opportunity');
 const Client = mongoose.model('client');
 
-const extractChats = async ({ cookie, ajaxToken, newConversationIdArr, publicIdentifier }) => {
+const extractChats = async ({
+    cookie,
+    ajaxToken,
+    newConversationIdArr,
+    publicIdentifier,
+    publicIdentifiers,
+    checkBefore,
+}) => {
     try {
         let createdBefore = null;
         let extractedChats = [];
@@ -57,6 +64,34 @@ const extractChats = async ({ cookie, ajaxToken, newConversationIdArr, publicIde
                     break;
                 }
             }
+        } else if (publicIdentifiers) {
+            let chatsFound = [];
+            while (publicIdentifiers.length > 0 && (checkBefore < createdBefore || !createdBefore)) {
+                console.log('publicIdentifiers::', publicIdentifiers, publicIdentifiers.length);
+                console.log(checkBefore, createdBefore);
+                let rawChatsData = await fetchChats(cookie, ajaxToken, createdBefore);
+
+                let processedChatData = await processChatData(rawChatsData);
+                if (processedChatData['chats'].length > 0) {
+                    for (let j = 0; j < processedChatData['chats'].length; j++) {
+                        if (publicIdentifiers.indexOf(processedChatData['chats'][j].publicIdentifier) !== -1) {
+                            publicIdentifiers.filter((p) => p !== processedChatData['chats'][j].publicIdentifier);
+                            console.log(
+                                '=====================Matched============================',
+                                processedChatData['chats'][j].publicIdentifier,
+                            );
+                            chatsFound.push({
+                                publicIdentifier: processedChatData['chats'][j].publicIdentifier,
+                                conversationId: processedChatData['chats'][j].conversationId,
+                            });
+                        }
+                    }
+                    createdBefore = processedChatData['lowestLastActivity'];
+                } else {
+                    break;
+                }
+            }
+            return chatsFound;
         } else {
             while (true) {
                 let rawChatsData = await fetchChats(cookie, ajaxToken, createdBefore);
@@ -143,7 +178,7 @@ const processChatData = async (rawChatsData) => {
                 extractedChats.push(chat);
             }
         }
-
+        // console.log('extractedChats::', extractedChats);
         return {
             chats: extractedChats,
             lowestLastActivity: lowestLastActivity,
@@ -186,6 +221,7 @@ const fetchChats = async (cookie, ajaxToken, createdBefore) => {
         };
 
         let response = await axios(data);
+        // console.log('fetchChats::', JSON.stringify(response.data, null, 3));
 
         return response.data;
     } catch (e) {

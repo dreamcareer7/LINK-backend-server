@@ -70,6 +70,7 @@ const clientSchema = new Schema(
         //  ajaxToken: Schema.Types.String,
         fcmToken: [Schema.Types.String],
         logoutAllDevicesAt: { type: Schema.Types.Date },
+        lastSyncForChatsAt: { type: Schema.Types.Date },
     },
     { timestamps: true },
 );

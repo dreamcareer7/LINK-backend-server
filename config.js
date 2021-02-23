@@ -53,6 +53,7 @@ module.exports = {
         clientId: process.env.LINKEDIN_CLIENT_ID,
         clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
         inviteeScrapIntervalInMinutes: parseFloat(process.env.INVITEE_SCRAP_INTERVAL_IN_MINUTES) || 180,
+        stageScrapIntervalInMinutes: parseFloat(process.env.STAGE_SCRAP_INTERVAL_IN_MINUTES) || 720,
     },
     firebase: {
         dbUrl: process.env.FIREBASE_DB_URL,

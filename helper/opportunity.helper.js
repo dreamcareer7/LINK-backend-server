@@ -1,4 +1,11 @@
 const axios = require('axios');
+const cron = require('node-cron');
+const mongoose = require('mongoose');
+const Opportunity = mongoose.model('opportunity');
+const Client = mongoose.model('client');
+const Conversation = mongoose.model('conversation');
+const conversationHelper = require('./conversation.helper');
+const cookieHelper = require('./cookie.helper');
 const config = require('../config');
 const Logger = require('../services/logger');
 
@@ -151,7 +158,121 @@ const getContactInfo = async (publicIdentifier, cookie, ajaxToken) => {
     }
 };
 
+let syncOpportunityStage = async () => {
+    try {
+        let interval = config.linkedIn.stageScrapIntervalInMinutes;
+        let cronString = '';
+        if (interval % 60 === 0) {
+            interval = interval / 60;
+            cronString = `0 */${interval} * * *`;
+        } else {
+            cronString = `*/${interval} * * * *`;
+        }
+        cron.schedule(
+            cronString,
+            async () => {
+                Logger.log.info('Syncing conversation list at:', new Date());
+                let clients = await Client.find({
+                    isDeleted: false,
+                    isCookieExpired: false,
+                    isExtensionInstalled: true,
+                    isSubscribed: true,
+                    isSubscriptionCancelled: false,
+                });
+                for (let i = 0; i < clients.length; i++) {
+                    console.log('Processing for Client::', clients[i]._id, clients[i].publicIdentifier);
+                    let promiseArr = [];
+                    promiseArr.push(
+                        Opportunity.find({
+                            clientId: clients[i]._id,
+                            isDeleted: false,
+                            stage: 'INITIAL_CONTACT',
+                            'stageLogs.value': { $ne: 'IN_CONVERSION' },
+                        }),
+                    );
+                    promiseArr.push(Conversation.findOne({ clientId: clients[i]._id, isDeleted: false }));
+                    let response = await Promise.all(promiseArr);
+                    let opportunities = response[0];
+                    let dbConversation = response[1];
+                    let publicIdentifiers = [];
+                    console.log('opportunities::', opportunities);
+                    console.log('dbConversation::', dbConversation);
+                    for (let j = 0; j < opportunities.length; j++) {
+                        let conversation = dbConversation.conversations.filter(
+                            (o) => o.publicIdentifier === opportunities[j].publicIdentifier,
+                        );
+                        if (conversation.length === 1) {
+                            opportunities[j].stage = 'IN_CONVERSION';
+                            opportunities[j].stageLogs.push({
+                                value: 'IN_CONVERSION',
+                                changedAt: new Date(),
+                            });
+                            await opportunities[j].save();
+                        } else {
+                            publicIdentifiers.push(opportunities[j].publicIdentifier);
+                        }
+                    }
+                    console.log('PublicIdentifiers for which chat not found::', publicIdentifiers);
+                    if (publicIdentifiers.length > 0) {
+                        if (!clients[i].lastSyncForChatsAt) {
+                            clients[i].lastSyncForChatsAt = clients[i].createdAt;
+                            await clients[i].save();
+                        }
+                        let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(clients[i].cookie);
+                        let newChats = await conversationHelper.extractChats({
+                            cookie: cookieStr,
+                            ajaxToken,
+                            publicIdentifiers,
+                            checkBefore: clients[i].lastSyncForChatsAt.getTime(),
+                        });
+                        console.log('newChats::', newChats);
+                        if (newChats.length > 0) {
+                            let newPromiseArr = [];
+                            for (let j = 0; j < newChats.length; j++) {
+                                newPromiseArr.push(
+                                    Opportunity.updateOne(
+                                        {
+                                            clientId: clients[i]._id,
+                                            publicIdentifier: newChats[j].publicIdentifier,
+                                            isDeleted: false,
+                                        },
+                                        {
+                                            stage: 'IN_CONVERSION',
+                                            $push: {
+                                                stageLogs: {
+                                                    value: 'IN_CONVERSION',
+                                                    changedAt: new Date(),
+                                                },
+                                            },
+                                        },
+                                    ),
+                                );
+                                dbConversation.conversations.push({
+                                    publicIdentifier: newChats[j].publicIdentifier,
+                                    conversationId: newChats[j].conversationId,
+                                });
+                            }
+                            await Promise.all(newPromiseArr);
+                        }
+                    }
+                    clients[i].lastSyncForChatsAt = new Date();
+                    await clients[i].save();
+                }
+                Logger.log.info('Completed the Sync.');
+            },
+            {
+                scheduled: true,
+                timezone: 'Australia/Melbourne',
+            },
+        ).start();
+        Logger.log.info('Successfully set up the cron for Conversation List scrapping');
+    } catch (e) {
+        Logger.log.error('Error in syncOpportunityStage', e.message || e);
+    }
+};
+
 module.exports = {
     getProfile: getProfile,
     getContactInfo,
+    syncOpportunityStage,
 };

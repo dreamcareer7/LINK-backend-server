@@ -111,9 +111,11 @@ ServerInitializer.createOrganization();
 let SchedulerHelper = require('./services/cron.schedular.service');
 let notificationHelper = require('./helper/notification.helper');
 let inviteeHelper = require('./helper/invitee.helper');
+let opportunityHelper = require('./helper/opportunity.helper');
 notificationHelper.scheduleNotification();
 SchedulerHelper.scheduler();
 inviteeHelper.syncInvitees();
+opportunityHelper.syncOpportunityStage();
 
 /**
  * Catch 404 routes

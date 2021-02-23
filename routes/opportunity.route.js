@@ -41,6 +41,19 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
                         changedAt: new Date(),
                     },
                 ];
+                let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
+                let conversation = await conversationHelper.extractChats({
+                    cookie: cookieStr,
+                    ajaxToken: ajaxToken,
+                    publicIdentifier: req.body.publicIdentifier,
+                });
+                if (conversation.length !== 0) {
+                    opportunityData.stage = 'IN_CONVERSION';
+                    opportunityData.stageLogs.push({
+                        value: 'IN_CONVERSION',
+                        changedAt: new Date(),
+                    });
+                }
                 opportunity = new Opportunity(opportunityData);
                 await opportunity.save();
                 Logger.log.info('New Opportunity added.');
@@ -196,9 +209,25 @@ router.put('/fetch-conversation/:id', async (req, res) => {
             req.client._id,
             req.body.createdAt,
         );
+        let changeStageToInConversation = false;
+        if (
+            conversationData &&
+            conversationData.length > 0 &&
+            opportunity.stage === 'INITIAL_CONTACT' &&
+            opportunity.stageLogs.length === 1
+        ) {
+            opportunity.stage = 'IN_CONVERSION';
+            opportunity.stageLogs.push({
+                value: 'IN_CONVERSION',
+                changedAt: new Date(),
+            });
+            await opportunity.save();
+            changeStageToInConversation = true;
+        }
         return res.status(200).send({
             status: 'SUCCESS',
             data: conversationData,
+            changeStageToInConversation,
         });
     } catch (e) {
         req.client.isCookieExpired = true;
