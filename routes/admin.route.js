@@ -225,7 +225,7 @@ router.put('/update/:id', async (req, res) => {
         admin.lastName = req.body.lastName;
         admin.email = req.body.email;
         admin.phone = req.body.phone;
-        admin.profileUrl = req.body.profileUrl;
+        admin.profilePic = req.body.profilePic;
         await admin.save();
         return res.status(200).send({
             status: 'SUCCESS',
