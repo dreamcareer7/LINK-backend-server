@@ -85,10 +85,13 @@ router.get('/sign-up', async (req, res) => {
         }
     } catch (e) {
         Logger.log.error('Error in SignUp API call.', e.message || e);
-        res.status(500).json({
-            status: e.status || 'ERROR',
-            message: e.message,
-        });
+        return res.redirect(
+            `${config.clientUrls.clientFrontEndBaseUrl}signUp?message=Error signing up with LinkedIn. Please try again.`,
+        );
+        // res.status(500).json({
+        //     status: e.status || 'ERROR',
+        //     message: e.message,
+        // });
     }
 });
 
