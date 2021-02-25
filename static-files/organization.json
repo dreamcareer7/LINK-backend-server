@@ -7,8 +7,8 @@
         },
         {
             "title": "extension_not_installed",
-            "text": "Uhh ohh! Please install the Chrome Extension and Sign In with LinkedIn to access the Jayla App.",
-            "description": "Message is displayed when Chrome Extension is not Installed"
+            "text": "Uhh ohh! Either you haven't Signed In with LinkedIn into the Chrome Extension or the Chrome Extension is not installed. In the case of Extension not installed, click on the button below to get it.",
+            "description": "Message is displayed when either Chrome Extension is not Installed or User hasn't SignedIn into the Chrome Extension using that LinkedIn account."
         },
         {
             "title": "cookie_expired",
