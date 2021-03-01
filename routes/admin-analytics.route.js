@@ -194,6 +194,7 @@ router.put('/industries', async (req, res) => {
                             },
                             {
                                 isDeleted: false,
+                                isSubscribed: true,
                             },
                         ],
                     },
@@ -252,7 +253,10 @@ router.put('/gender', async (req, res) => {
                                     $lte: req.body.endDate,
                                 },
                             },
-                            { isDeleted: false },
+                            {
+                                isDeleted: false,
+                                isSubscribed: true,
+                            },
                         ],
                     },
                 },
@@ -332,7 +336,10 @@ router.put('/subscription', async (req, res) => {
                                     $lte: req.body.endDate,
                                 },
                             },
-                            { isDeleted: false },
+                            {
+                                isDeleted: false,
+                                isSubscribed: true,
+                            },
                         ],
                     },
                 },
@@ -530,7 +537,10 @@ router.put('/company-size', async (req, res) => {
                                     $lte: req.body.endDate,
                                 },
                             },
-                            { isDeleted: false },
+                            {
+                                isDeleted: false,
+                                isSubscribed: true,
+                            },
                         ],
                     },
                 },
