@@ -25,22 +25,12 @@ router.get('/get-subscribers', async (req, res) => {
         if (req.query.subscriptionType) {
             queryObj['selectedPlan.status'] = req.query.subscriptionType;
         }
-        let startDate;
-        let endDate;
         let sortOrder = req.query.sortOrder;
-        if (req.query.startDate) {
-            startDate = new Date(req.query.startDate);
-        } else {
-            startDate = new Date();
-            startDate.setTime(startDate.getTime() - 30 * 24 * 3600 * 1000);
+        if (req.query.startDate && req.query.endDate) {
+            let startDate = new Date(req.query.startDate);
+            let endDate = new Date(req.query.endDate);
+            queryObj.createdAt = { $gte: startDate, $lte: endDate };
         }
-        if (req.query.endDate) {
-            endDate = new Date(req.query.endDate);
-        } else {
-            endDate = new Date();
-            endDate.setHours(23, 59, 59);
-        }
-        queryObj.createdAt = { $gte: startDate, $lte: endDate };
         let client = await Client.paginate(queryObj, {
             page,
             limit,
