@@ -67,8 +67,6 @@ const extractChats = async ({
         } else if (publicIdentifiers) {
             let chatsFound = [];
             while (publicIdentifiers.length > 0 && (checkBefore < createdBefore || !createdBefore)) {
-                console.log('publicIdentifiers::', publicIdentifiers, publicIdentifiers.length);
-                console.log(checkBefore, createdBefore);
                 let rawChatsData = await fetchChats(cookie, ajaxToken, createdBefore);
 
                 let processedChatData = await processChatData(rawChatsData);
@@ -76,10 +74,6 @@ const extractChats = async ({
                     for (let j = 0; j < processedChatData['chats'].length; j++) {
                         if (publicIdentifiers.indexOf(processedChatData['chats'][j].publicIdentifier) !== -1) {
                             publicIdentifiers.filter((p) => p !== processedChatData['chats'][j].publicIdentifier);
-                            console.log(
-                                '=====================Matched============================',
-                                processedChatData['chats'][j].publicIdentifier,
-                            );
                             chatsFound.push({
                                 publicIdentifier: processedChatData['chats'][j].publicIdentifier,
                                 conversationId: processedChatData['chats'][j].conversationId,
@@ -178,7 +172,6 @@ const processChatData = async (rawChatsData) => {
                 extractedChats.push(chat);
             }
         }
-        // console.log('extractedChats::', extractedChats);
         return {
             chats: extractedChats,
             lowestLastActivity: lowestLastActivity,
@@ -192,9 +185,9 @@ const fetchChats = async (cookie, ajaxToken, createdBefore) => {
     try {
         if (createdBefore === null) {
             url =
-                'https://www.linkedin.com/voyager/api/messaging/conversations?keyVersion=LEGACY_INBOX&count=20&q=syncToken';
+                'https://www.linkedin.com/voyager/api/messaging/conversations?keyVersion=LEGACY_INBOX&count=100&q=syncToken';
         } else {
-            url = `https://www.linkedin.com/voyager/api/messaging/conversations?keyVersion=LEGACY_INBOX&createdBefore=${createdBefore}`;
+            url = `https://www.linkedin.com/voyager/api/messaging/conversations?keyVersion=LEGACY_INBOX&count=100&createdBefore=${createdBefore}`;
         }
         let data = {
             method: 'GET',
@@ -221,11 +214,14 @@ const fetchChats = async (cookie, ajaxToken, createdBefore) => {
         };
 
         let response = await axios(data);
-        // console.log('fetchChats::', JSON.stringify(response.data, null, 3));
 
         return response.data;
     } catch (e) {
         Logger.log.error('Error in fetch chat.', e.message || e);
+        if (e.message && e.message.includes('Request failed with status code 400')) {
+            Logger.log.error('Chat not found.');
+            return { included: [] };
+        }
         return Promise.reject({ message: 'Error in fetch chat.' });
     }
 };
@@ -274,6 +270,10 @@ const fetchConversation = async (
         return msg;
     } catch (e) {
         Logger.log.error('Error in fetch Conversation.', e.message || e);
+        if (e.message && e.message.includes('Request failed with status code 500')) {
+            Logger.log.error('Returned 500');
+            return [];
+        }
         return Promise.reject({ message: 'Error in fetch Conversation.' });
     }
 };

@@ -145,7 +145,9 @@ router.put('/fetch-conversation/:id', async (req, res) => {
             'conversations.publicIdentifier': opportunity.publicIdentifier,
             isDeleted: false,
         });
+        let isConversationIdPresent = true;
         if (!dbConversation) {
+            isConversationIdPresent = false;
             let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
             let conversation = await conversationHelper.extractChats({
                 cookie: cookieStr,
@@ -209,6 +211,51 @@ router.put('/fetch-conversation/:id', async (req, res) => {
             req.client._id,
             req.body.createdAt,
         );
+        if (!req.body.createdAt && conversationData.length === 0) {
+            Logger.log.info('Checking if new conversation is performed for', opportunity.publicIdentifier);
+            let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
+            let conversation = await conversationHelper.extractChats({
+                cookie: cookieStr,
+                ajaxToken: ajaxToken,
+                publicIdentifier: opportunity.publicIdentifier,
+            });
+            if (dbConversation && dbConversation.conversations) {
+                if (conversation && conversation.length !== 0) {
+                    Logger.log.info('New conversation is performed for', opportunity.publicIdentifier);
+                    for (let i = 0; i < dbConversation.conversations.length; i++) {
+                        if (dbConversation.conversations[i].publicIdentifier === conversation[0].publicIdentifier) {
+                            dbConversation.conversations[i].conversationId = conversation[0].conversationId;
+                            conversationId = conversation[0].conversationId;
+                            await dbConversation.save();
+                            break;
+                        }
+                    }
+                    conversationData = await conversationHelper.fetchConversation(
+                        cookieStr,
+                        ajaxToken,
+                        conversationId,
+                        publicIdentifier,
+                        req.client._id,
+                        req.body.createdAt,
+                    );
+                } else {
+                    Logger.log.info(
+                        `New conversation is not performed for ${opportunity.publicIdentifier}, hence removing it.`,
+                    );
+                    for (let i = 0; i < dbConversation.conversations.length; i++) {
+                        if (dbConversation.conversations[i].publicIdentifier === opportunity.publicIdentifier) {
+                            dbConversation.conversations.splice(i, 1);
+                            await dbConversation.save();
+                            break;
+                        }
+                    }
+                    dbConversation.conversations = dbConversation.conversations.filter(
+                        (c) => c.publicIdentifier !== opportunity.publicIdentifier,
+                    );
+                    await dbConversation.save();
+                }
+            }
+        }
         let changeStageToInConversation = false;
         if (
             conversationData &&
