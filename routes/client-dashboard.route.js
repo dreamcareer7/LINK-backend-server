@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const Opportunity = mongoose.model('opportunity');
 const Notification = mongoose.model('notification');
 const Logger = require('../services/logger');
+const graphHelper = require('../helper/graph.helper');
 
 router.put('/opportunities', async (req, res) => {
     try {
@@ -81,6 +82,7 @@ router.put('/pipeline-value', async (req, res) => {
                 },
             ],
         ]).allowDiskUse(true);
+        let totalDealAmount = 0;
         data = data.filter(function(value, index, arr) {
             return value._id !== null;
         });
@@ -97,8 +99,13 @@ router.put('/pipeline-value', async (req, res) => {
                 data.push({
                     _id: pipeline,
                     total: 0,
+                    totalDealValue: 0,
                 });
             }
+        });
+        data.forEach((pipeline) => {
+            totalDealAmount += pipeline.totalDealValue;
+            pipeline.totalDealValueStr = graphHelper.getDealValueStr(pipeline.totalDealValue);
         });
         let orderedData = [];
         pipelines.forEach((key) => {
@@ -107,6 +114,7 @@ router.put('/pipeline-value', async (req, res) => {
         return res.status(200).send({
             status: 'SUCCESS',
             data: orderedData,
+            totalDealAmount,
         });
     } catch (e) {
         Logger.log.error('Error in client-dashboard pipeline-value API call', e.message || e);

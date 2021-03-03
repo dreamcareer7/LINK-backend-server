@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const Opportunity = mongoose.model('opportunity');
 const Invitee = mongoose.model('invitee');
 const Logger = require('../services/logger');
+const graphHelper = require('../helper/graph.helper');
 
 router.get('/activity-breakdown', async (req, res) => {
     try {
@@ -205,6 +206,7 @@ router.get('/pipeline-value', async (req, res) => {
                 },
             ],
         ]).allowDiskUse(true);
+        let totalDealAmount = 0;
         data = data.filter(function(value, index, arr) {
             return value._id !== null;
         });
@@ -225,6 +227,10 @@ router.get('/pipeline-value', async (req, res) => {
                 });
             }
         });
+        data.forEach((pipeline) => {
+            totalDealAmount += pipeline.totalDealValue;
+            pipeline.totalDealValueStr = graphHelper.getDealValueStr(pipeline.totalDealValue);
+        });
         let orderedData = [];
         pipelines.forEach((key) => {
             orderedData.push(data.filter((pipeline) => pipeline._id === key).pop());
@@ -232,6 +238,7 @@ router.get('/pipeline-value', async (req, res) => {
         return res.status(200).send({
             status: 'SUCCESS',
             data: orderedData,
+            totalDealAmount,
         });
     } catch (e) {
         Logger.log.error('Error in client-reporting pipeline value API call', e.message || e);
@@ -323,11 +330,15 @@ router.get('/total-sales', async (req, res) => {
                 },
             ],
         ]).allowDiskUse(true);
+        let maximumDeal = 0;
         data.forEach((dayRecord) => {
+            if (maximumDeal < dayRecord.totalDealValue) {
+                maximumDeal = dayRecord.totalDealValue;
+            }
             let dayDate = new Date(dayRecord._id.year, dayRecord._id.month - 1, dayRecord._id.day, 0, 0, 0);
             for (let j = 0; j < Object.keys(responseObj).length; j++) {
                 if (
-                    parseInt(Object.keys(responseObj)[j]) < dayDate.getTime() &&
+                    parseInt(Object.keys(responseObj)[j]) <= dayDate.getTime() &&
                     (j === Object.keys(responseObj).length - 1 ||
                         parseInt(Object.keys(responseObj)[j + 1]) > dayDate.getTime())
                 ) {
@@ -335,6 +346,9 @@ router.get('/total-sales', async (req, res) => {
                 }
             }
         });
+        let maximumGraphValue = Math.pow(10, maximumDeal.toFixed(0).length);
+        let dividerValues = 0;
+        if (maximumGraphValue) dividerValues = maximumGraphValue / 5;
         let finalResponseArr = [];
         for (let i = 0; i < Object.keys(responseObj).length; i++) {
             const dateLabel = moment(new Date(parseInt(Object.keys(responseObj)[i]))).format('MMM DD');
@@ -346,6 +360,8 @@ router.get('/total-sales', async (req, res) => {
         return res.status(200).send({
             status: 'SUCCESS',
             data: finalResponseArr,
+            maximumGraphValue,
+            dividerValues,
         });
     } catch (e) {
         Logger.log.error('Error in client-reporting total sales API call', e.message || e);
