@@ -231,6 +231,9 @@ router.get('/pipeline-value', async (req, res) => {
             totalDealAmount += pipeline.totalDealValue;
             pipeline.totalDealValueStr = graphHelper.getDealValueStr(pipeline.totalDealValue);
         });
+        data.forEach((pipeline) => {
+            pipeline.totalDealValuePer = graphHelper.getPercentStr(pipeline.totalDealValue, totalDealAmount);
+        });
         let orderedData = [];
         pipelines.forEach((key) => {
             orderedData.push(data.filter((pipeline) => pipeline._id === key).pop());

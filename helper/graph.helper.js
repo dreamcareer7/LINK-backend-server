@@ -11,7 +11,17 @@ let getDealValueStr = (value) => {
     }
     return valueStr;
 };
+let getPercentStr = (value, total) => {
+    let valueStr = '';
+    if (value && total) {
+        valueStr = ((value / total) * 100).toFixed(0) + '%';
+    } else {
+        valueStr = '0%';
+    }
+    return valueStr;
+};
 
 module.exports = {
     getDealValueStr,
+    getPercentStr,
 };
