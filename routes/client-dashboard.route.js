@@ -27,6 +27,12 @@ router.put('/opportunities', async (req, res) => {
         data = data.filter(function(value, index, arr) {
             return value._id !== null;
         });
+        if (data.length === 0) {
+            return res.status(200).send({
+                status: 'SUCCESS',
+                data: [],
+            });
+        }
         let addedStages = data.map((stage) => stage._id);
         let stages = ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'POTENTIAL', 'CLOSED', 'LOST'];
         stages.forEach((stage) => {
@@ -78,6 +84,12 @@ router.put('/pipeline-value', async (req, res) => {
         data = data.filter(function(value, index, arr) {
             return value._id !== null;
         });
+        if (data.length === 0) {
+            return res.status(200).send({
+                status: 'SUCCESS',
+                data: [],
+            });
+        }
         let addedPipelines = data.map((pipeline) => pipeline._id);
         let pipelines = ['VERY_LIKELY', 'LIKELY', 'NOT_LIKELY'];
         pipelines.forEach((pipeline) => {
