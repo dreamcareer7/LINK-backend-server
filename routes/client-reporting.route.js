@@ -44,8 +44,15 @@ router.get('/activity-breakdown', async (req, res) => {
                     {
                         $group: {
                             _id: '$stageLogs.value',
+                            totalUsers: {
+                                $addToSet: '$_id',
+                            },
+                        },
+                    },
+                    {
+                        $project: {
                             total: {
-                                $sum: 1,
+                                $size: '$totalUsers',
                             },
                         },
                     },
