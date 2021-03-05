@@ -58,9 +58,9 @@ router.get('/sign-up', async (req, res) => {
             ? user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier
             : null;
         let contactInfo = await linkedInHelper.getContactInfo(token);
-        if (contactInfo.email) {
-            client.email = contactInfo.email;
-        }
+        // if (contactInfo.email) {
+        //     client.email = contactInfo.email;
+        // }
         if (contactInfo.phone) {
             client.phone = contactInfo.phone;
         }
@@ -722,7 +722,11 @@ router.put('/cancel-subscription', authMiddleWare.clientAuthMiddleWare, async (r
             });
         }
         await stripeHelper.cancelSubscription({ stripeSubscriptionId: payment.stripeSubscriptionId });
-        let client = await Client.updateOne({ _id: req.client._id }, { isSubscriptionAppliedForCancellation: true })
+        let client = await Client.findOneAndUpdate(
+            { _id: req.client._id },
+            { isSubscriptionAppliedForCancellation: true },
+            { new: true },
+        )
             .select(
                 'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType stripeCustomerId isSubscriptionAppliedForCancellation',
             )
@@ -735,7 +739,7 @@ router.put('/cancel-subscription', authMiddleWare.clientAuthMiddleWare, async (r
         Logger.log.error('Error in cancel-subscription API call', e.message || e);
         return res.status(500).json({
             status: 'ERROR',
-            message: error.message,
+            message: e.message,
         });
     }
 });
