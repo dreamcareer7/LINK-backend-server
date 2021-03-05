@@ -731,6 +731,7 @@ router.put('/cancel-subscription', authMiddleWare.clientAuthMiddleWare, async (r
                 'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType stripeCustomerId isSubscriptionAppliedForCancellation',
             )
             .lean();
+        console.log('Client updated successfully', client);
         return res.status(200).send({
             status: 'SUCCESS',
             data: client,
