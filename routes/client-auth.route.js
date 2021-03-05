@@ -731,6 +731,7 @@ router.put('/cancel-subscription', authMiddleWare.clientAuthMiddleWare, async (r
                 'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType stripeCustomerId isSubscriptionAppliedForCancellation',
             )
             .lean();
+        let activeStatus = ['FREE_TRIAL', 'MONTHLY', 'YEARLY'];
         client.isActive =
             client.selectedPlan &&
             client.selectedPlan.status &&
