@@ -55,6 +55,7 @@ const clientSchema = new Schema(
         isDeleted: { type: Schema.Types.Boolean, default: false },
         isSubscribed: { type: Schema.Types.Boolean, default: false },
         isSubscriptionCancelled: { type: Schema.Types.Boolean, default: false },
+        isSubscriptionAppliedForCancellation: { type: Schema.Types.Boolean, default: false },
         stripeCustomerId: { type: Schema.Types.String },
         selectedPlan: {
             planSelected: { type: Schema.Types.String, enum: ['MONTHLY', 'YEARLY'] },

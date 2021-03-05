@@ -398,7 +398,7 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
 router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
-            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType stripeCustomerId isExtensionInstalled isCookieExpired cookie publicIdentifier',
+            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType stripeCustomerId isExtensionInstalled isCookieExpired cookie publicIdentifier isSubscriptionAppliedForCancellation',
         );
         // .lean();
         if (!client) {
@@ -424,6 +424,7 @@ router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) 
             }
         }
         let activeStatus = ['FREE_TRIAL', 'MONTHLY', 'YEARLY'];
+        client = JSON.parse(JSON.stringify(client));
         client.isActive =
             client.selectedPlan &&
             client.selectedPlan.status &&
@@ -466,7 +467,7 @@ router.get('/get-login-status', authMiddleWare.linkedInLoggedInChecked, async (r
 router.put('/update', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
-            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType stripeCustomerId',
+            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType stripeCustomerId isSubscriptionAppliedForCancellation',
         );
         if (!client) {
             return res.status(400).send({
@@ -474,9 +475,9 @@ router.put('/update', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
                 message: 'Client is not found.',
             });
         }
-        client.firstName = req.body.firstName;
-        client.lastName = req.body.lastName;
-        client.email = req.body.email;
+        // client.firstName = req.body.firstName;
+        // client.lastName = req.body.lastName;
+        // client.email = req.body.email;
         client.phone = req.body.phone;
         client.title = req.body.title;
         client.industry = req.body.industry;
@@ -504,7 +505,7 @@ router.put('/update', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
 router.put('/notification-type', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false }).select(
-            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType stripeCustomerId',
+            'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType stripeCustomerId isSubscriptionAppliedForCancellation',
         );
         if (!client) {
             return res.status(400).send({
@@ -721,9 +722,14 @@ router.put('/cancel-subscription', authMiddleWare.clientAuthMiddleWare, async (r
             });
         }
         await stripeHelper.cancelSubscription({ stripeSubscriptionId: payment.stripeSubscriptionId });
+        let client = await Client.updateOne({ _id: req.client._id }, { isSubscriptionAppliedForCancellation: true })
+            .select(
+                'firstName lastName email phone title profilePicUrl industry companyName companySize companyLocation isDeleted selectedPlan notificationType stripeCustomerId isSubscriptionAppliedForCancellation',
+            )
+            .lean();
         return res.status(200).send({
             status: 'SUCCESS',
-            message: 'Subscription cancelled successfully.',
+            data: client,
         });
     } catch (e) {
         Logger.log.error('Error in cancel-subscription API call', e.message || e);
