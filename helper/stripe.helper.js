@@ -18,6 +18,7 @@ const cancelSubscription = async ({ stripeSubscriptionId }) => {
         Logger.log.info('Response of Cancellation of Stripe:', response.data);
         if (response.data && response.data === 'SUCCESS') {
             Logger.log.info('Successfully cancelled the Subscription');
+            return resolve();
         } else {
             Logger.log.error('Error in cancelling the subscription', stripeSubscriptionId);
             return Promise.reject({ message: 'Error in cancelling the Subscription.' });
