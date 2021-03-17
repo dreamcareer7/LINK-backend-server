@@ -90,6 +90,7 @@ clientSchema.statics.findByToken = async function(token) {
         decoded = jwt.verify(token, jwtSecret);
         clientData = await client.findOne({
             _id: decoded._id,
+            isDeleted: false,
         });
         if (decoded.generatedAt + parseFloat(config.jwt.clientExpireTimeInHours) * 3600 * 1000 > d.getTime()) {
             if (!clientData.logoutAllDevicesAt || clientData.logoutAllDevicesAt.getTime() < decoded.generatedAt) {

@@ -47,6 +47,7 @@ adminSchema.statics.findByToken = async function(token) {
         adminData = await admin
             .findOne({
                 _id: decoded._id,
+                isDeleted: false,
             })
             .select('-password');
         if (adminData.jwtToken.indexOf(token) !== -1) {
