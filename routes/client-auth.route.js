@@ -51,6 +51,11 @@ router.get('/sign-up', async (req, res) => {
             }
             client = payment.clientId;
         }
+        if (client && client.isSubscriptionCancelled) {
+            return res.redirect(
+                `${config.clientUrls.clientFrontEndBaseUrl}signUp?message=Your Subscription is cancelled, please contact admin.`,
+            );
+        }
         client.firstName = user.localizedFirstName;
         client.lastName = user.localizedLastName;
         client.linkedInID = user.id;
