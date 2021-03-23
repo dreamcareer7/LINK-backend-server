@@ -43,7 +43,7 @@ let clientAuthMiddleWare = async (req, res, next) => {
                     next();
                 } else {
                     Logger.log.warn('Subscription is cancelled for client', client._id);
-                    res.status(401).send('Auth-Token is not valid');
+                    res.status(401).send('Subscription is cancelled for client.');
                 }
             } else {
                 Logger.log.warn('Auth-Token is not valid.');
