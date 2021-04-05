@@ -522,6 +522,12 @@ router.put('/notification-type', authMiddleWare.clientAuthMiddleWare, async (req
         client['notificationType']['browser'] = req.body.notificationType.browser;
 
         await client.save();
+        let activeStatus = ['FREE_TRIAL', 'MONTHLY', 'YEARLY'];
+        client = JSON.parse(JSON.stringify(client));
+        client.isActive =
+            client.selectedPlan &&
+            client.selectedPlan.status &&
+            activeStatus.indexOf(client.selectedPlan.status) !== -1;
         return res.status(200).send({
             status: 'SUCCESS',
             data: client,
