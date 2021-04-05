@@ -401,7 +401,7 @@ router.post('/sync-with-linkedIn/:id', authMiddleWare.linkedInLoggedInChecked, a
         }
         let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
         opportunityData = await opportunityHelper.getProfile(opportunity.publicIdentifier, cookieStr, ajaxToken);
-        let contactInfo = await opportunityHelper.getContactInfo(req.body.publicIdentifier, cookieStr, ajaxToken);
+        let contactInfo = await opportunityHelper.getContactInfo(opportunity.publicIdentifier, cookieStr, ajaxToken);
         opportunityData = { ...opportunityData, ...contactInfo };
         opportunity = await Opportunity.findOneAndUpdate(
             { _id: req.params.id, clientId: req.client._id, isDeleted: false },
