@@ -12,14 +12,27 @@ router.put('/filters', async (req, res) => {
     try {
         let page = parseInt(req.query.page);
         let limit = parseInt(req.query.limit);
-
+        let options = {
+            page: parseInt(req.query.page),
+            limit: parseInt(req.query.limit),
+            sort: { followUp: 1 },
+        };
         let queryObj = {
             clientId: req.client._id,
             isDeleted: false,
+            followUp: { $exists: true, $ne: null },
         };
 
         if (req.body.stages.length > 0) {
-            queryObj.stage = { $in: req.body.stages };
+            queryObj.stage = { $in: req.body.stages, $nin: [] };
+            if (req.body.stages.indexOf('CLOSED') === -1) {
+                queryObj.stage['$nin'] = queryObj.stage['$nin'].push('CLOSED');
+            }
+            if (req.body.stages.indexOf('LOST') === -1) {
+                queryObj.stage['$nin'] = queryObj.stage['$nin'].push('LOST');
+            }
+        } else {
+            queryObj.stage = { $nin: ['CLOSED', 'LOST'] };
         }
 
         if (req.body.likelyHoods.length > 0) {
@@ -37,9 +50,8 @@ router.put('/filters', async (req, res) => {
                 $lte: new Date(req.body.endDate),
             };
         }
-
         let promiseArr = [];
-        promiseArr.push(Opportunity.paginate(queryObj, { page, limit }));
+        promiseArr.push(Opportunity.paginate(queryObj, options));
         promiseArr.push(
             Opportunity.aggregate([
                 {
