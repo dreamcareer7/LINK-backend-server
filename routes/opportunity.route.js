@@ -462,6 +462,10 @@ router.get('/get-opportunity/:id', async (req, res) => {
         let opportunity = await Opportunity.findOne({ _id: req.params.id, clientId: req.client._id, isDeleted: false });
 
         if (opportunity) {
+            if (!opportunity.isVisited) {
+                opportunity.isVisited = true;
+                await opportunity.save();
+            }
             return res.status(200).send({
                 status: 'SUCCESS',
                 data: opportunity,

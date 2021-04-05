@@ -41,6 +41,7 @@ const opportunitySchema = new Schema(
         likelyHood: { type: Schema.Types.String, enum: ['LIKELY', 'VERY_LIKELY', 'NOT_LIKELY'] },
         followUp: Schema.Types.Date,
         notes: [{ text: Schema.Types.String, creationTime: Schema.Types.Date, updationTime: Schema.Types.Date }],
+        isVisited: { type: Schema.Types.Boolean, default: false },
     },
     { timestamps: true },
 );
