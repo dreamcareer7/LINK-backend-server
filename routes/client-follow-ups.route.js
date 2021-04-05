@@ -26,10 +26,10 @@ router.put('/filters', async (req, res) => {
         if (req.body.stages.length > 0) {
             queryObj.stage = { $in: req.body.stages, $nin: [] };
             if (req.body.stages.indexOf('CLOSED') === -1) {
-                queryObj.stage['$nin'] = queryObj.stage['$nin'].push('CLOSED');
+                queryObj.stage['$nin'].push('CLOSED');
             }
             if (req.body.stages.indexOf('LOST') === -1) {
-                queryObj.stage['$nin'] = queryObj.stage['$nin'].push('LOST');
+                queryObj.stage['$nin'].push('LOST');
             }
         } else {
             queryObj.stage = { $nin: ['CLOSED', 'LOST'] };
