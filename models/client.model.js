@@ -72,6 +72,7 @@ const clientSchema = new Schema(
         fcmToken: [Schema.Types.String],
         logoutAllDevicesAt: { type: Schema.Types.Date },
         lastSyncForChatsAt: { type: Schema.Types.Date },
+        socketIds: { type: Schema.Types.Mixed, default: [] },
     },
     { timestamps: true },
 );

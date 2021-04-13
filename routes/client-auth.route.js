@@ -12,6 +12,7 @@ const linkedInHelper = require('../helper/linkedin.helper');
 const cookieHelper = require('../helper/cookie.helper');
 const conversationHelper = require('../helper/conversation.helper');
 const opportunityHelper = require('../helper/opportunity.helper');
+const socketHelper = require('../helper/socket.helper');
 const stripeHelper = require('../helper/stripe.helper');
 
 const Logger = require('../services/logger');
@@ -779,6 +780,13 @@ router.post('/logout', async (req, res) => {
             updateObj['$pull'] = { fcmToken: req.body.fcmToken };
         }
         await Client.updateOne({ _id: decoded._id }, updateObj);
+        socketHelper.sendNotification({
+            notificationObj: {
+                type: 'LOGOUT_USER',
+                data: null,
+            },
+            clientId: decoded._id,
+        });
         res.status(200).json({
             status: 'SUCCESS',
             message: 'Client is Successfully logout.',
