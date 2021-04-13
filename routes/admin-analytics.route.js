@@ -331,7 +331,7 @@ router.put('/subscription', async (req, res) => {
                     $match: {
                         $and: [
                             {
-                                'selectedPlan.startDate': {
+                                createdAt: {
                                     $gte: req.body.startDate,
                                     $lte: req.body.endDate,
                                 },
