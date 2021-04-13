@@ -15,6 +15,7 @@ const scheduleNotification = async () => {
         // '55 27 19 * * *',
         '00 06 * * *', //For 6 AM
         async () => {
+            Logger.log.info('Executing the cron for notifications at', new Date());
             let dt = await getDateForSpecificTimezone();
             Logger.log.info('Executing the cron for follow ups for the date:', dt.startDate);
             let promiseArr = [];
@@ -26,8 +27,12 @@ const scheduleNotification = async () => {
                     let opportunities = await Opportunity.find({
                         clientId: clients[i]._id,
                         isDeleted: false,
-                        followUp: { $gte: dt.startDate, $lte: dt.endDate },
-                    }).select('_id firstName lastName title stage profilePicUrl');
+                        followUp: { $lte: dt.endDate },
+                    })
+                        .limit(5)
+                        .sort({ followUp: 1 })
+                        .select('_id firstName lastName title stage profilePicUrl');
+                    console.log('opportunities::', opportunities);
                     if (opportunities.length !== 0) {
                         if (clients[i].notificationType.browser) {
                             promiseArr.push(
@@ -74,7 +79,7 @@ const scheduleNotification = async () => {
         {
             scheduled: true,
 
-            timezone: 'Australia/Melbourne',
+            timezone: 'America/Los_Angeles',
         },
     ).start();
     Logger.log.info('Successfully set up the cron for follow ups');
@@ -83,18 +88,18 @@ const scheduleNotification = async () => {
 const getDateForSpecificTimezone = async () => {
     const currentTime = new Date();
     const now = moment.utc(currentTime);
-    const timezoneOffset = moment.tz.zone('Australia/Melbourne').utcOffset(now);
+    const timezoneOffset = moment.tz.zone('America/Los_Angeles').utcOffset(now);
     const serverOffset = currentTime.getTimezoneOffset();
     let today = new Date();
     today.setHours(0, 0, 0, 0);
     today.setTime(today.getTime() + (timezoneOffset - serverOffset) * 60 * 1000);
-    let tomorrow = new Date(today);
-    tomorrow.setTime(tomorrow.getTime() + 24 * 3600 * 1000 - 1000);
+    let todayEnd = new Date(today);
+    todayEnd.setTime(todayEnd.getTime() + 24 * 3600 * 1000 - 1000);
     // console.log('today::', today);
     // console.log('tomorrow::', tomorrow);
     return {
         startDate: today,
-        endDate: tomorrow,
+        endDate: todayEnd,
     };
 };
 
