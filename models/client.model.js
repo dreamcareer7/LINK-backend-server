@@ -93,12 +93,25 @@ clientSchema.statics.findByToken = async function(token) {
             _id: decoded._id,
             isDeleted: false,
         });
-        if (decoded.generatedAt + parseFloat(config.jwt.clientExpireTimeInHours) * 3600 * 1000 > d.getTime()) {
-            if (!clientData.logoutAllDevicesAt || clientData.logoutAllDevicesAt.getTime() < decoded.generatedAt) {
+        if (!clientData.logoutAllDevicesAt || clientData.logoutAllDevicesAt.getTime() < decoded.generatedAt) {
+            if (
+                clientData.lastRequestAt &&
+                clientData.lastRequestAt.getTime() + parseFloat(config.jwt.clientExpireTimeInHours) * 3600 * 1000 >
+                    d.getTime()
+            ) {
+                await client.updateOne(
+                    {
+                        _id: decoded._id,
+                    },
+                    { lastRequestAt: new Date() },
+                );
                 return clientData;
             }
-            Logger.log.info('User is logged out of all devices');
-            return Promise.reject({ status: 'TOKEN_EXPIRED', message: 'JwtToken is expired' });
+            Logger.log.info('More days passed for the last request of the user');
+            return Promise.reject({
+                status: 'TOKEN_EXPIRED',
+                message: 'More days passed for the last request of the user',
+            });
         }
         return Promise.reject({ status: 'TOKEN_EXPIRED', message: 'JwtToken is expired' });
     } catch (e) {
