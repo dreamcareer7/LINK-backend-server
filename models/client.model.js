@@ -125,22 +125,33 @@ clientSchema.statics.findByToken = async function(token) {
 /**
  * Generates token at the time of Login call
  */
-clientSchema.methods.getAuthToken = function() {
-    let c = this;
-    let d = new Date();
-    let jwtSecret = config.jwt.secret;
-    let access = 'auth';
-    let token = jwt
-        .sign(
+clientSchema.methods.getAuthToken = async function() {
+    try {
+        let c = this;
+        let d = new Date();
+        let jwtSecret = config.jwt.secret;
+        let access = 'auth';
+        let token = jwt
+            .sign(
+                {
+                    _id: c._id.toHexString(),
+                    generatedAt: d.getTime(),
+                    access,
+                },
+                jwtSecret,
+            )
+            .toString();
+        await client.updateOne(
             {
-                _id: c._id.toHexString(),
-                generatedAt: d.getTime(),
-                access,
+                _id: c._id,
             },
-            jwtSecret,
-        )
-        .toString();
-    return token;
+            { lastRequestAt: new Date() },
+        );
+        return token;
+    } catch (e) {
+        console.log('Error in generating token for client', e.message || e);
+        return Promise.reject(e);
+    }
 };
 clientSchema.plugin(mongoosePaginate);
 
