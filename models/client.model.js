@@ -107,15 +107,17 @@ clientSchema.statics.findByToken = async function(token) {
                     { lastRequestAt: new Date() },
                 );
                 return clientData;
+            } else {
+                Logger.log.info('More days passed for the last request of the user');
+                return Promise.reject({
+                    status: 'TOKEN_EXPIRED',
+                    message: 'More days passed for the last request of the user',
+                });
             }
-            Logger.log.info('More days passed for the last request of the user');
-            return Promise.reject({
-                status: 'TOKEN_EXPIRED',
-                message: 'More days passed for the last request of the user',
-            });
+        } else {
+            Logger.log.info('Client not found or token is expired', client._id);
+            return Promise.reject({ status: 'TOKEN_EXPIRED', message: 'JwtToken is expired' });
         }
-        Logger.log.info('Client not found or token is expired', client._id);
-        return Promise.reject({ status: 'TOKEN_EXPIRED', message: 'JwtToken is expired' });
     } catch (e) {
         console.log('Error in finding client by token', e.message || e);
         return Promise.reject({ status: 'INVALID_TOKEN', message: 'Cannot decode token' });
@@ -141,7 +143,7 @@ clientSchema.methods.getAuthToken = async function() {
                 jwtSecret,
             )
             .toString();
-        await client.updateOne(
+        await c.updateOne(
             {
                 _id: c._id,
             },
