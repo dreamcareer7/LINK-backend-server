@@ -127,7 +127,7 @@ clientSchema.statics.findByToken = async function(token) {
 /**
  * Generates token at the time of Login call
  */
-clientSchema.methods.getAuthToken = async function() {
+clientSchema.methods.getAuthToken = async function(updateTime = true) {
     try {
         let c = this;
         let d = new Date();
@@ -143,12 +143,14 @@ clientSchema.methods.getAuthToken = async function() {
                 jwtSecret,
             )
             .toString();
-        await c.updateOne(
-            {
-                _id: c._id,
-            },
-            { lastRequestAt: new Date() },
-        );
+        if (updateTime) {
+            await c.updateOne(
+                {
+                    _id: c._id,
+                },
+                { lastRequestAt: new Date() },
+            );
+        }
         return token;
     } catch (e) {
         console.log('Error in generating token for client', e.message || e);

@@ -56,7 +56,7 @@ const scheduleNotification = async () => {
                                     profilePicUrl,
                                 }),
                             );
-                            let token = clients[i].getAuthToken();
+                            let token = await clients[i].getAuthToken(false);
                             let mailObj = {
                                 toAddress: [clients[i].email],
                                 subject: 'Here are your daily follow-ups to action inside of Jayla',

@@ -78,7 +78,7 @@ router.get('/sign-up', async (req, res) => {
                 status: 'SUCCESS',
             });
         } else {
-            let token = client.getAuthToken();
+            let token = await client.getAuthToken();
             // client.jwtToken.push(token);
             // await client.save();
             // console.log('Client Token ::', token);
@@ -159,7 +159,7 @@ router.get('/sign-up-extension', async (req, res) => {
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
         let linkedInIdToken = linkedInHelper.getLinkedInIdToken(linkedInToken);
         if (client) {
-            let token = client.getAuthToken();
+            let token = await client.getAuthToken();
             if (client.isSubscribed && !client.isSubscriptionCancelled) {
                 if (!client.isExtensionInstalled) {
                     client.isExtensionInstalled = true;
