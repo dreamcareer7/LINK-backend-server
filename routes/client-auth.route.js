@@ -454,9 +454,13 @@ router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) 
  */
 router.get('/get-login-status', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
     try {
+        let is = 0;
+        if (req.client.isSubscribed && !req.client.isSubscriptionCancelled) {
+            is = 1;
+        }
         return res.status(200).send({
             status: 'SUCCESS',
-            message: 'Client is logged in.',
+            data: { is },
         });
     } catch (e) {
         Logger.log.error('Error in get client API.', e.message || e);
