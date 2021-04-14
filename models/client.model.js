@@ -10,6 +10,7 @@ const Schema = mongoose.Schema;
 const mongoosePaginate = require('mongoose-paginate');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const Logger = require('../services/logger');
 
 /**
  * Schema Definition
