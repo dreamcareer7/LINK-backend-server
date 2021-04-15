@@ -95,7 +95,10 @@ clientSchema.statics.findByToken = async function(token) {
             _id: decoded._id,
             isDeleted: false,
         });
-        if (!clientData.logoutAllDevicesAt || clientData.logoutAllDevicesAt.getTime() < decoded.generatedAt) {
+        if (
+            clientData &&
+            (!clientData.logoutAllDevicesAt || clientData.logoutAllDevicesAt.getTime() < decoded.generatedAt)
+        ) {
             if (
                 clientData.lastRequestAt &&
                 clientData.lastRequestAt.getTime() + parseFloat(config.jwt.clientExpireTimeInHours) * 3600 * 1000 >
