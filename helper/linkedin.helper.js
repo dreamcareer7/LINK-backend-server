@@ -31,6 +31,7 @@ const genLinkedInAccessToken = async (code, redirectUri) => {
  */
 const getLinkedInUserData = async (token) => {
     try {
+        console.log('in getLinkedInUserData', token);
         let data = {
             method: 'GET',
             url: `https://api.linkedin.com/v2/me?projection=(id,profilePicture(displayImage~:playableStreams),firstName,lastName,localizedFirstName,localizedLastName)`,
@@ -41,7 +42,7 @@ const getLinkedInUserData = async (token) => {
         };
 
         let response = await axios(data);
-
+        console.log('received response', response.data);
         return response.data;
     } catch (e) {
         Logger.log.error('Error in get LinkedIn User Data', e.message || e);
@@ -86,14 +87,15 @@ const getContactInfo = async (token) => {
 /**
  * Generates token at the time of Login call
  */
-getLinkedInIdToken = function(linkedInId) {
+getLinkedInIdToken = function(linkedInToken, linkedInId) {
     let d = new Date();
     let jwtSecret = config.jwt.secret;
     let access = 'auth';
     let token = jwt
         .sign(
             {
-                linkedInId: linkedInId,
+                linkedInUserId: linkedInId,
+                linkedInId: linkedInToken,
                 expiredTime: parseFloat(config.jwt.clientExpireTimeInHours) * 3600 * 1000 + d.getTime(),
                 access,
             },

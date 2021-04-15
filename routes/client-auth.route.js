@@ -157,7 +157,7 @@ router.get('/sign-up-extension', async (req, res) => {
         );
         let user = await linkedInHelper.getLinkedInUserData(linkedInToken);
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
-        let linkedInIdToken = linkedInHelper.getLinkedInIdToken(linkedInToken);
+        let linkedInIdToken = linkedInHelper.getLinkedInIdToken(linkedInToken, user.id);
         if (client) {
             let token = await client.getAuthToken();
             if (client.isSubscribed && !client.isSubscriptionCancelled) {
@@ -170,7 +170,7 @@ router.get('/sign-up-extension', async (req, res) => {
                 );
             } else {
                 return res.redirect(
-                    `${config.backEndBaseUrl}linkedin-signin.html?token=${token}&lToken=${linkedInIdToken}&is=0`,
+                    `${config.backEndBaseUrl}linkedin-signin.html?token=&lToken=${linkedInIdToken}&is=0`,
                 );
             }
         } else {
@@ -452,15 +452,77 @@ router.get('/get-client', authMiddleWare.clientAuthMiddleWare, async (req, res) 
  * get Client Data
  *
  */
-router.get('/get-login-status', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
+router.get('/get-login-status', async (req, res) => {
     try {
-        let is = 0;
-        if (req.client.isSubscribed && !req.client.isSubscriptionCancelled) {
-            is = 1;
+        let reqIs = req.query.is;
+        let dataObj = {};
+        if (reqIs === '0') {
+            let lToken = req.header('authorization');
+            if (!lToken) {
+                Logger.log.warn('L Token not set in header');
+                return res.status(401).send({ message: 'L Token not set in header' });
+            }
+            console.log('req.header::', req.header);
+            console.log('lToken::', lToken);
+            let decoded;
+            let jwtSecret = config.jwt.secret;
+            let d = new Date();
+            // try {
+            decoded = jwt.verify(lToken, jwtSecret);
+            console.log('decoded::', decoded);
+            if (!decoded.linkedInUserId || decoded.expiredTime < d.getTime()) {
+                console.log('in if...');
+                return res.status(401).send({ message: 'Invalid Token or expired' });
+            }
+            console.log('after if...');
+            let user = await linkedInHelper.getLinkedInUserData(decoded.linkedInId);
+            console.log('user::', user);
+            let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
+            console.log('client::', client);
+            if (client && client.isSubscribed && !client.isSubscriptionCancelled) {
+                dataObj = {
+                    profileTitle: client.title ? client.title : '',
+                    profileName:
+                        (client.firstName ? client.firstName : '') + (client.lastName ? ' ' + client.lastName : ''),
+                    profilePicture: client.profilePicUrl,
+                    token: await client.getAuthToken(),
+                    lToken: lToken,
+                    is: '1',
+                };
+            } else {
+                dataObj = {
+                    is: '0',
+                };
+            }
+            // } catch (e) {
+            //     Logger.log.error('Error occurred.', e.message || e);
+            //     return res.status(401).send({message: 'Invalid Auth-Token'});
+            // }
+        } else if (reqIs === '1') {
+            console.log("req.header('authorization')::", req.header('authorization'));
+            let token = req.header('authorization');
+            try {
+                let client = await Client.findByToken(token);
+                console.log('client::', client);
+                if (!client.isSubscribed || client.isSubscriptionCancelled) {
+                    dataObj = {
+                        is: '0',
+                    };
+                } else {
+                    dataObj = {
+                        is: '1',
+                    };
+                }
+            } catch (e) {
+                Logger.log.warn('Error occurred.', e.message || e);
+                return res.status(401).send({ message: 'Invalid Auth-Token' });
+            }
         }
+        console.log('dataObj::', dataObj);
+        console.log('Returning at ', new Date());
         return res.status(200).send({
             status: 'SUCCESS',
-            data: { is },
+            data: dataObj,
         });
     } catch (e) {
         Logger.log.error('Error in get client API.', e.message || e);
