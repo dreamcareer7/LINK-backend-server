@@ -465,6 +465,7 @@ router.get('/get-opportunity/:id', async (req, res) => {
             if (!opportunity.isVisited) {
                 opportunity.isVisited = true;
                 await opportunity.save();
+                opportunity.isVisited = false;
             }
             return res.status(200).send({
                 status: 'SUCCESS',
