@@ -64,7 +64,7 @@ const scheduleNotification = async () => {
                                     firstName: clients[i].firstName,
                                     lastName: clients[i].lastName,
                                     opportunities: opportunityForMail,
-                                    dashboardUrl: `${config.clientUrls.clientFrontEndBaseUrl}auth-verify?token=${token}`,
+                                    dashboardUrl: `${config.clientUrls.clientFrontEndBaseUrl}auth-verify?token=${token}&redirectTo=followups`,
                                 },
                                 mailFor: 'client-follow-ups',
                             };
