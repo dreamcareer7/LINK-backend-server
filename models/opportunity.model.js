@@ -29,7 +29,7 @@ const opportunitySchema = new Schema(
         stage: {
             type: Schema.Types.String,
             enum: ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'CLOSED', 'LOST', 'POTENTIAL'],
-            default: 'INITIAL_CONTACT',
+            // default: 'INITIAL_CONTACT',
         },
         stageLogs: [
             {
