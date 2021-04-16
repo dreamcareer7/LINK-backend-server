@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const moment = require('moment-timezone');
 const Opportunity = mongoose.model('opportunity');
 const Logger = require('../services/logger');
 
@@ -10,8 +11,11 @@ const Logger = require('../services/logger');
 
 router.put('/filters', async (req, res) => {
     try {
-        let page = parseInt(req.query.page);
-        let limit = parseInt(req.query.limit);
+        let momentDate = moment().tz('America/Los_Angeles');
+        momentDate.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+        momentDate.toISOString();
+        momentDate = momentDate.format();
+        let today = momentDate;
         let options = {
             page: parseInt(req.query.page),
             limit: parseInt(req.query.limit),
@@ -24,17 +28,25 @@ router.put('/filters', async (req, res) => {
         };
 
         if (req.body.stages.length > 0) {
+            let otherStages = req.body.stages;
+            let lostClosedStages = [];
+            if (otherStages.indexOf('LOST') === -1) {
+                lostClosedStages.push('LOST');
+            }
+            if (otherStages.indexOf('CLOSED') === -1) {
+                lostClosedStages.push('CLOSED');
+            }
             queryObj.stage = { $in: req.body.stages, $nin: [] };
-            if (req.body.stages.indexOf('CLOSED') === -1) {
-                queryObj.stage['$nin'].push('CLOSED');
-            }
-            if (req.body.stages.indexOf('LOST') === -1) {
-                queryObj.stage['$nin'].push('LOST');
-            }
+            queryObj['$or'] = [
+                { stage: { $in: lostClosedStages }, followUp: { $gt: today } },
+                { stage: { $in: otherStages } },
+            ];
         } else {
-            queryObj.stage = { $nin: ['CLOSED', 'LOST'] };
+            queryObj['$or'] = [
+                { stage: { $in: ['CLOSED', 'LOST'] }, followUp: { $gt: today } },
+                { stage: { $in: ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'POTENTIAL'] } },
+            ];
         }
-
         if (req.body.likelyHoods.length > 0) {
             queryObj.likelyHood = { $in: req.body.likelyHoods };
         }
@@ -50,6 +62,8 @@ router.put('/filters', async (req, res) => {
                 $lte: new Date(req.body.endDate),
             };
         }
+        console.log('today::', today);
+        console.log('queryObj::', JSON.stringify(queryObj, null, 3));
         let promiseArr = [];
         promiseArr.push(Opportunity.paginate(queryObj, options));
         promiseArr.push(
