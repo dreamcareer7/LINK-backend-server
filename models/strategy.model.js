@@ -13,7 +13,7 @@ const Schema = mongoose.Schema;
  */
 const strategySchema = new Schema(
     {
-        sequenceNumber: { type: Schema.Types.Number, unique: true },
+        sequenceNumber: { type: Schema.Types.Number },
         title: { type: Schema.Types.String },
         description: { type: Schema.Types.String },
         videoScript: { type: Schema.Types.String },

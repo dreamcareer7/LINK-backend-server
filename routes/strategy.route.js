@@ -3,11 +3,12 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const Strategy = mongoose.model('strategy');
 const Logger = require('../services/logger');
+const authMiddleWare = require('../middleware/authenticate');
 
 /*
 Add strategy
 */
-router.post('/', async (req, res) => {
+router.post('/', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
         if (!req.body.title || !req.body.description || !req.body.videoScript) {
             return res.status(400).json({
@@ -16,8 +17,11 @@ router.post('/', async (req, res) => {
             });
         }
         let sequenceNumber = req.body.sequenceNumber;
-        if (sequenceNumber) {
-            const existingStrategy = await Strategy.findOne({ sequenceNumber: req.body.sequenceNumber });
+        if (req.body.hasOwnProperty('sequenceNumber')) {
+            const existingStrategy = await Strategy.findOne({
+                sequenceNumber: req.body.sequenceNumber,
+                isDeleted: false,
+            });
             if (existingStrategy) {
                 return res.status(400).json({
                     status: 'STRATEGY_WITH_SAME_NUMBER_EXISTS',
@@ -54,9 +58,9 @@ router.post('/', async (req, res) => {
 /*
 update strategy
 */
-router.put('/:sequence-number', async (req, res) => {
+router.put('/:sequenceNumber', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
-        if (!req.body.title || !req.body.description || !req.body.videoScript || req.params['sequence-number']) {
+        if (!req.body.title || !req.body.description || !req.body.videoScript || !req.params['sequenceNumber']) {
             return res.status(400).json({
                 status: 'REQUIRE_FIELD_EMPTY',
                 message: 'Enter mandatory Fields.',
@@ -64,7 +68,7 @@ router.put('/:sequence-number', async (req, res) => {
         }
         await Strategy.updateOne(
             {
-                sequenceNumber: req.params['sequence-number'],
+                sequenceNumber: req.params['sequenceNumber'],
             },
             req.body,
         );
@@ -84,15 +88,15 @@ router.put('/:sequence-number', async (req, res) => {
 /*
 Delete Strategy
 */
-router.delete('/:sequence-number', async (req, res) => {
+router.delete('/:sequenceNumber', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
     try {
-        if (!req.params['sequence-number']) {
+        if (!req.params['sequenceNumber']) {
             return res.status(400).json({
                 status: 'SEQUENCE_NUMBER_NOT_FOUND',
                 message: 'Sequence Number is requires in params.',
             });
         }
-        await Strategy.updateOne({ sequenceNumber: req.params['sequence-number'] });
+        await Strategy.updateOne({ sequenceNumber: req.params['sequenceNumber'] }, { isDeleted: true });
         return res.status(200).send({
             status: 'SUCCESS',
             message: 'Strategy deleted successfully.',
@@ -109,7 +113,27 @@ router.delete('/:sequence-number', async (req, res) => {
 /*
 List Strategies
 */
-router.get('/', async (req, res) => {
+router.get('/admin', authMiddleWare.adminAuthMiddleWare, async (req, res) => {
+    try {
+        let strategies = await Strategy.find({ isDeleted: false })
+            .sort({ sequenceNumber: 1 })
+            .lean();
+        return res.status(200).send({
+            status: 'SUCCESS',
+            data: strategies,
+        });
+    } catch (e) {
+        Logger.log.error('Error in get all strategies.', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+/*
+List Strategies
+*/
+router.get('/', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
         let strategies = await Strategy.find({ isDeleted: false })
             .sort({ sequenceNumber: 1 })

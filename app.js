@@ -95,7 +95,7 @@ app.use('/payment', payment);
 app.use('/conversation', authMiddleWare.clientAuthMiddleWare, authMiddleWare.linkedInLoggedInChecked, conversation);
 app.use('/client-follow-ups', authMiddleWare.clientAuthMiddleWare, clientFollowUps);
 app.use('/client-crm', authMiddleWare.clientAuthMiddleWare, clientCrm);
-app.use('/strategy', authMiddleWare.clientAuthMiddleWare, strategy);
+app.use('/strategy', strategy);
 app.use('/organization', organization);
 
 /**
