@@ -73,6 +73,7 @@ let payment = require('./routes/payment.route');
 let conversation = require('./routes/conversation.route');
 let clientFollowUps = require('./routes/client-follow-ups.route');
 let clientCrm = require('./routes/client-crm.route');
+let strategy = require('./routes/strategy.route');
 let organization = require('./routes/organization.route');
 
 app.use('/', index);
@@ -94,6 +95,7 @@ app.use('/payment', payment);
 app.use('/conversation', authMiddleWare.clientAuthMiddleWare, authMiddleWare.linkedInLoggedInChecked, conversation);
 app.use('/client-follow-ups', authMiddleWare.clientAuthMiddleWare, clientFollowUps);
 app.use('/client-crm', authMiddleWare.clientAuthMiddleWare, clientCrm);
+app.use('/strategy', authMiddleWare.clientAuthMiddleWare, strategy);
 app.use('/organization', organization);
 
 /**
