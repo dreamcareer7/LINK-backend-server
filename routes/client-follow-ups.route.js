@@ -62,8 +62,8 @@ router.put('/filters', async (req, res) => {
                 $lte: new Date(req.body.endDate),
             };
         }
-        console.log('today::', today);
-        console.log('queryObj::', JSON.stringify(queryObj, null, 3));
+        // console.log('today::', today);
+        // console.log('queryObj::', JSON.stringify(queryObj, null, 3));
         let promiseArr = [];
         promiseArr.push(Opportunity.paginate(queryObj, options));
         promiseArr.push(
