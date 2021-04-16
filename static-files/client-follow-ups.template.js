@@ -28,6 +28,11 @@ module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
 
         <tr>
           <td align='left' valign='center' style='padding: 10px 40px; font-size: 16px; line-height: 24px; font-weight: 400;  color: #666666'>
+            Hey ${firstName}.
+          </td>
+        </tr>
+        <tr>
+          <td align='left' valign='center' style='padding: 10px 40px; font-size: 16px; line-height: 24px; font-weight: 400;  color: #666666'>
             Below are sales opportunities you've set to re-engage with today.
           </td>
         </tr>
