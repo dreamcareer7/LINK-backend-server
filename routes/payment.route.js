@@ -82,14 +82,16 @@ router.post('/stripe-webhook', async (req, res) => {
                         payment.planType = client.selectedPlan.planSelected;
                         payment.paymentAmount = reqData.plan.amount;
                         payment.stripePlanId = reqData.plan.id;
+                        // let linkedInSignUpLink =
+                        //     'https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=' +
+                        //     config.linkedIn.clientId +
+                        //     '&redirect_uri=' +
+                        //     config.backEndBaseUrl +
+                        //     'client-auth/sign-up?subscription_id=' +
+                        //     reqData.id +
+                        //     '&state=fooobar&scope=r_emailaddress,r_liteprofile';
                         let linkedInSignUpLink =
-                            'https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=' +
-                            config.linkedIn.clientId +
-                            '&redirect_uri=' +
-                            config.backEndBaseUrl +
-                            'client-auth/sign-up?subscription_id=' +
-                            reqData.id +
-                            '&state=fooobar&scope=r_emailaddress,r_liteprofile';
+                            config.linkFluencer.gettingStartedPageUrl + '?subscription_id=' + reqData.id;
                         let mailObj = {
                             toAddress: [client.email],
                             subject: 'Welcome To Jayla',
