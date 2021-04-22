@@ -15,7 +15,9 @@ router.put('/general-values', async (req, res) => {
         promiseArr.push(getPercentOfLeadsClosed({ clientId: req.client._id }));
         promiseArr.push(getTotalSalesGenerated({ clientId: req.client._id }));
         let promiseData = await Promise.all(promiseArr);
-        let responseData = {};
+        let responseData = {
+            timeSpentInLinkedIn: 0
+        };
         promiseData.forEach((response) => {
             responseData = { ...responseData, ...response };
         });
