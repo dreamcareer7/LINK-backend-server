@@ -29,6 +29,7 @@ module.exports = {
     },
     linkFluencer: {
         paymentPageUrl: 'https://linkfluencer.com/order',
+        gettingStartedPageUrl: 'https://linkfluencer.com/getting-started',
         apiKey: process.env.LINKFLUENCER_API_KEY,
     },
     environment: process.env.ENVIRONMENT || 'local',

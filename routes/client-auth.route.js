@@ -30,10 +30,13 @@ router.get('/sign-up', async (req, res) => {
                 message: 'Code is not Found',
             });
         }
+        let isNewClient = false;
         let subscriptionId = req.query.subscription_id;
         let redirectUrl = config.backEndBaseUrl + 'client-auth/sign-up';
         if (subscriptionId) {
             redirectUrl += '?subscription_id=' + subscriptionId;
+            Logger.log.info('Its a request from new client - with subscription id');
+            isNewClient = true;
         }
         let token = await linkedInHelper.genLinkedInAccessToken(req.query.code, redirectUrl);
         let user = await linkedInHelper.getLinkedInUserData(token);
@@ -87,7 +90,11 @@ router.get('/sign-up', async (req, res) => {
             //     message: 'Welcome to Dashbord.',
             //     status: 'SUCCESS',
             // });
-            return res.redirect(`${config.clientUrls.clientFrontEndBaseUrl}auth-verify?token=${token}`);
+            if (isNewClient) {
+                return res.redirect(`${config.linkFluencer.gettingStartedPageUrl}?subscription_id=${subscriptionId}`);
+            } else {
+                return res.redirect(`${config.clientUrls.clientFrontEndBaseUrl}auth-verify?token=${token}`);
+            }
         }
     } catch (e) {
         Logger.log.error('Error in SignUp API call.', e.message || e);
