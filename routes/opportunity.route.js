@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const moment = require('moment-timezone');
 const mongoose = require('mongoose');
 const Opportunity = mongoose.model('opportunity');
 const Conversation = mongoose.model('conversation');
@@ -532,6 +533,134 @@ router.put('/search-opportunity', async (req, res) => {
         });
     }
 });
+
+/**
+ *client-follow-ups filters
+ */
+
+router.put('/get-opportunity-with-prev-next', async (req, res) => {
+    try {
+        let momentDate = moment().tz('America/Los_Angeles');
+        momentDate.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+        momentDate.toISOString();
+        momentDate = momentDate.format();
+        let today = momentDate;
+        let options = {
+            page: parseInt(req.query.page),
+            limit: parseInt(req.query.limit),
+            sort: { followUp: 1, firstName: 1, lastName: 1 },
+        };
+        let queryObj = {
+            clientId: req.client._id,
+            isDeleted: false,
+            followUp: { $exists: true, $ne: null },
+        };
+        let matchPipeline = {
+            clientId: req.client._id,
+            isDeleted: false,
+            followUp: { $exists: true, $ne: null },
+        };
+
+        if (req.body.stages.length > 0) {
+            let otherStages = req.body.stages;
+            let lostClosedStages = [];
+            if (otherStages.indexOf('LOST') === -1) {
+                lostClosedStages.push('LOST');
+            }
+            if (otherStages.indexOf('CLOSED') === -1) {
+                lostClosedStages.push('CLOSED');
+            }
+            matchPipeline.stage = { $in: req.body.stages, $nin: [] };
+            matchPipeline['$or'] = [
+                { stage: { $in: lostClosedStages }, followUp: { $gt: today } },
+                { stage: { $in: otherStages } },
+            ];
+        } else {
+            matchPipeline['$or'] = [
+                { stage: { $in: ['CLOSED', 'LOST'] }, followUp: { $gt: today } },
+                { stage: { $in: ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'POTENTIAL'] } },
+            ];
+        }
+        if (req.body.likelyHoods.length > 0) {
+            matchPipeline.likelyHood = { $in: req.body.likelyHoods };
+        }
+        if (req.body.startDeal && req.body.endDeal) {
+            matchPipeline.dealSize = {
+                $gte: req.body.startDeal,
+                $lte: req.body.endDeal,
+            };
+        }
+        if (req.body.endDate && req.body.startDate) {
+            matchPipeline.followUp = {
+                $gte: new Date(req.body.startDate),
+                $lte: new Date(req.body.endDate),
+            };
+        }
+        let promiseArr = [];
+        promiseArr.push(
+            Opportunity.aggregate([
+                {
+                    $match: matchPipeline,
+                },
+                {
+                    $sort: {
+                        followUp: 1,
+                        firstName: 1,
+                        lastName: 1,
+                    },
+                },
+                {
+                    $group: {
+                        _id: '$clientId',
+                        opportunityIds: {
+                            $push: '$_id',
+                        },
+                    },
+                },
+            ]).allowDiskUse(true),
+        );
+        console.log('MATCH PIPELINE::', JSON.stringify(matchPipeline, null, 3));
+        promiseArr.push(Opportunity.findOne({ _id: req.body.currentOpportunityId }));
+        let data = await Promise.all(promiseArr);
+        if (!data[1].isVisited) {
+            data[1].isVisited = true;
+            await data[1].save();
+            data[1].isVisited = false;
+        }
+        let prevId;
+        let nextId;
+        console.log('data [0]', data[0]);
+        if (data[0] && data[0][0] && data[0][0].opportunityIds && data[0][0].opportunityIds.length > 1) {
+            console.log('In the if condition...');
+            data[0][0].opportunityIds = data[0][0].opportunityIds.map((x) => x.toString());
+            const currentIndex = data[0][0].opportunityIds.indexOf(req.body.currentOpportunityId);
+            console.log('currentIndex', currentIndex);
+            if (currentIndex !== 0) {
+                prevId = data[0][0].opportunityIds[currentIndex - 1];
+            }
+            if (currentIndex !== data[0][0].opportunityIds.length - 1) {
+                nextId = data[0][0].opportunityIds[currentIndex + 1];
+            }
+        }
+        console.log('prevId', prevId);
+        console.log('nextId', nextId);
+        res.status(200).send({
+            status: 'SUCCESS',
+            data: {
+                prevId,
+                nextId,
+                opportunity: data[1],
+            },
+        });
+    } catch (e) {
+        Logger.log.error('Error client-follow-ups filters in  API.', e.message || e);
+        res.status(500).json({
+            status: e.status || 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
 /**
  * Export Router
  */

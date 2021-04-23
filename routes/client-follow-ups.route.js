@@ -19,7 +19,7 @@ router.put('/filters', async (req, res) => {
         let options = {
             page: parseInt(req.query.page),
             limit: parseInt(req.query.limit),
-            sort: { followUp: 1 },
+            sort: { followUp: 1, firstName: 1, lastName: 1 },
         };
         let queryObj = {
             clientId: req.client._id,
