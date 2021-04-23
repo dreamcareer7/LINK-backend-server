@@ -45,7 +45,7 @@ router.post('/send-invitation', async (req, res) => {
         let linkFluencerLink = config.linkFluencer.paymentPageUrl + '?jayla_customer_id=' + newClient._id;
         let mailObj = {
             toAddress: [newClient.email],
-            subject: "You've been invited to start using Jayla",
+            subject: 'Special invitation to Jayla',
             text: {
                 linkFluencerLink,
                 firstName: newClient.firstName,

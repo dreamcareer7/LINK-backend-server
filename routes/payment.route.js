@@ -94,7 +94,7 @@ router.post('/stripe-webhook', async (req, res) => {
                             config.linkFluencer.gettingStartedPageUrl + '?subscription_id=' + reqData.id;
                         let mailObj = {
                             toAddress: [client.email],
-                            subject: 'Welcome To Jayla',
+                            subject: 'Welcome to Jayla',
                             text: {
                                 linkedInSignUpLink,
                                 firstName: client.firstName,
