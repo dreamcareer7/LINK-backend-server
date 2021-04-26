@@ -352,6 +352,7 @@ router.put('/get-opportunity', authMiddleWare.linkedInLoggedInChecked, async (re
         let opportunitys = await Opportunity.find({
             clientId: req.client._id,
             isDeleted: false,
+            isSaved: true,
             publicIdentifier: { $in: req.body.publicIdentifierArr },
         }).select('publicIdentifier -_id');
 
