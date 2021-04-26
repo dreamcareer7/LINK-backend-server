@@ -649,7 +649,7 @@ router.put('/get-opportunity-with-prev-next', async (req, res) => {
             data: {
                 prevId,
                 nextId,
-                opportunity: data[1],
+                ...data[1],
             },
         });
     } catch (e) {
