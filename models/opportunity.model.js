@@ -42,6 +42,7 @@ const opportunitySchema = new Schema(
         followUp: Schema.Types.Date,
         notes: [{ text: Schema.Types.String, creationTime: Schema.Types.Date, updationTime: Schema.Types.Date }],
         isVisited: { type: Schema.Types.Boolean, default: false },
+        isSaved: { type: Schema.Types.Boolean, default: false },
     },
     { timestamps: true },
 );

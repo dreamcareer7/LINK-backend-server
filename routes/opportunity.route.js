@@ -10,6 +10,7 @@ const cookieHelper = require('../helper/cookie.helper');
 const firebaseHelper = require('../helper/firebase-notification');
 const conversationHelper = require('../helper/conversation.helper');
 const authMiddleWare = require('../middleware/authenticate');
+const socketHelper = require('../helper/socket.helper');
 
 /**
  * add opportunity
@@ -300,6 +301,17 @@ router.put('/update-opportunity/:id', async (req, res) => {
             });
         }
         let opportunity = await Opportunity.findOne({ _id: req.params.id, clientId: req.client._id, isDeleted: false });
+        if (!opportunity.isSaved) {
+            req.body.isSaved = true;
+            socketHelper.sendNotification({
+                notificationObj: {
+                    publicIdentifier: opportunity.publicIdentifier,
+                    buttonText: 'Update Opportunity',
+                },
+                clientId: req.client._id,
+                requestFor: 'extension',
+            });
+        }
         if (opportunity.stage !== req.body.stage) {
             req.body.stageLogs = opportunity.stageLogs;
             req.body.stageLogs.push({
@@ -508,6 +520,7 @@ router.put('/search-opportunity', async (req, res) => {
         let opportunity = await Opportunity.find({
             clientId: req.client._id,
             isDeleted: false,
+            isSaved: true,
 
             $or: [
                 { $and: [{ firstName: new RegExp(name[0], 'i') }, { lastName: new RegExp(name[1], 'i') }] },
@@ -545,19 +558,10 @@ router.put('/get-opportunity-with-prev-next', async (req, res) => {
         momentDate.toISOString();
         momentDate = momentDate.format();
         let today = momentDate;
-        let options = {
-            page: parseInt(req.query.page),
-            limit: parseInt(req.query.limit),
-            sort: { followUp: 1, firstName: 1, lastName: 1 },
-        };
-        let queryObj = {
-            clientId: req.client._id,
-            isDeleted: false,
-            followUp: { $exists: true, $ne: null },
-        };
         let matchPipeline = {
             clientId: req.client._id,
             isDeleted: false,
+            isSaved: true,
             followUp: { $exists: true, $ne: null },
         };
 

@@ -12,7 +12,7 @@ router.put('/opportunities', async (req, res) => {
             [
                 {
                     $match: {
-                        $and: [{ clientId: req.client._id }, { isDeleted: false }],
+                        $and: [{ clientId: req.client._id }, { isDeleted: false, isSaved: true }],
                     },
                 },
                 {
@@ -66,7 +66,7 @@ router.put('/pipeline-value', async (req, res) => {
             [
                 {
                     $match: {
-                        $and: [{ clientId: req.client._id }, { isDeleted: false }],
+                        $and: [{ clientId: req.client._id }, { isDeleted: false, isSaved: true }],
                     },
                 },
                 {

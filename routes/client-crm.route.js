@@ -13,6 +13,7 @@ router.put('/filters', async (req, res) => {
         let queryObj = {
             clientId: req.client._id,
             isDeleted: false,
+            isSaved: true,
         };
 
         if (req.body.endDate && req.body.startDate) {
@@ -44,7 +45,7 @@ router.put('/filters', async (req, res) => {
             Opportunity.aggregate([
                 {
                     $match: {
-                        $and: [{ clientId: req.client._id }, { isDeleted: false }],
+                        $and: [{ clientId: req.client._id }, { isDeleted: false, isSaved: true }],
                     },
                 },
                 {

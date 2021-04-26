@@ -26,6 +26,7 @@ router.get('/activity-breakdown', async (req, res) => {
                         $match: {
                             clientId: req.client._id,
                             isDeleted: false,
+                            isSaved: true,
                             // createdAt: { $gte: startDate, $lte: endDate },
                         },
                     },
@@ -197,6 +198,7 @@ router.get('/pipeline-value', async (req, res) => {
                     $match: {
                         clientId: req.client._id,
                         isDeleted: false,
+                        isSaved: true,
                         createdAt: { $gte: startDate, $lte: endDate },
                     },
                 },
@@ -288,6 +290,7 @@ router.get('/total-sales', async (req, res) => {
                     $match: {
                         clientId: req.client._id,
                         isDeleted: false,
+                        isSaved: true,
                         // createdAt: { $gte: startDate, $lte: endDate },
                         // stage: 'CLOSED',
                     },
@@ -401,6 +404,7 @@ router.get('/conversions', async (req, res) => {
                         $match: {
                             clientId: req.client._id,
                             isDeleted: false,
+                            isSaved: true,
                             // createdAt: { $gte: startDate, $lte: endDate },
                         },
                     },

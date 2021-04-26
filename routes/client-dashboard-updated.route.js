@@ -16,7 +16,7 @@ router.put('/general-values', async (req, res) => {
         promiseArr.push(getTotalSalesGenerated({ clientId: req.client._id }));
         let promiseData = await Promise.all(promiseArr);
         let responseData = {
-            timeSpentInLinkedIn: 0
+            timeSpentInLinkedIn: 0,
         };
         promiseData.forEach((response) => {
             responseData = { ...responseData, ...response };
@@ -41,7 +41,7 @@ router.put('/pipeline-value', async (req, res) => {
             [
                 {
                     $match: {
-                        $and: [{ clientId: req.client._id }, { isDeleted: false }],
+                        $and: [{ clientId: req.client._id }, { isDeleted: false, isSaved: true }],
                     },
                 },
                 {
@@ -110,6 +110,7 @@ router.put('/sales-between', async (req, res) => {
                 $match: {
                     clientId: req.client._id,
                     isDeleted: false,
+                    isSaved: true,
                     stage: 'CLOSED',
                 },
             },
@@ -205,6 +206,7 @@ let getInvitesValues = ({ clientId }) => {
                     inviteAccepted = inviteesData[i].count;
                 }
             }
+            inviteSent += inviteAccepted;
             console.log('inviteSent::', inviteSent);
             console.log('inviteAccepted::', inviteAccepted);
             if (inviteSent !== 0 || inviteSent !== 0) {
@@ -228,6 +230,7 @@ let getTotalLeads = ({ clientId }) => {
         try {
             let opportunityCount = await Opportunity.find({
                 isDeleted: false,
+                isSaved: true,
                 clientId: clientId,
                 stage: { $nin: ['CLOSED', 'LOST'], $exists: true },
             }).count();
@@ -251,6 +254,7 @@ let getPercentOfLeadsClosed = ({ clientId }) => {
                     $match: {
                         clientId: clientId,
                         isDeleted: false,
+                        isSaved: true,
                         stage: {
                             $exists: true,
                         },
@@ -311,6 +315,7 @@ let getTotalSalesGenerated = ({ clientId }) => {
                     $match: {
                         clientId: clientId,
                         isDeleted: false,
+                        isSaved: true,
                         stage: 'CLOSED',
                     },
                 },
