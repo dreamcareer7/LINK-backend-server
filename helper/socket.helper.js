@@ -63,10 +63,7 @@ let addSocketIdToClient = (token, socketId, requestFrom) => {
                 return resolve();
             }
             if (requestFrom && requestFrom === 'extension') {
-                console.log('client::', client);
-                console.log('in extension if...', socketId);
                 if (client.extensionSocketIds.indexOf(socketId) === -1) {
-                    console.log('in inner extension if...');
                     await Client.updateOne({ _id: client._id }, { $push: { extensionSocketIds: socketId } });
                 }
             } else {
@@ -109,7 +106,7 @@ let getSocketIdFromClient = (clientId, requestFor) => {
     return new Promise(async (resolve, reject) => {
         try {
             let client = await Client.findOne({ _id: clientId })
-                .select({ socketIds: 1 })
+                .select({ socketIds: 1, extensionSocketIds: 1 })
                 .lean();
             if (!client) {
                 return [];

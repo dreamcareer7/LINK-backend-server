@@ -577,12 +577,12 @@ router.put('/get-opportunity-with-prev-next', async (req, res) => {
             }
             matchPipeline.stage = { $in: req.body.stages, $nin: [] };
             matchPipeline['$or'] = [
-                { stage: { $in: lostClosedStages }, followUp: { $gt: today } },
+                { stage: { $in: lostClosedStages }, followUp: { $gt: new Date(today) } },
                 { stage: { $in: otherStages } },
             ];
         } else {
             matchPipeline['$or'] = [
-                { stage: { $in: ['CLOSED', 'LOST'] }, followUp: { $gt: today } },
+                { stage: { $in: ['CLOSED', 'LOST'] }, followUp: { $gt: new Date(today) } },
                 { stage: { $in: ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'POTENTIAL'] } },
             ];
         }
