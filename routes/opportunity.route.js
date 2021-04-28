@@ -381,6 +381,14 @@ router.delete('/delete-opportunity/:id', async (req, res) => {
             { new: true },
         );
         if (opportunity) {
+            socketHelper.sendNotification({
+                notificationObj: {
+                    publicIdentifier: opportunity.publicIdentifier,
+                    buttonText: 'Add Opportunity',
+                },
+                clientId: req.client._id,
+                requestFor: 'extension',
+            });
             return res.status(200).json({
                 status: 'SUCCESS',
                 message: 'opportunitys is Deleted Successfully.',
