@@ -9,27 +9,30 @@ let socketChromeUser = {};
 socketApi.io = io;
 
 io.on('connection', async function(socket) {
-    console.log('New user connected:', socket.id);
-    let requestFrom = socket.handshake.query.request_from;
-    console.log('requestFrom::', requestFrom);
-    if (requestFrom && requestFrom === 'extension') {
-        socketChromeUser[socket.id] = socket;
-    } else {
-        socketUser[socket.id] = socket;
-    }
-    let userToken = socket.handshake.query.token;
-    if (userToken) {
-        await addSocketIdToClient(userToken, socket.id, requestFrom);
-    }
-    socket.on('disconnect', async () => {
-        console.log('User disconnected::', socket.id);
-        await removeSocketIdFromClient(socket.id);
-        for (let key in socketUser) {
-            if (key.toString() === socket.id) {
-                delete socketUser[key];
-            }
+    try {
+        let requestFrom = socket.handshake.query.request_from;
+        console.log('New user connected:', socket.id, requestFrom);
+        if (requestFrom && requestFrom === 'extension') {
+            socketChromeUser[socket.id] = socket;
+        } else {
+            socketUser[socket.id] = socket;
         }
-    });
+        let userToken = socket.handshake.query.token;
+        if (userToken) {
+            await addSocketIdToClient(userToken, socket.id, requestFrom);
+        }
+        socket.on('disconnect', async () => {
+            console.log('User disconnected::', socket.id);
+            await removeSocketIdFromClient(socket.id);
+            for (let key in socketUser) {
+                if (key.toString() === socket.id) {
+                    delete socketUser[key];
+                }
+            }
+        });
+    } catch (e) {
+        console.log('Error connecting the user::', e.message || e);
+    }
 });
 
 socketApi.sendNotification = async function({ notificationObj, socketIds = [], clientId = null, requestFor }) {
