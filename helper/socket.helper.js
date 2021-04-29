@@ -21,6 +21,10 @@ io.on('connection', async function(socket) {
         if (userToken) {
             await addSocketIdToClient(userToken, socket.id, requestFrom);
         }
+        socket.on('time-tracking', async (message) => {
+            console.log('Received the tracking of the user', message);
+            updateTimeSpent(message);
+        });
         socket.on('disconnect', async () => {
             console.log('User disconnected::', socket.id);
             await removeSocketIdFromClient(socket.id);
@@ -125,6 +129,45 @@ let getSocketIdFromClient = (clientId, requestFor) => {
             return reject(err);
         }
     });
+};
+
+/**
+ * Time spent on LinkedIn
+ */
+let updateTimeSpent = async ({ startTime, endTime, token }) => {
+    try {
+        let currentTime = new Date();
+        if (!startTime || !endTime || !token) {
+            Logger.log.error('Missing required fields to add the time spent on linkedIn');
+            return Promise.resolve();
+        }
+        startTime = new Date(startTime);
+        endTime = new Date(endTime);
+        if (startTime > currentTime || endTime > currentTime || startTime > endTime) {
+            Logger.log.error('Missing minimum criteria to add the time spent on linkedIn');
+            return Promise.resolve();
+        }
+        let client = await Client.findByToken(token);
+        if (!client) {
+            Logger.log.error('Client not found for the requested token');
+            return Promise.resolve();
+        }
+        if (!client.lastOnLinkedInAt) {
+            client.lastOnLinkedInAt = endTime;
+            client.timeSpentOnLinkedInInMs = endTime.getTime() - startTime.getTime();
+        } else {
+            if (client.lastOnLinkedInAt < startTime) {
+                client.timeSpentOnLinkedInInMs += endTime.getTime() - startTime.getTime();
+            } else {
+                client.timeSpentOnLinkedInInMs += endTime.getTime() - client.lastOnLinkedInAt.getTime();
+            }
+            client.lastOnLinkedInAt = endTime;
+        }
+        await client.save();
+        return Promise.resolve();
+    } catch (e) {
+        Logger.log.error('Error updating the total time spent on linkedIn:', e.message || e);
+    }
 };
 
 module.exports = socketApi;

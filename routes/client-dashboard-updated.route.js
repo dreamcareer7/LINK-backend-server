@@ -11,13 +11,11 @@ router.put('/general-values', async (req, res) => {
         let promiseArr = [];
         promiseArr.push(getInvitesValues({ clientId: req.client._id }));
         promiseArr.push(getTotalLeads({ clientId: req.client._id }));
-        //TODO get time spent on LinkedIn
+        promiseArr.push(getTotalHoursSpent({ client: req.client }));
         promiseArr.push(getPercentOfLeadsClosed({ clientId: req.client._id }));
         promiseArr.push(getTotalSalesGenerated({ clientId: req.client._id }));
         let promiseData = await Promise.all(promiseArr);
-        let responseData = {
-            timeSpentInLinkedIn: 0,
-        };
+        let responseData = {};
         promiseData.forEach((response) => {
             responseData = { ...responseData, ...response };
         });
@@ -158,10 +156,17 @@ router.put('/sales-between', async (req, res) => {
     }
 });
 
-let getTotalHoursSpent = ({}) => {
+let getTotalHoursSpent = ({ client }) => {
     return new Promise(async (resolve, reject) => {
         try {
-            resolve();
+            let hoursSpent = 0;
+            if (client.timeSpentOnLinkedInInMs) {
+                Logger.log.info('Time spent on linkedIn in  ms:', client.timeSpentOnLinkedInInMs);
+                hoursSpent = Math.round(client.timeSpentOnLinkedInInMs / (60 * 60 * 1000));
+            }
+            return resolve({
+                timeSpentInLinkedIn: hoursSpent,
+            });
         } catch (err) {
             Logger.log.error('ERROR : ', err);
             reject(err);

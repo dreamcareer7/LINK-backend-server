@@ -76,6 +76,8 @@ const clientSchema = new Schema(
         lastRequestAt: { type: Schema.Types.Date, default: new Date() },
         socketIds: [{ type: Schema.Types.String, default: [] }],
         extensionSocketIds: [{ type: Schema.Types.String, default: [] }],
+        lastOnLinkedInAt: { type: Schema.Types.Date },
+        timeSpentOnLinkedInInMs: { type: Schema.Types.Number, default: 0 },
     },
     { timestamps: true },
 );
