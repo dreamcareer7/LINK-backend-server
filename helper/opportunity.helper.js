@@ -180,7 +180,6 @@ let syncOpportunityStage = async () => {
                     isSubscriptionCancelled: false,
                 });
                 for (let i = 0; i < clients.length; i++) {
-                    console.log('Processing for Client::', clients[i]._id, clients[i].publicIdentifier);
                     let promiseArr = [];
                     promiseArr.push(
                         Opportunity.find({
@@ -195,8 +194,6 @@ let syncOpportunityStage = async () => {
                     let opportunities = response[0];
                     let dbConversation = response[1];
                     let publicIdentifiers = [];
-                    console.log('opportunities::', opportunities);
-                    console.log('dbConversation::', dbConversation);
                     for (let j = 0; j < opportunities.length; j++) {
                         let conversation = dbConversation.conversations.filter(
                             (o) => o.publicIdentifier === opportunities[j].publicIdentifier,
@@ -212,7 +209,6 @@ let syncOpportunityStage = async () => {
                             publicIdentifiers.push(opportunities[j].publicIdentifier);
                         }
                     }
-                    console.log('PublicIdentifiers for which chat not found::', publicIdentifiers);
                     if (publicIdentifiers.length > 0) {
                         if (!clients[i].lastSyncForChatsAt) {
                             clients[i].lastSyncForChatsAt = clients[i].createdAt;
@@ -225,7 +221,6 @@ let syncOpportunityStage = async () => {
                             publicIdentifiers,
                             checkBefore: clients[i].lastSyncForChatsAt.getTime(),
                         });
-                        console.log('newChats::', newChats);
                         if (newChats.length > 0) {
                             let newPromiseArr = [];
                             for (let j = 0; j < newChats.length; j++) {

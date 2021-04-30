@@ -19,7 +19,6 @@ router.put('/general-values', async (req, res) => {
         promiseData.forEach((response) => {
             responseData = { ...responseData, ...response };
         });
-        console.log('responseData', responseData);
         return res.status(200).send({
             status: 'SUCCESS',
             data: responseData,
@@ -209,7 +208,6 @@ let getInvitesValues = ({ clientId }) => {
                     },
                 },
             ]);
-            console.log('inviteesData::', inviteesData);
             for (let i = 0; i < inviteesData.length; i++) {
                 if (inviteesData[i]._id.hasOwnProperty('isAccepted') && !inviteesData[i]._id.isAccepted) {
                     inviteSent = inviteesData[i].count;
@@ -218,12 +216,9 @@ let getInvitesValues = ({ clientId }) => {
                 }
             }
             inviteSent += inviteAccepted;
-            console.log('inviteSent::', inviteSent);
-            console.log('inviteAccepted::', inviteAccepted);
             if (inviteSent !== 0 || inviteSent !== 0) {
                 acceptanceRate = Math.round((inviteAccepted / (inviteSent + inviteAccepted)) * 100);
             }
-            console.log('acceptanceRate::', acceptanceRate);
             return resolve({
                 inviteSent,
                 inviteAccepted,
@@ -245,7 +240,6 @@ let getTotalLeads = ({ clientId }) => {
                 clientId: clientId,
                 stage: { $nin: ['CLOSED', 'LOST'], $exists: true },
             }).count();
-            console.log('opportunityCount::', opportunityCount);
             resolve({ opportunityCount });
         } catch (err) {
             Logger.log.error('ERROR : ', err);
@@ -303,12 +297,9 @@ let getPercentOfLeadsClosed = ({ clientId }) => {
                     otherThanClosed = opportunityData[i].count;
                 }
             }
-            console.log('closed::', closed);
-            console.log('otherThanClosed::', otherThanClosed);
             if (closed !== 0 || otherThanClosed !== 0) {
                 percentOfLeadsClosed = Math.round((closed / (closed + otherThanClosed)) * 100);
             }
-            console.log('percentOfLeadsClosed::', percentOfLeadsClosed);
             return resolve({ percentOfLeadsClosed });
         } catch (err) {
             Logger.log.error('ERROR : ', err);

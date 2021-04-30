@@ -31,7 +31,6 @@ const genLinkedInAccessToken = async (code, redirectUri) => {
  */
 const getLinkedInUserData = async (token) => {
     try {
-        console.log('in getLinkedInUserData', token);
         let data = {
             method: 'GET',
             url: `https://api.linkedin.com/v2/me?projection=(id,profilePicture(displayImage~:playableStreams),firstName,lastName,localizedFirstName,localizedLastName)`,
@@ -42,7 +41,6 @@ const getLinkedInUserData = async (token) => {
         };
 
         let response = await axios(data);
-        console.log('received response', response.data);
         return response.data;
     } catch (e) {
         Logger.log.error('Error in get LinkedIn User Data', e.message || e);

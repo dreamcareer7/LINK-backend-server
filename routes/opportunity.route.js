@@ -632,7 +632,6 @@ router.put('/get-opportunity-with-prev-next', async (req, res) => {
                 },
             ]).allowDiskUse(true),
         );
-        console.log('MATCH PIPELINE::', JSON.stringify(matchPipeline, null, 3));
         promiseArr.push(Opportunity.findOne({ _id: req.body.currentOpportunityId }));
         let data = await Promise.all(promiseArr);
         if (!data[1].isVisited) {
@@ -642,12 +641,9 @@ router.put('/get-opportunity-with-prev-next', async (req, res) => {
         }
         let prevId;
         let nextId;
-        console.log('data [0]', data[0]);
         if (data[0] && data[0][0] && data[0][0].opportunityIds && data[0][0].opportunityIds.length > 1) {
-            console.log('In the if condition...');
             data[0][0].opportunityIds = data[0][0].opportunityIds.map((x) => x.toString());
             const currentIndex = data[0][0].opportunityIds.indexOf(req.body.currentOpportunityId);
-            console.log('currentIndex', currentIndex);
             if (currentIndex !== 0) {
                 prevId = data[0][0].opportunityIds[currentIndex - 1];
             }
@@ -655,8 +651,6 @@ router.put('/get-opportunity-with-prev-next', async (req, res) => {
                 nextId = data[0][0].opportunityIds[currentIndex + 1];
             }
         }
-        console.log('prevId', prevId);
-        console.log('nextId', nextId);
         res.status(200).send({
             status: 'SUCCESS',
             data: {

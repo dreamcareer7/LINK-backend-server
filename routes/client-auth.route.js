@@ -469,23 +469,16 @@ router.get('/get-login-status', async (req, res) => {
                 Logger.log.warn('L Token not set in header');
                 return res.status(401).send({ message: 'L Token not set in header' });
             }
-            console.log('req.header::', req.header);
-            console.log('lToken::', lToken);
             let decoded;
             let jwtSecret = config.jwt.secret;
             let d = new Date();
             // try {
             decoded = jwt.verify(lToken, jwtSecret);
-            console.log('decoded::', decoded);
             if (!decoded.linkedInUserId || decoded.expiredTime < d.getTime()) {
-                console.log('in if...');
                 return res.status(401).send({ message: 'Invalid Token or expired' });
             }
-            console.log('after if...');
             let user = await linkedInHelper.getLinkedInUserData(decoded.linkedInId);
-            console.log('user::', user);
             let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
-            console.log('client::', client);
             if (client && client.isSubscribed && !client.isSubscriptionCancelled) {
                 dataObj = {
                     profileTitle: client.title ? client.title : '',
@@ -506,11 +499,9 @@ router.get('/get-login-status', async (req, res) => {
             //     return res.status(401).send({message: 'Invalid Auth-Token'});
             // }
         } else if (reqIs === '1') {
-            console.log("req.header('authorization')::", req.header('authorization'));
             let token = req.header('authorization');
             try {
                 let client = await Client.findByToken(token);
-                console.log('client::', client);
                 if (!client.isSubscribed || client.isSubscriptionCancelled) {
                     dataObj = {
                         is: '0',
@@ -525,8 +516,6 @@ router.get('/get-login-status', async (req, res) => {
                 return res.status(401).send({ message: 'Invalid Auth-Token' });
             }
         }
-        console.log('dataObj::', dataObj);
-        console.log('Returning at ', new Date());
         return res.status(200).send({
             status: 'SUCCESS',
             data: dataObj,

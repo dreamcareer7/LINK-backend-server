@@ -32,7 +32,6 @@ const scheduleNotification = async () => {
                         .limit(5)
                         .sort({ followUp: 1 })
                         .select('_id firstName lastName title stage profilePicUrl');
-                    console.log('opportunities::', opportunities);
                     if (opportunities.length !== 0) {
                         if (clients[i].notificationType.browser) {
                             promiseArr.push(
