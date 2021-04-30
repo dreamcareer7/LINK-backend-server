@@ -138,7 +138,7 @@ let updateTimeSpent = async ({ startTime, endTime, token }) => {
     try {
         let currentTime = new Date();
         if (!startTime || !endTime || !token) {
-            Logger.log.error('Missing required fields to add the time spent on linkedIn');
+            Logger.log.info('Missing required fields to add the time spent on linkedIn');
             return Promise.resolve();
         }
         startTime = new Date(startTime);

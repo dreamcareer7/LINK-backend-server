@@ -80,6 +80,12 @@ router.put('/pipeline-value', async (req, res) => {
             totalDealAmount += pipeline.totalDealValue;
             pipeline.totalDealValueStr = graphHelper.getDealValueStr(pipeline.totalDealValue);
         });
+        if (totalDealAmount === 0) {
+            return res.status(200).send({
+                status: 'SUCCESS',
+                data: [],
+            });
+        }
         let orderedData = [];
         pipelines.forEach((key) => {
             orderedData.push(data.filter((pipeline) => pipeline._id === key).pop());
