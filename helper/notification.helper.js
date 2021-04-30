@@ -13,7 +13,7 @@ const scheduleNotification = async () => {
     // Setted Statically at 06:00 AM Australian Time
     cron.schedule(
         // '55 27 19 * * *',
-        '00 06 * * *', //For 6 AM
+        '00 07 * * *', //For 6 AM
         async () => {
             Logger.log.info('Executing the cron for notifications at', new Date());
             let dt = await getDateForSpecificTimezone();
@@ -79,7 +79,7 @@ const scheduleNotification = async () => {
         {
             scheduled: true,
 
-            timezone: 'America/Los_Angeles',
+            timezone: 'Australia/Melbourne',
         },
     ).start();
     Logger.log.info('Successfully set up the cron for follow ups');
@@ -88,7 +88,7 @@ const scheduleNotification = async () => {
 const getDateForSpecificTimezone = async () => {
     const currentTime = new Date();
     const now = moment.utc(currentTime);
-    const timezoneOffset = moment.tz.zone('America/Los_Angeles').utcOffset(now);
+    const timezoneOffset = moment.tz.zone('Australia/Melbourne').utcOffset(now);
     const serverOffset = currentTime.getTimezoneOffset();
     let today = new Date();
     today.setHours(0, 0, 0, 0);

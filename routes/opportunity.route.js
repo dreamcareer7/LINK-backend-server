@@ -562,7 +562,7 @@ router.put('/search-opportunity', async (req, res) => {
 
 router.put('/get-opportunity-with-prev-next', async (req, res) => {
     try {
-        let momentDate = moment().tz('America/Los_Angeles');
+        let momentDate = moment().tz('Australia/Melbourne');
         momentDate.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
         momentDate.toISOString();
         momentDate = momentDate.format();
