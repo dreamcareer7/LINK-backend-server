@@ -679,14 +679,14 @@ router.get('/invoices-download', authMiddleWare.clientAuthMiddleWare, async (req
                 select: { planType: 1 },
             })
             .lean();
-        let fields = ['date', 'amount', 'receipt-number', 'plan-type', 'invoice-url'];
+        let fields = ['Date', 'Amount', 'Receipt Number', 'Plan Type', 'Invoice URL'];
         const rawJson = invoices.map((x) => {
             return {
-                date: x.createdAt.toLocaleString(),
-                amount: x.totalAmount,
-                'receipt-number': x.receiptNumber,
-                'plan-type': x.paymentId.planType,
-                'invoice-url': x.hostUrl,
+                Date: x.createdAt.toLocaleString(),
+                Amount: x.totalAmount,
+                'Receipt Number': x.receiptNumber,
+                'Plan Type': x.paymentId.planType,
+                'Invoice URL': x.hostUrl,
             };
         });
         const json2csvParser = new Parser({ fields });
