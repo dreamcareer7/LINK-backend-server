@@ -143,7 +143,11 @@ let updateTimeSpent = async ({ startTime, endTime, token }) => {
         }
         startTime = new Date(startTime);
         endTime = new Date(endTime);
-        if (startTime > currentTime || endTime > currentTime || startTime > endTime) {
+        if (
+            startTime > currentTime ||
+            Math.abs(currentTime.getTime() - endTime.getTime()) > 10 * 1000 ||
+            startTime > endTime
+        ) {
             Logger.log.error('Missing minimum criteria to add the time spent on linkedIn');
             return Promise.resolve();
         }
