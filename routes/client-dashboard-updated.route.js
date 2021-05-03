@@ -38,7 +38,12 @@ router.put('/pipeline-value', async (req, res) => {
             [
                 {
                     $match: {
-                        $and: [{ clientId: req.client._id }, { isDeleted: false, isSaved: true }],
+                        clientId: req.client._id,
+                        isDeleted: false,
+                        isSaved: true,
+                        stage: {
+                            $in: ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'POTENTIAL'],
+                        },
                     },
                 },
                 {
