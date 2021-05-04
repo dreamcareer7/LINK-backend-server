@@ -277,8 +277,9 @@ router.put('/fetch-conversation/:id', async (req, res) => {
             }
         }
         let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
+        let conversationData;
         if (chatFor === 'SALES_NAVIGATOR') {
-            let conversationData = await conversationHelper.fetchConversation(
+            conversationData = await conversationHelper.fetchSalesNavigatorConversation(
                 cookieStr,
                 ajaxToken,
                 conversationId,
@@ -287,7 +288,7 @@ router.put('/fetch-conversation/:id', async (req, res) => {
                 req.body.createdAt,
             );
         } else {
-            let conversationData = await conversationHelper.fetchConversation(
+            conversationData = await conversationHelper.fetchConversation(
                 cookieStr,
                 ajaxToken,
                 conversationId,
