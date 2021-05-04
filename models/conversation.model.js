@@ -18,6 +18,7 @@ const conversationSchema = new Schema(
             {
                 conversationId: Schema.Types.String,
                 publicIdentifier: Schema.Types.String,
+                salesNavigatorId: Schema.Types.String,
             },
         ],
         isDeleted: { type: Schema.Types.Boolean, default: false },

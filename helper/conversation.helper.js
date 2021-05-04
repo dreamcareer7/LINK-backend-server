@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const Opportunity = mongoose.model('opportunity');
 const Client = mongoose.model('client');
 
+//*Extract list of LinkedIn Chats*/
 const extractChats = async ({
     cookie,
     ajaxToken,
@@ -107,6 +108,7 @@ const extractChats = async ({
     }
 };
 
+//*Processes fetched list of LinkedIn Chats*/
 const processChatData = async (rawChatsData) => {
     try {
         let extractedChats = [];
@@ -181,6 +183,8 @@ const processChatData = async (rawChatsData) => {
         return Promise.reject({ message: 'Error in processChatData.' });
     }
 };
+
+//*Fetches list of LinkedIn Chats*/
 const fetchChats = async (cookie, ajaxToken, createdBefore) => {
     try {
         if (createdBefore === null) {
@@ -226,6 +230,7 @@ const fetchChats = async (cookie, ajaxToken, createdBefore) => {
     }
 };
 
+//*Fetches single LinkedIn Chat*/
 const fetchConversation = async (
     cookie,
     ajaxToken,
@@ -278,6 +283,7 @@ const fetchConversation = async (
     }
 };
 
+//*Fetches single LinkedIn Chat*/
 const processConversation = async (response, opportunityPublicIdentifier, clientId) => {
     try {
         let client = await Client.findOne({ _id: clientId, isDeleted: false })
