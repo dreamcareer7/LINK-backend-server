@@ -41,19 +41,21 @@ router.get('/sign-up', async (req, res) => {
         let token = await linkedInHelper.genLinkedInAccessToken(req.query.code, redirectUrl);
         let user = await linkedInHelper.getLinkedInUserData(token);
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
+        console.log('client::', client);
         if (!client) {
-            if (!subscriptionId) {
-                return res.redirect(config.linkFluencer.paymentPageUrl);
-            }
-            let payment = await Payment.findOne({
-                stripeSubscriptionId: subscriptionId,
-                isDeleted: false,
-            }).populate('clientId');
-
-            if (!payment || !payment.clientId || !payment.clientId._id) {
-                return res.redirect(config.linkFluencer.paymentPageUrl);
-            }
-            client = payment.clientId;
+            client = new Client({ linkedInID: user.id });
+            // if (!subscriptionId) {
+            //     return res.redirect(config.linkFluencer.paymentPageUrl);
+            // }
+            // let payment = await Payment.findOne({
+            //     stripeSubscriptionId: subscriptionId,
+            //     isDeleted: false,
+            // }).populate('clientId');
+            //
+            // if (!payment || !payment.clientId || !payment.clientId._id) {
+            //     return res.redirect(config.linkFluencer.paymentPageUrl);
+            // }
+            // client = payment.clientId;
         }
         if (client && client.isSubscriptionCancelled) {
             return res.redirect(
@@ -270,8 +272,11 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
             });
         }
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false });
-
+        console.log('req.body.cookie::', req.body.cookie);
+        // for(let i = 0; i < client.cookie.length; i++) {
+        // }
         client.cookie = req.body.cookie;
+        // client.cookieArr = req.body.cookie;
         client.publicIdentifier = req.body.publicIdentifier;
         if (client.isConversationAdded === false) {
             client.isConversationAdded = true;

@@ -240,6 +240,7 @@ const fetchConversation = async (
     createdAt,
 ) => {
     try {
+        console.log('getting the chat...', cookie, ajaxToken, conversationId);
         let url;
         if (!isNaN(createdAt) && createdAt !== '' && createdAt !== null && createdAt !== undefined) {
             url = `https://www.linkedin.com/voyager/api/messaging/conversations/${conversationId}/events?createdBefore=${createdAt}`;
@@ -270,7 +271,9 @@ const fetchConversation = async (
             },
         };
 
+        console.log('req data::', data);
         let response = await axios(data);
+        console.log('received the chat', response.data);
         let msg = await processConversation(response.data, opportunityPublicIdentifier, clientId);
         return msg;
     } catch (e) {
@@ -477,6 +480,7 @@ const fetchSalesNavigatorConversation = async (
     clientId,
     createdAt,
 ) => {
+    console.log('in fetchSalesNavigatorConversation::', conversationId, ajaxToken, cookie);
     try {
         let url;
         if (!isNaN(createdAt) && createdAt !== '' && createdAt !== null && createdAt !== undefined) {

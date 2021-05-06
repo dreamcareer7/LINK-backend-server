@@ -214,6 +214,7 @@ router.put('/fetch-conversation/:id', async (req, res) => {
                     }
                 }
             } else {
+                console.log('Calling for getting linkedin chat without chat in db...');
                 isConversationIdPresent = false;
                 let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
                 let conversation = await conversationHelper.extractChats({
@@ -282,12 +283,13 @@ router.put('/fetch-conversation/:id', async (req, res) => {
             conversationData = await conversationHelper.fetchSalesNavigatorConversation(
                 cookieStr,
                 ajaxToken,
-                conversationId,
+                '2-YmQwMDA4MTQtYzgxNi00OTU3LWJmOWEtOTAzMGU1MzJmMTZkXzAxMg==',
                 publicIdentifier,
                 req.client._id,
                 req.body.createdAt,
             );
         } else {
+            console.log('Calling for getting linkedin chat finally...');
             conversationData = await conversationHelper.fetchConversation(
                 cookieStr,
                 ajaxToken,

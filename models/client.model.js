@@ -65,7 +65,8 @@ const clientSchema = new Schema(
             startDate: Schema.Types.Date,
         },
         totalReceivedAmount: { type: Schema.Types.Number, default: 0 },
-        cookie: Schema.Types.String,
+        cookie: Schema.Types.Mixed,
+        // cookieArr: [Schema.Types.Mixed],
         isCookieExpired: { type: Schema.Types.Boolean },
         isExtensionInstalled: { type: Schema.Types.Boolean, default: false },
 
