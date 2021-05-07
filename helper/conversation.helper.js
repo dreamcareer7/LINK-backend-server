@@ -349,7 +349,7 @@ const processConversation = async (response, opportunityPublicIdentifier, client
 };
 
 //*Extract Sales navigator chat of LinkedIn Chats*/
-const getSalesNavigatorChatId = async ({ cookie, ajaxToken, publicIdentifier }) => {
+const getSalesNavigatorChatId = async ({ cookie, ajaxToken, publicIdentifier, reqFrom }) => {
     try {
         let createdBefore = null;
         let salesNavigatorChatId = '';
@@ -373,7 +373,11 @@ const getSalesNavigatorChatId = async ({ cookie, ajaxToken, publicIdentifier }) 
         return salesNavigatorChatId;
     } catch (e) {
         Logger.log.error('Error in extractSalesNavigatorChats.', e.message || e);
-        return '';
+        if (reqFrom === 'ADD_OPPORTUNITY') {
+            return '';
+        } else {
+            return Promise.reject({ message: 'Error in Extract Chats from Sales Navigator' });
+        }
     }
 };
 
@@ -479,15 +483,20 @@ const fetchSalesNavigatorConversation = async (
     opportunityPublicIdentifier,
     clientId,
     createdAt,
+    salesNavigatorObj,
 ) => {
     console.log('in fetchSalesNavigatorConversation::', conversationId, ajaxToken, cookie);
     try {
         let url;
+        let isCreatedAtReceived = false;
         if (!isNaN(createdAt) && createdAt !== '' && createdAt !== null && createdAt !== undefined) {
-            url = `https://www.linkedin.com/sales-api/salesApiMessagingThreads/${conversationId}?decoration=%28id%2Crestrictions%2Carchived%2CunreadMessageCount%2CnextPageStartsAt%2CtotalMessageCount%2Cmessages*%28id%2Ctype%2CcontentFlag%2CdeliveredAt%2ClastEditedAt%2Csubject%2Cbody%2CfooterText%2CblockCopy%2Cattachments%2Cauthor%2CsystemMessageContent%29%2Cparticipants*~fs_salesProfile%28entityUrn%2CfirstName%2ClastName%2CflagshipProfileUrl%2CfullName%2Cdegree%2CprofilePictureDisplayImage%29%29&count=1&messageCount=100&deliveredBefore=${createdAt}`;
+            isCreatedAtReceived = true;
+            console.log('in if...', createdAt);
+            url = `https://www.linkedin.com/sales-api/salesApiMessagingThreads/${conversationId}/messages?decoration=%28id%2Ctype%2Cauthor%2Cattachments%2CcontentFlag%2CdeliveredAt%2Csubject%2Cbody%2CfooterText%2CblockCopy%2CsystemMessageContent%29&count=10&deliveredBefore=${createdAt}`;
         } else {
-            url = `https://www.linkedin.com/sales-api/salesApiMessagingThreads/${conversationId}?decoration=%28id%2Crestrictions%2Carchived%2CunreadMessageCount%2CnextPageStartsAt%2CtotalMessageCount%2Cmessages*%28id%2Ctype%2CcontentFlag%2CdeliveredAt%2ClastEditedAt%2Csubject%2Cbody%2CfooterText%2CblockCopy%2Cattachments%2Cauthor%2CsystemMessageContent%29%2Cparticipants*~fs_salesProfile%28entityUrn%2CfirstName%2ClastName%2CflagshipProfileUrl%2CfullName%2Cdegree%2CprofilePictureDisplayImage%29%29&count=1&messageCount=100`;
+            url = `https://www.linkedin.com/sales-api/salesApiMessagingThreads/${conversationId}?decoration=%28id%2Crestrictions%2Carchived%2CunreadMessageCount%2CnextPageStartsAt%2CtotalMessageCount%2Cmessages*%28id%2Ctype%2CcontentFlag%2CdeliveredAt%2ClastEditedAt%2Csubject%2Cbody%2CfooterText%2CblockCopy%2Cattachments%2Cauthor%2CsystemMessageContent%29%2Cparticipants*~fs_salesProfile%28entityUrn%2CfirstName%2ClastName%2CflagshipProfileUrl%2CfullName%2Cdegree%2CprofilePictureDisplayImage%29%29&count=1&messageCount=10`;
         }
+        console.log('url::', url);
         let data = {
             method: 'GET',
 
@@ -513,7 +522,14 @@ const fetchSalesNavigatorConversation = async (
         };
 
         let response = await axios(data);
-        let msg = await processSalesNavigatorConversation(response.data, opportunityPublicIdentifier, clientId);
+        console.log('response from linkedIn::', response.data);
+        let msg = await processSalesNavigatorConversation(
+            response.data,
+            opportunityPublicIdentifier,
+            clientId,
+            isCreatedAtReceived,
+            salesNavigatorObj,
+        );
         return msg;
     } catch (e) {
         Logger.log.error('Error in fetch Conversation.', e.message || e);
@@ -526,7 +542,13 @@ const fetchSalesNavigatorConversation = async (
 };
 
 //*Fetches single LinkedIn Chat*/
-const processSalesNavigatorConversation = async (response, opportunityPublicIdentifier, clientId) => {
+const processSalesNavigatorConversation = async (
+    response,
+    opportunityPublicIdentifier,
+    clientId,
+    isCreatedAtReceived,
+    salesNavigatorObj,
+) => {
     try {
         let client = await Client.findOne({ _id: clientId, isDeleted: false })
             .select('-opportunitys -jwtToken -notificationType -notificationPeriod -tags -cookie -ajaxToken')
@@ -538,32 +560,52 @@ const processSalesNavigatorConversation = async (response, opportunityPublicIden
         }).lean();
         let obj = {};
         let msgArr = [];
-        for (let i = 0; i < response.included.length; i++) {
-            if (response.included[i].hasOwnProperty('flagshipProfileUrl')) {
-                if (response.included[i].flagshipProfileUrl.includes(opportunityPublicIdentifier)) {
-                    obj['1'] = {
-                        entityUrn: response.included[i].entityUrn,
-                        profilePicUrl: client.hasOwnProperty('profilePicUrl') ? client.profilePicUrl : null,
-                    };
-                } else {
-                    obj['2'] = {
-                        entityUrn: response.included[i].entityUrn,
-                        profilePicUrl: opportunity.hasOwnProperty('profilePicUrl') ? opportunity.profilePicUrl : null,
-                    };
+        if (!isCreatedAtReceived) {
+            for (let i = 0; i < response.included.length; i++) {
+                if (response.included[i].hasOwnProperty('flagshipProfileUrl')) {
+                    if (response.included[i].flagshipProfileUrl.includes(opportunityPublicIdentifier)) {
+                        obj['1'] = {
+                            entityUrn: response.included[i].entityUrn,
+                            profilePicUrl: client.hasOwnProperty('profilePicUrl') ? client.profilePicUrl : null,
+                        };
+                    } else {
+                        obj['2'] = {
+                            entityUrn: response.included[i].entityUrn,
+                            profilePicUrl: opportunity.hasOwnProperty('profilePicUrl')
+                                ? opportunity.profilePicUrl
+                                : null,
+                        };
+                    }
                 }
             }
-        }
-
-        for (let i = 0; i < response.data.messages.length; i++) {
-            let messageObj = {};
-            if (response.data.messages[i].hasOwnProperty('author')) {
-                for (let key in obj) {
-                    if (obj[key].entityUrn === response.data.messages[i]['author']) {
-                        messageObj.id = key;
-                        messageObj.profilePicUrl = obj[key].profilePicUrl;
-                        messageObj.message = response.data.messages[i]['body'];
-                        messageObj.createdAt = response.data.messages[i]['deliveredAt'];
-                        msgArr.push(messageObj);
+            for (let i = 0; i < response.data.messages.length; i++) {
+                let messageObj = {};
+                if (response.data.messages[i].hasOwnProperty('author')) {
+                    for (let key in obj) {
+                        if (obj[key].entityUrn === response.data.messages[i]['author']) {
+                            messageObj.id = key;
+                            messageObj.profilePicUrl = obj[key].profilePicUrl;
+                            messageObj.message = response.data.messages[i]['body'];
+                            messageObj.createdAt = response.data.messages[i]['deliveredAt'];
+                            msgArr.push(messageObj);
+                        }
+                    }
+                }
+            }
+        } else {
+            obj = salesNavigatorObj;
+            console.log('message arr::', JSON.stringify(response.data.elements, null, 3));
+            for (let i = 0; i < response.data.elements.length; i++) {
+                let messageObj = {};
+                if (response.data.elements[i].hasOwnProperty('author')) {
+                    for (let key in obj) {
+                        if (obj[key].entityUrn === response.data.elements[i]['author']) {
+                            messageObj.id = key;
+                            messageObj.profilePicUrl = obj[key].profilePicUrl;
+                            messageObj.message = response.data.elements[i]['body'];
+                            messageObj.createdAt = response.data.elements[i]['deliveredAt'];
+                            msgArr.push(messageObj);
+                        }
                     }
                 }
             }
@@ -573,7 +615,7 @@ const processSalesNavigatorConversation = async (response, opportunityPublicIden
             return a.createdAt - b.createdAt;
         });
 
-        return msgArr;
+        return { conversationData: msgArr, salesNavigatorObj: obj };
     } catch (e) {
         Logger.log.error('Error in process Conversation.', e.message || e);
         return Promise.reject({ message: 'Error in process Conversation.' });

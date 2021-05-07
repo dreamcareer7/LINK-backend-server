@@ -50,6 +50,7 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
                     cookie: cookieStr,
                     ajaxToken: ajaxToken,
                     publicIdentifier: req.body.publicIdentifier,
+                    reqFrom: 'ADD_OPPORTUNITY',
                 });
                 Logger.log.info('salesNavigatorChatId response in the route', salesNavigatorChatId);
                 if (salesNavigatorChatId) {
@@ -161,16 +162,33 @@ router.put('/fetch-conversation/:id', async (req, res) => {
         }
         let dbConversation = await Conversation.findOne({
             clientId: req.client._id,
-            'conversations.publicIdentifier': opportunity.publicIdentifier,
+            // 'conversations.publicIdentifier': opportunity.publicIdentifier,
             isDeleted: false,
         });
-        let isConversationIdPresent = true;
         if (!dbConversation) {
+            dbConversation = new Conversation({
+                clientId: req.client._id,
+                conversations: [],
+            });
+            await dbConversation.save();
+        }
+        let conversationArr = dbConversation.conversations.filter(
+            (c) => c.publicIdentifier === opportunity.publicIdentifier,
+        );
+        let isConversationIdPresent = true;
+        if (
+            conversationArr.length === 0 ||
+            (conversationArr[0] &&
+                ((chatFor === 'SALES_NAVIGATOR' && !conversationArr[0].salesNavigatorId) ||
+                    (chatFor === 'LINKED_IN' && !conversationArr[0].conversationId)))
+        ) {
+            isConversationIdPresent = false;
+            let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
             if (chatFor === 'SALES_NAVIGATOR') {
                 let salesNavigatorChatId = await conversationHelper.getSalesNavigatorChatId({
                     cookie: cookieStr,
                     ajaxToken: ajaxToken,
-                    publicIdentifier: req.body.publicIdentifier,
+                    publicIdentifier: opportunity.publicIdentifier,
                 });
                 if (!salesNavigatorChatId) {
                     Logger.log.info('No Sales Navigator chat found with the given user');
@@ -184,39 +202,24 @@ router.put('/fetch-conversation/:id', async (req, res) => {
                         clientId: req.client._id,
                         isDeleted: false,
                     });
-                    if (!dbConversation) {
-                        dbConversation = new Conversation({
-                            clientId: req.client._id,
-                            conversations: [
-                                {
-                                    salesNavigatorId: salesNavigatorChatId,
-                                    publicIdentifier: req.body.publicIdentifier,
-                                },
-                            ],
+                    let i = 0;
+                    for (i = 0; i < dbConversation.conversations.length; i++) {
+                        if (dbConversation.conversations[i].publicIdentifier === opportunity.publicIdentifier) {
+                            dbConversation.conversations[i].salesNavigatorId = salesNavigatorChatId;
+                            await dbConversation.save();
+                            break;
+                        }
+                    }
+                    if (i === dbConversation.conversations.length) {
+                        dbConversation.conversations.push({
+                            publicIdentifier: opportunity.publicIdentifier,
+                            salesNavigatorId: salesNavigatorChatId,
                         });
                         await dbConversation.save();
-                    } else {
-                        let i = 0;
-                        for (i = 0; i < dbConversation.conversations.length; i++) {
-                            if (dbConversation.conversations[i].publicIdentifier === req.body.publicIdentifier) {
-                                dbConversation.conversations[i].salesNavigatorId = salesNavigatorChatId;
-                                await dbConversation.save();
-                                break;
-                            }
-                        }
-                        if (i === dbConversation.conversations.length) {
-                            dbConversation.conversations.push({
-                                publicIdentifier: req.body.publicIdentifier,
-                                salesNavigatorId: salesNavigatorChatId,
-                            });
-                            await dbConversation.save();
-                        }
                     }
                 }
             } else {
                 console.log('Calling for getting linkedin chat without chat in db...');
-                isConversationIdPresent = false;
-                let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
                 let conversation = await conversationHelper.extractChats({
                     cookie: cookieStr,
                     ajaxToken: ajaxToken,
@@ -233,34 +236,34 @@ router.put('/fetch-conversation/:id', async (req, res) => {
                     clientId: req.client._id,
                     isDeleted: false,
                 });
-                if (!dbConversation) {
-                    dbConversation = new Conversation({
-                        clientId: req.client._id,
-                        conversations: [
-                            {
-                                conversationId: conversation[0].conversationId,
-                                publicIdentifier: conversation[0].publicIdentifier,
-                            },
-                        ],
-                    });
-                    await dbConversation.save();
-                } else {
-                    let i = 0;
-                    for (i = 0; i < dbConversation.conversations.length; i++) {
-                        if (dbConversation.conversations[i].publicIdentifier === req.body.publicIdentifier) {
-                            dbConversation.conversations[i].conversationId = conversation[0].conversationId;
-                            await dbConversation.save();
-                            break;
-                        }
-                    }
-                    if (i === dbConversation.conversations.length) {
-                        dbConversation.conversations.push({
-                            publicIdentifier: conversation[0].publicIdentifier,
-                            conversationId: conversation[0].conversationId,
-                        });
+                // if (!dbConversation) {
+                //     dbConversation = new Conversation({
+                //         clientId: req.client._id,
+                //         conversations: [
+                //             {
+                //                 conversationId: conversation[0].conversationId,
+                //                 publicIdentifier: conversation[0].publicIdentifier,
+                //             },
+                //         ],
+                //     });
+                //     await dbConversation.save();
+                // } else {
+                let i = 0;
+                for (i = 0; i < dbConversation.conversations.length; i++) {
+                    if (dbConversation.conversations[i].publicIdentifier === opportunity.publicIdentifier) {
+                        dbConversation.conversations[i].conversationId = conversation[0].conversationId;
                         await dbConversation.save();
+                        break;
                     }
                 }
+                if (i === dbConversation.conversations.length) {
+                    dbConversation.conversations.push({
+                        publicIdentifier: conversation[0].publicIdentifier,
+                        conversationId: conversation[0].conversationId,
+                    });
+                    await dbConversation.save();
+                }
+                // }
             }
         }
         let conversationId;
@@ -279,15 +282,20 @@ router.put('/fetch-conversation/:id', async (req, res) => {
         }
         let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
         let conversationData;
+        let salesNavigatorObj;
         if (chatFor === 'SALES_NAVIGATOR') {
-            conversationData = await conversationHelper.fetchSalesNavigatorConversation(
+            console.log('Fetching the sales chat for conversationId', salesNavigatorChatId);
+            const salesNavigatorResponse = await conversationHelper.fetchSalesNavigatorConversation(
                 cookieStr,
                 ajaxToken,
-                '2-YmQwMDA4MTQtYzgxNi00OTU3LWJmOWEtOTAzMGU1MzJmMTZkXzAxMg==',
+                salesNavigatorChatId,
                 publicIdentifier,
                 req.client._id,
                 req.body.createdAt,
+                req.body.salesNavigatorObj,
             );
+            conversationData = salesNavigatorResponse.conversationData;
+            salesNavigatorObj = salesNavigatorResponse.salesNavigatorObj;
         } else {
             console.log('Calling for getting linkedin chat finally...');
             conversationData = await conversationHelper.fetchConversation(
@@ -366,6 +374,7 @@ router.put('/fetch-conversation/:id', async (req, res) => {
             status: 'SUCCESS',
             data: conversationData,
             changeStageToInConversation,
+            salesNavigatorObj,
         });
     } catch (e) {
         req.client.isCookieExpired = true;
