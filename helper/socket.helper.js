@@ -159,7 +159,13 @@ let updateTimeSpent = async ({ startTime, endTime, token }) => {
             Logger.log.error('Missing minimum criteria to add the time spent on linkedIn');
             return Promise.resolve();
         }
-        let client = await Client.findByToken(token);
+        let decoded;
+        let jwtSecret = config.jwt.secret;
+        decoded = jwt.verify(token, jwtSecret);
+        let client = await Client.findOne({
+            _id: decoded._id,
+            isDeleted: false,
+        });
         if (!client) {
             Logger.log.error('Client not found for the requested token');
             return Promise.resolve();
