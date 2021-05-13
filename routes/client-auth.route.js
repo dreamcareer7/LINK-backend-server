@@ -672,7 +672,7 @@ router.get('/invoices-download', authMiddleWare.clientAuthMiddleWare, async (req
         const rawJson = invoices.map((x) => {
             return {
                 Date: x.createdAt.toLocaleString(),
-                Amount: x.totalAmount,
+                Amount: x.totalAmount ? x.totalAmount / 100 : 0,
                 'Receipt Number': x.receiptNumber,
                 'Plan Type': x.paymentId.planType,
                 'Invoice URL': x.hostUrl,

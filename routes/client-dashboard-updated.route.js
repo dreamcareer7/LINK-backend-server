@@ -222,7 +222,8 @@ let getInvitesValues = ({ clientId }) => {
             }
             inviteSent += inviteAccepted;
             if (inviteSent !== 0 || inviteSent !== 0) {
-                acceptanceRate = Math.round((inviteAccepted / (inviteSent + inviteAccepted)) * 100);
+                inviteSent = inviteSent + inviteAccepted;
+                acceptanceRate = Math.round((inviteAccepted / inviteSent) * 100);
             }
             return resolve({
                 inviteSent,
