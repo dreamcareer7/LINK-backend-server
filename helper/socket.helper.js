@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const Client = mongoose.model('client');
 const Logger = require('./../services/logger');
+const config = require('../config');
+const jwt = require('jsonwebtoken');
 var socket_io = require('socket.io');
 var io = socket_io();
 var socketApi = {};
@@ -65,7 +67,13 @@ socketApi.sendNotification = async function({ notificationObj, socketIds = [], c
 let addSocketIdToClient = (token, socketId, requestFrom) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let client = await Client.findByToken(token);
+            let decoded;
+            let jwtSecret = config.jwt.secret;
+            decoded = jwt.verify(token, jwtSecret);
+            let client = await Client.findOne({
+                _id: decoded._id,
+                isDeleted: false,
+            });
             if (!client) {
                 return resolve();
             }
