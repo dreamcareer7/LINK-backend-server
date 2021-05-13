@@ -30,7 +30,7 @@ const scheduleNotification = async () => {
                         followUp: { $lte: dt.endDate },
                     })
                         .limit(5)
-                        .sort({ followUp: 1 })
+                        .sort({ followUp: 1, firstName: 1, lastName: 1 })
                         .select('_id firstName lastName companyName stage profilePicUrl');
                     if (opportunities.length !== 0) {
                         if (clients[i].notificationType.browser) {
