@@ -28,14 +28,14 @@ module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
         <tr>
           <td align='left' valign='top'>
             <img style='width: 100%'
-                 src='https://link.dev.gradlesol.com/app/mail-images/linkfluencer-header.jpg'/>
+                 src='${config.backEndBaseUrl}mail-images/linkfluencer-header.jpg'/>
           </td>
         </tr>
 
         <tr>
           <td align='left' valign='center'
               style='padding: 10px 3%; font-size: 13px; line-height: 1.2; font-weight: 400;  color: #222222'>
-            Hey (first name),
+            Hey ${firstName},
           </td>
         </tr>
 
@@ -51,7 +51,7 @@ module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
           <td align='center' valign='center' style='padding: 5px 3%; font-size: 13px; line-height: 24px; color: #222222'>
             <table width='100%' cellspacing='0' cellpadding='12' style='font-size: 13px; color: #222222;'>
               <tr style='padding: 7px 10px; background-color: #F9F9F9; border-radius: 5px'>
-                <td valign='center' width="70" style='border-top-left-radius: 7px; border-bottom-left-radius: 7px;'>
+                <td valign='center' width="70" style='width:394px; max-width: 394px; border-top-left-radius: 7px; border-bottom-left-radius: 7px;'>
                   <table style='font-size: 13px; color: #222222;'>
                     <tr>
                       <td>
@@ -67,7 +67,7 @@ module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
                     </tr>
                   </table>
                 </td>
-                <td width="30" style='border-top-right-radius: 7px; border-bottom-right-radius: 7px;'>
+                <td width="30" style='width:200px; max-width: 200px; border-top-right-radius: 7px; border-bottom-right-radius: 7px;'>
                   <div style='font-weight: 600; line-height: 1.5'>Stage</div>
                   <div>${opportunities[i].stageStr ? opportunities[i].stageStr : ''}</div>
                 </td>
@@ -76,6 +76,7 @@ module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
           </td>
         </tr>`;
     }
+
     mailTemplate += `<tr>
           <td align='left' valign='center'>
             <table style="margin: 20px; padding: 7px 27px; background-color: #469a1e; color: #fff; border-radius: 3rem">
@@ -141,8 +142,8 @@ module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
                     <tr>
                       <td valign="center" align="center" style="font-weight: 700">
                         <a href="https://linkfluencer.com/blog" target="_blank" style="font-family: 'Roboto',sans-serif;font-size: 14px;color:#fff;font-weight:700;display: inline-block;text-decoration: none;text-transform: uppercase;font-weight: 700;">
-                                                    READ MORE
-                                                </a>
+                          READ MORE
+                        </a>
                       </td>
                     </tr>
                   </table>
@@ -158,17 +159,17 @@ module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
             <table cellspacing="5" style="padding: 20px 0 3% 0">
               <tr>
                 <td><a href="https://www.facebook.com/au.linkfluencer/" target="_blank" style="text-decoration: none; cursor:pointer;">
-                                    <img height="33"
-                                         src='https://link.dev.gradlesol.com/app/mail-images/facebook.png'/></a>
-                                </td>
-                                <td><a href="https://www.linkedin.com/company/linkfluencer-pty-ltd/" target="_blank" style="text-decoration: none; cursor:pointer;">
-                                    <img height="33"
-                                         src='https://link.dev.gradlesol.com/app/mail-images/linkedin.png'/></a>
-                                </td>
-                                <td><a href="https://www.youtube.com/channel/UC8ff9YC96plcIo47biGcYSg" target="_blank" style="text-decoration: none; cursor:pointer;">
-                                    <img height="33"
-                                         src='https://link.dev.gradlesol.com/app/mail-images/youtube.png'/></a>
-                                </td>
+                  <img height="33"
+                       src='${config.backEndBaseUrl}mail-images/facebook.png'/></a>
+                </td>
+                <td><a href="https://www.linkedin.com/company/linkfluencer-pty-ltd/" target="_blank" style="text-decoration: none; cursor:pointer;">
+                  <img height="33"
+                       src='${config.backEndBaseUrl}mail-images/linkedin.png'/></a>
+                </td>
+                <td><a href="https://www.youtube.com/channel/UC8ff9YC96plcIo47biGcYSg" target="_blank" style="text-decoration: none; cursor:pointer;">
+                  <img height="33"
+                       src='${config.backEndBaseUrl}mail-images/youtube.png'/></a>
+                </td>
               </tr>
             </table>
           </td>
@@ -187,7 +188,6 @@ module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
   </tbody>
 </table>
 </body>
-</html>
-`;
+</html>`;
     return mailTemplate;
 };
