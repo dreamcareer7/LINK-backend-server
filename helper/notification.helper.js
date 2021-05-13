@@ -31,7 +31,7 @@ const scheduleNotification = async () => {
                     })
                         .limit(5)
                         .sort({ followUp: 1 })
-                        .select('_id firstName lastName title stage profilePicUrl');
+                        .select('_id firstName lastName companyName stage profilePicUrl');
                     if (opportunities.length !== 0) {
                         if (clients[i].notificationType.browser) {
                             promiseArr.push(
@@ -47,10 +47,10 @@ const scheduleNotification = async () => {
                         }
                         if (clients[i].notificationType.email && clients[i].email) {
                             let opportunityForMail = opportunities.map(
-                                ({ firstName, lastName, title, stage, profilePicUrl }) => ({
+                                ({ firstName, lastName, companyName, stage, profilePicUrl }) => ({
                                     firstName,
                                     lastName,
-                                    title,
+                                    companyName,
                                     stageStr: getStageStr(stage),
                                     profilePicUrl,
                                 }),

@@ -62,7 +62,7 @@ module.exports = ({ firstName, lastName, opportunities, dashboardUrl }) => {
                         <div style='font-weight: 600; line-height: 2'>${
                             opportunities[i].firstName ? opportunities[i].firstName : ''
                         } ${opportunities[i].lastName ? opportunities[i].lastName : ''}</div>
-                        <div>${opportunities[i].title ? opportunities[i].title : ''}</div>
+                        <div>${opportunities[i].companyName ? opportunities[i].companyName : ''}</div>
                       </td>
                     </tr>
                   </table>
