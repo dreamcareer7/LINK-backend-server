@@ -270,8 +270,11 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
             });
         }
         let client = await Client.findOne({ _id: req.client._id, isDeleted: false });
-
+        console.log('req.body.cookie::', req.body.cookie);
+        // for(let i = 0; i < client.cookie.length; i++) {
+        // }
         client.cookie = req.body.cookie;
+        // client.cookieArr = req.body.cookie;
         client.publicIdentifier = req.body.publicIdentifier;
         if (client.isConversationAdded === false) {
             client.isConversationAdded = true;
