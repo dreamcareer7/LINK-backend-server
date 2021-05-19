@@ -19,7 +19,7 @@ const scheduleNotification = async () => {
             let dt = await getDateForSpecificTimezone();
             Logger.log.info('Executing the cron for follow ups for the date:', dt.startDate);
             let promiseArr = [];
-            let clients = await Client.find({ isDeleted: false }).select(
+            let clients = await Client.find({ isDeleted: false, isSubscriptionCancelled: false }).select(
                 '_id firstName lastName email notificationType fcmToken',
             );
             if (clients.length !== 0) {
