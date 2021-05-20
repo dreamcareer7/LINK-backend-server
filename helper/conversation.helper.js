@@ -563,13 +563,13 @@ const processSalesNavigatorConversation = async (
         if (!isCreatedAtReceived) {
             for (let i = 0; i < response.included.length; i++) {
                 if (response.included[i].hasOwnProperty('flagshipProfileUrl')) {
-                    if (response.included[i].flagshipProfileUrl.includes(opportunityPublicIdentifier)) {
-                        obj['2'] = {
+                    if (!response.included[i].flagshipProfileUrl.includes(opportunityPublicIdentifier)) {
+                        obj['1'] = {
                             entityUrn: response.included[i].entityUrn,
                             profilePicUrl: client.hasOwnProperty('profilePicUrl') ? client.profilePicUrl : null,
                         };
                     } else {
-                        obj['1'] = {
+                        obj['2'] = {
                             entityUrn: response.included[i].entityUrn,
                             profilePicUrl: opportunity.hasOwnProperty('profilePicUrl')
                                 ? opportunity.profilePicUrl
