@@ -24,6 +24,10 @@ const sendNotification = ({ tokens, data }) => {
                     data: {
                         payload: JSON.stringify(data),
                     },
+                    notification: {
+                        title: 'Sales opportunities to follow up',
+                        body: 'Click here to action them now.',
+                    },
                     webpush: {
                         headers: {
                             TTL: '20',
