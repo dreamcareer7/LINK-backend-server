@@ -24,13 +24,16 @@ const sendNotification = ({ tokens, data }) => {
                     data: {
                         payload: JSON.stringify(data),
                     },
-                    notification: {
-                        title: 'Sales opportunities to follow up',
-                        body: 'Click here to action them now.',
-                    },
+                    // notification: {
+                    //     title: 'Saless opportunities to follow up!!!',
+                    //     body: 'Click here to action them now...',
+                    // },
                     webpush: {
                         headers: {
                             TTL: '20',
+                        },
+                        fcm_options: {
+                            link: 'https://jayla.linkfluencer.com',
                         },
                     },
                 };
