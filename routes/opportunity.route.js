@@ -587,6 +587,8 @@ router.get('/get-opportunity/:id', async (req, res) => {
                 await opportunity.save();
                 opportunity.isVisited = false;
             }
+            opportunity = JSON.parse(JSON.stringify(opportunity));
+            opportunity.showSalesButton = req.client.hasSalesNavigatorAccount;
             return res.status(200).send({
                 status: 'SUCCESS',
                 data: opportunity,
@@ -749,6 +751,8 @@ router.put('/get-opportunity-with-prev-next', async (req, res) => {
                 nextId = data[0][0].opportunityIds[currentIndex + 1];
             }
         }
+        data[1] = JSON.parse(JSON.stringify(data[1]));
+        data[1].showSalesButton = req.client.hasSalesNavigatorAccount;
         res.status(200).send({
             status: 'SUCCESS',
             data: {

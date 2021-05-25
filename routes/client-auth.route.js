@@ -919,6 +919,28 @@ router.put('/add-user-as-invited', authMiddleWare.linkedInLoggedInChecked, async
 //     }
 // });
 
+/*
+Update Sales Navigator account status
+*/
+router.put('/update-sales-navigator-status', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
+    try {
+        await Client.updateOne(
+            { _id: req.client._id },
+            { hasSalesNavigatorAccount: req.body.hasSalesNavigatorAccount },
+        );
+        res.status(200).json({
+            status: 'SUCCESS',
+            message: 'Sales Navigator status updated successfully.',
+        });
+    } catch (e) {
+        Logger.log.error('Sales Navigator status update API call', e.message || e);
+        res.status(500).json({
+            status: 'ERROR',
+            message: e.message,
+        });
+    }
+});
+
 /**
  * Export Router
  */

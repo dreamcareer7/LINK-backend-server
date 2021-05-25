@@ -79,6 +79,7 @@ const clientSchema = new Schema(
         extensionSocketIds: [{ type: Schema.Types.String, default: [] }],
         lastOnLinkedInAt: { type: Schema.Types.Date },
         timeSpentOnLinkedInInMs: { type: Schema.Types.Number, default: 0 },
+        hasSalesNavigatorAccount: { type: Schema.Types.Boolean, default: false },
     },
     { timestamps: true },
 );
