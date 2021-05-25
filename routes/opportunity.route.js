@@ -528,6 +528,8 @@ router.post('/sync-with-linkedIn/:id', authMiddleWare.linkedInLoggedInChecked, a
             opportunityData,
             { new: true },
         );
+        opportunity = JSON.parse(JSON.stringify(opportunity));
+        opportunity.showSalesButton = req.client.hasSalesNavigatorAccount;
         return res.status(200).json({
             status: 'SUCCESS',
             data: opportunity,
