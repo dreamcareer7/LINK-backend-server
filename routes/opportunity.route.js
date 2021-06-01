@@ -219,7 +219,6 @@ router.put('/fetch-conversation/:id', async (req, res) => {
                     }
                 }
             } else {
-                console.log('Calling for getting linkedin chat without chat in db...');
                 let conversation = await conversationHelper.extractChats({
                     cookie: cookieStr,
                     ajaxToken: ajaxToken,
@@ -284,7 +283,6 @@ router.put('/fetch-conversation/:id', async (req, res) => {
         let conversationData;
         let salesNavigatorObj;
         if (chatFor === 'SALES_NAVIGATOR') {
-            console.log('Fetching the sales chat for conversationId', salesNavigatorChatId);
             const salesNavigatorResponse = await conversationHelper.fetchSalesNavigatorConversation(
                 cookieStr,
                 ajaxToken,
@@ -297,7 +295,6 @@ router.put('/fetch-conversation/:id', async (req, res) => {
             conversationData = salesNavigatorResponse.conversationData;
             salesNavigatorObj = salesNavigatorResponse.salesNavigatorObj;
         } else {
-            console.log('Calling for getting linkedin chat finally...');
             conversationData = await conversationHelper.fetchConversation(
                 cookieStr,
                 ajaxToken,

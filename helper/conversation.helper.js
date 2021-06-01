@@ -19,8 +19,6 @@ const extractChats = async ({
     isForCron = false,
 }) => {
     try {
-        console.log('checkUntil::', checkUntil);
-        console.log('isForCron::', isForCron);
         let createdBefore = null;
         let extractedChats = [];
         if (newConversationIdArr) {
@@ -103,7 +101,6 @@ const extractChats = async ({
                 if (processedChatData['chats'].length > 0) {
                     extractedChats = [...extractedChats, ...processedChatData['chats']];
                     createdBefore = processedChatData['lowestLastActivity'];
-                    console.log('createdBefore::', createdBefore);
                 } else {
                     break;
                 }
@@ -248,7 +245,7 @@ const fetchConversation = async (
     createdAt,
 ) => {
     try {
-        console.log('getting the chat...', cookie, ajaxToken, conversationId);
+        // console.log('getting the chat...', cookie, ajaxToken, conversationId);
         let url;
         if (!isNaN(createdAt) && createdAt !== '' && createdAt !== null && createdAt !== undefined) {
             url = `https://www.linkedin.com/voyager/api/messaging/conversations/${conversationId}/events?createdBefore=${createdAt}`;
@@ -279,9 +276,9 @@ const fetchConversation = async (
             },
         };
 
-        console.log('req data::', data);
+        // console.log('req data::', data);
         let response = await axios(data);
-        console.log('received the chat', response.data);
+        // console.log('received the chat', response.data);
         let msg = await processConversation(response.data, opportunityPublicIdentifier, clientId);
         return msg;
     } catch (e) {
@@ -401,7 +398,7 @@ const identifySalesNavigatorConversationId = async (rawChatsData, publicIdentifi
             if (itemType === 'com.linkedin.sales.profile.Profile' && item['flagshipProfileUrl']) {
                 if (item['flagshipProfileUrl'].includes(publicIdentifier)) {
                     const profileEntityUrn = item['entityUrn'];
-                    console.log('Profile URL::', profileEntityUrn);
+                    // console.log('Profile URL::', profileEntityUrn);
                     const chat = rawChats.filter(
                         (c) => c.participants && c.participants.indexOf(profileEntityUrn) !== -1,
                     );
@@ -467,10 +464,10 @@ const fetchSalesNavigatorChats = async (cookie, ajaxToken, createdBefore) => {
         };
         // console.log('REQ DATA::', JSON.stringify(data, null, 3));
         let response = await axios(data);
-        console.log(
-            'Response received for the Sales navigator list of the chats::',
-            JSON.stringify(response.data, null, 3),
-        );
+        // console.log(
+        //     'Response received for the Sales navigator list of the chats::',
+        //     JSON.stringify(response.data, null, 3),
+        // );
         return response.data;
     } catch (e) {
         Logger.log.error('Error in fetch SalesNavigator chat.', e.message || e);
@@ -493,18 +490,16 @@ const fetchSalesNavigatorConversation = async (
     createdAt,
     salesNavigatorObj,
 ) => {
-    console.log('in fetchSalesNavigatorConversation::', conversationId, ajaxToken, cookie);
+    // console.log('in fetchSalesNavigatorConversation::', conversationId, ajaxToken, cookie);
     try {
         let url;
         let isCreatedAtReceived = false;
         if (!isNaN(createdAt) && createdAt !== '' && createdAt !== null && createdAt !== undefined) {
             isCreatedAtReceived = true;
-            console.log('in if...', createdAt);
             url = `https://www.linkedin.com/sales-api/salesApiMessagingThreads/${conversationId}/messages?decoration=%28id%2Ctype%2Cauthor%2Cattachments%2CcontentFlag%2CdeliveredAt%2Csubject%2Cbody%2CfooterText%2CblockCopy%2CsystemMessageContent%29&count=10&deliveredBefore=${createdAt}`;
         } else {
             url = `https://www.linkedin.com/sales-api/salesApiMessagingThreads/${conversationId}?decoration=%28id%2Crestrictions%2Carchived%2CunreadMessageCount%2CnextPageStartsAt%2CtotalMessageCount%2Cmessages*%28id%2Ctype%2CcontentFlag%2CdeliveredAt%2ClastEditedAt%2Csubject%2Cbody%2CfooterText%2CblockCopy%2Cattachments%2Cauthor%2CsystemMessageContent%29%2Cparticipants*~fs_salesProfile%28entityUrn%2CfirstName%2ClastName%2CflagshipProfileUrl%2CfullName%2Cdegree%2CprofilePictureDisplayImage%29%29&count=1&messageCount=10`;
         }
-        console.log('url::', url);
         let data = {
             method: 'GET',
 
@@ -530,7 +525,7 @@ const fetchSalesNavigatorConversation = async (
         };
 
         let response = await axios(data);
-        console.log('response from linkedIn::', response.data);
+        // console.log('response from linkedIn::', response.data);
         let msg = await processSalesNavigatorConversation(
             response.data,
             opportunityPublicIdentifier,
@@ -602,7 +597,7 @@ const processSalesNavigatorConversation = async (
             }
         } else {
             obj = salesNavigatorObj;
-            console.log('message arr::', JSON.stringify(response.data.elements, null, 3));
+            // console.log('message arr::', JSON.stringify(response.data.elements, null, 3));
             for (let i = 0; i < response.data.elements.length; i++) {
                 let messageObj = {};
                 if (response.data.elements[i].hasOwnProperty('author')) {
@@ -669,12 +664,6 @@ let updateConversationList = async () => {
                         } else {
                             linkedInConversations = await extractChats({ cookie: cookieStr, ajaxToken: ajaxToken });
                         }
-                        console.log(
-                            'Conversations received for client:',
-                            clients[i]._id,
-                            '::',
-                            linkedInConversations.length,
-                        );
                         for (let j = 0; j < linkedInConversations.length; j++) {
                             const dbIndex = conversation.conversations
                                 .map((c) => c.publicIdentifier)

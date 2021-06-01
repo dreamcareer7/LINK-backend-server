@@ -14,8 +14,6 @@ const getModifyCookie = (cookieObj) => {
         cookieStr += cookieKey + '=' + cookieObj[cookieKey].value + '; ';
     });
     cookieStr = cookieStr.substr(0, cookieStr.length - 2);
-    console.log('AJAX::', ajaxToken);
-    console.log('cookieStr::', cookieStr);
     // for (let i = 0; i < cookieArr.length; i++) {
     //     if (
     //         cookieArr[i].includes('li_sugr') ||
