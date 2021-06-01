@@ -1,8 +1,11 @@
 const Logger = require('../services/logger');
 const axios = require('axios');
+const cron = require('node-cron');
 const mongoose = require('mongoose');
 const Opportunity = mongoose.model('opportunity');
 const Client = mongoose.model('client');
+const Conversation = mongoose.model('conversation');
+const cookieHelper = require('./cookie.helper');
 
 //*Extract list of LinkedIn Chats*/
 const extractChats = async ({
@@ -187,11 +190,11 @@ const processChatData = async (rawChatsData) => {
 //*Fetches list of LinkedIn Chats*/
 const fetchChats = async (cookie, ajaxToken, createdBefore) => {
     try {
+        const chatCount = 20;
         if (createdBefore === null) {
-            url =
-                'https://www.linkedin.com/voyager/api/messaging/conversations?keyVersion=LEGACY_INBOX&count=100&q=syncToken';
+            url = `https://www.linkedin.com/voyager/api/messaging/conversations?keyVersion=LEGACY_INBOX&count=${chatCount}&q=syncToken`;
         } else {
-            url = `https://www.linkedin.com/voyager/api/messaging/conversations?keyVersion=LEGACY_INBOX&count=100&createdBefore=${createdBefore}`;
+            url = `https://www.linkedin.com/voyager/api/messaging/conversations?keyVersion=LEGACY_INBOX&count=${chatCount}&createdBefore=${createdBefore}`;
         }
         let data = {
             method: 'GET',
@@ -428,11 +431,11 @@ const identifySalesNavigatorConversationId = async (rawChatsData, publicIdentifi
 //*Fetches list of LinkedIn Chats*/
 const fetchSalesNavigatorChats = async (cookie, ajaxToken, createdBefore) => {
     try {
+        const chatCount = 20;
         if (createdBefore === null) {
-            url =
-                'https://www.linkedin.com/sales-api/salesApiMessagingThreads?decoration=%28id%2Crestrictions%2Carchived%2CunreadMessageCount%2CnextPageStartsAt%2CtotalMessageCount%2Cmessages*%28id%2Ctype%2CcontentFlag%2CdeliveredAt%2ClastEditedAt%2Csubject%2Cbody%2CfooterText%2CblockCopy%2Cattachments%2Cauthor%2CsystemMessageContent%29%2Cparticipants*~fs_salesProfile%28entityUrn%2CfirstName%2ClastName%2CflagshipProfileUrl%2CfullName%2Cdegree%2CprofilePictureDisplayImage%29%29&count=100&filter=INBOX&q=filter';
+            url = `https://www.linkedin.com/sales-api/salesApiMessagingThreads?decoration=%28id%2Crestrictions%2Carchived%2CunreadMessageCount%2CnextPageStartsAt%2CtotalMessageCount%2Cmessages*%28id%2Ctype%2CcontentFlag%2CdeliveredAt%2ClastEditedAt%2Csubject%2Cbody%2CfooterText%2CblockCopy%2Cattachments%2Cauthor%2CsystemMessageContent%29%2Cparticipants*~fs_salesProfile%28entityUrn%2CfirstName%2ClastName%2CflagshipProfileUrl%2CfullName%2Cdegree%2CprofilePictureDisplayImage%29%29&count=${chatCount}&filter=INBOX&q=filter`;
         } else {
-            url = `https://www.linkedin.com/sales-api/salesApiMessagingThreads?decoration=%28id%2Crestrictions%2Carchived%2CunreadMessageCount%2CnextPageStartsAt%2CtotalMessageCount%2Cmessages*%28id%2Ctype%2CcontentFlag%2CdeliveredAt%2ClastEditedAt%2Csubject%2Cbody%2CfooterText%2CblockCopy%2Cattachments%2Cauthor%2CsystemMessageContent%29%2Cparticipants*~fs_salesProfile%28entityUrn%2CfirstName%2ClastName%2CflagshipProfileUrl%2CfullName%2Cdegree%2CprofilePictureDisplayImage%29%29&count=100&filter=INBOX&q=filter&pageStartsAt=${createdBefore}`;
+            url = `https://www.linkedin.com/sales-api/salesApiMessagingThreads?decoration=%28id%2Crestrictions%2Carchived%2CunreadMessageCount%2CnextPageStartsAt%2CtotalMessageCount%2Cmessages*%28id%2Ctype%2CcontentFlag%2CdeliveredAt%2ClastEditedAt%2Csubject%2Cbody%2CfooterText%2CblockCopy%2Cattachments%2Cauthor%2CsystemMessageContent%29%2Cparticipants*~fs_salesProfile%28entityUrn%2CfirstName%2ClastName%2CflagshipProfileUrl%2CfullName%2Cdegree%2CprofilePictureDisplayImage%29%29&count=${chatCount}&filter=INBOX&q=filter&pageStartsAt=${createdBefore}`;
         }
         let data = {
             method: 'GET',
@@ -627,6 +630,74 @@ const processSalesNavigatorConversation = async (
 //     ajaxToken: 'ajax:8721252854603641923',
 //     publicIdentifier: 'parth-mansatta-b12a761bb'
 // })
+
+let updateConversationList = async () => {
+    cron.schedule(
+        '15 24 22 * * *', //For 1 AM
+        async () => {
+            try {
+                Logger.log.info('Executing the cron for syncing LinkedIn chats at', new Date());
+                let clients = await Client.find({
+                    isDeleted: false,
+                    isSubscriptionCancelled: false,
+                    isCookieExpired: false,
+                    _id: '607695299c9b0940bf1c309d',
+                });
+                for (let i = 0; i < clients.length; i++) {
+                    try {
+                        let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(clients[i].cookie);
+                        let linkedInConversations = await extractChats({ cookie: cookieStr, ajaxToken: ajaxToken });
+                        let conversation = await Conversation.findOne({ clientId: clients[i]._id });
+                        if (!conversation) {
+                            conversation = new Conversation({
+                                clientId: clients[i]._id,
+                                conversations: [],
+                            });
+                        }
+                        console.log(
+                            'Conversations received for client:',
+                            clients[i]._id,
+                            '::',
+                            linkedInConversations.length,
+                        );
+                        for (let j = 0; j < linkedInConversations.length; j++) {
+                            const dbIndex = conversation.conversations
+                                .map((c) => c.publicIdentifier)
+                                .indexOf(linkedInConversations[j].publicIdentifier);
+                            if (dbIndex !== -1) {
+                                conversation.conversations[dbIndex].conversationId =
+                                    linkedInConversations[j].conversationId;
+                            } else {
+                                conversation.conversations.push({
+                                    conversationId: linkedInConversations[j].conversationId,
+                                    publicIdentifier: linkedInConversations[j].publicIdentifier,
+                                });
+                            }
+                        }
+                        await conversation.save();
+                    } catch (e) {
+                        Logger.log.warn(
+                            'Error in syncing chats for the client:',
+                            clients[i]._id,
+                            clients[i].publicIdentifier,
+                        );
+                    }
+                }
+                Logger.log.info('Successfully executed the cron for syncing LinkedIn chats at', new Date());
+            } catch (e) {
+                Logger.log.warn('Error in CRON to sync chat list', e.message || e);
+            }
+        },
+        {
+            scheduled: true,
+
+            timezone: 'Australia/Melbourne',
+        },
+    ).start();
+    Logger.log.info('Successfully set up the CRON to sync chat list');
+};
+
+updateConversationList();
 
 module.exports = {
     extractChats: extractChats,
