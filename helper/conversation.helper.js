@@ -15,8 +15,12 @@ const extractChats = async ({
     publicIdentifier,
     publicIdentifiers,
     checkBefore,
+    checkUntil,
+    isForCron = false,
 }) => {
     try {
+        console.log('checkUntil::', checkUntil);
+        console.log('isForCron::', isForCron);
         let createdBefore = null;
         let extractedChats = [];
         if (newConversationIdArr) {
@@ -91,7 +95,7 @@ const extractChats = async ({
             }
             return chatsFound;
         } else {
-            while (true) {
+            while (!isForCron || (isForCron && (checkUntil <= createdBefore || !createdBefore))) {
                 let rawChatsData = await fetchChats(cookie, ajaxToken, createdBefore);
 
                 let processedChatData = await processChatData(rawChatsData);
@@ -99,6 +103,7 @@ const extractChats = async ({
                 if (processedChatData['chats'].length > 0) {
                     extractedChats = [...extractedChats, ...processedChatData['chats']];
                     createdBefore = processedChatData['lowestLastActivity'];
+                    console.log('createdBefore::', createdBefore);
                 } else {
                     break;
                 }
@@ -633,7 +638,7 @@ const processSalesNavigatorConversation = async (
 
 let updateConversationList = async () => {
     cron.schedule(
-        '15 24 22 * * *', //For 1 AM
+        '58 17 23 * * *', //For 1 AM
         async () => {
             try {
                 Logger.log.info('Executing the cron for syncing LinkedIn chats at', new Date());
@@ -646,13 +651,23 @@ let updateConversationList = async () => {
                 for (let i = 0; i < clients.length; i++) {
                     try {
                         let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(clients[i].cookie);
-                        let linkedInConversations = await extractChats({ cookie: cookieStr, ajaxToken: ajaxToken });
                         let conversation = await Conversation.findOne({ clientId: clients[i]._id });
                         if (!conversation) {
                             conversation = new Conversation({
                                 clientId: clients[i]._id,
                                 conversations: [],
                             });
+                        }
+                        let linkedInConversations;
+                        if (conversation.linkedInSyncedAt) {
+                            linkedInConversations = await extractChats({
+                                cookie: cookieStr,
+                                ajaxToken: ajaxToken,
+                                checkUntil: conversation.linkedInSyncedAt.getTime(),
+                                isForCron: true,
+                            });
+                        } else {
+                            linkedInConversations = await extractChats({ cookie: cookieStr, ajaxToken: ajaxToken });
                         }
                         console.log(
                             'Conversations received for client:',
@@ -674,6 +689,7 @@ let updateConversationList = async () => {
                                 });
                             }
                         }
+                        conversation.linkedInSyncedAt = new Date();
                         await conversation.save();
                     } catch (e) {
                         Logger.log.warn(

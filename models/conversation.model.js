@@ -21,6 +21,7 @@ const conversationSchema = new Schema(
                 salesNavigatorId: Schema.Types.String,
             },
         ],
+        linkedInSyncedAt: { type: Schema.Types.Date },
         isDeleted: { type: Schema.Types.Boolean, default: false },
     },
     { timestamps: true },
