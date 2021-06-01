@@ -115,10 +115,11 @@ ServerInitializer.createOrganization();
 let SchedulerHelper = require('./services/cron.schedular.service');
 let notificationHelper = require('./helper/notification.helper');
 let inviteeHelper = require('./helper/invitee.helper');
-let opportunityHelper = require('./helper/opportunity.helper');
+let conversationHelper = require('./helper/conversation.helper');
 notificationHelper.scheduleNotification();
 SchedulerHelper.scheduler();
 inviteeHelper.syncInvitees();
+conversationHelper.updateConversationList();
 opportunityHelper.syncOpportunityStage();
 
 /**

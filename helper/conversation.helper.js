@@ -633,7 +633,7 @@ const processSalesNavigatorConversation = async (
 
 let updateConversationList = async () => {
     cron.schedule(
-        '58 17 23 * * *', //For 1 AM
+        '00 02 * * *', //For 2 AM
         async () => {
             try {
                 Logger.log.info('Executing the cron for syncing LinkedIn chats at', new Date());
@@ -702,11 +702,10 @@ let updateConversationList = async () => {
     Logger.log.info('Successfully set up the CRON to sync chat list');
 };
 
-updateConversationList();
-
 module.exports = {
     extractChats: extractChats,
     fetchConversation,
     getSalesNavigatorChatId,
     fetchSalesNavigatorConversation,
+    updateConversationList,
 };
