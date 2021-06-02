@@ -9,19 +9,21 @@ const mailHelper = require('./mailer.helper');
 const config = require('../config');
 const Logger = require('./../services/logger');
 
-const scheduleNotification = async () => {
-    // Setted Statically at 06:00 AM Australian Time
+const scheduleEmailNotification = async () => {
+    // Set Statically at 07:00 AM Australian Time
     cron.schedule(
-        // '55 27 19 * * *',
-        '00 07 * * *', //For 6 AM
+        // '35 24 19 * * *',
+        '00 07 * * *', //For 7 AM
         async () => {
-            Logger.log.info('Executing the cron for notifications at', new Date());
+            Logger.log.info('Executing the cron for Email notifications at', new Date());
             let dt = await getDateForSpecificTimezone();
             Logger.log.info('Executing the cron for follow ups for the date:', dt.startDate);
             let promiseArr = [];
-            let clients = await Client.find({ isDeleted: false, isSubscriptionCancelled: false }).select(
-                '_id firstName lastName email notificationType fcmToken',
-            );
+            let clients = await Client.find({
+                isDeleted: false,
+                isSubscriptionCancelled: false,
+                _id: '607695299c9b0940bf1c309d',
+            }).select('_id firstName lastName email notificationType fcmToken');
             if (clients.length !== 0) {
                 for (let i = 0; i < clients.length; i++) {
                     let opportunities = await Opportunity.find({
@@ -33,18 +35,6 @@ const scheduleNotification = async () => {
                         .sort({ followUp: 1, firstName: 1, lastName: 1 })
                         .select('_id firstName lastName companyName stage profilePicUrl');
                     if (opportunities.length !== 0) {
-                        if (clients[i].notificationType.browser) {
-                            promiseArr.push(
-                                FirebaseHelper.sendNotification({ tokens: clients[i].fcmToken, data: opportunities }),
-                            );
-                            opportunities.forEach((opportunity) => {
-                                let notification = new Notification({
-                                    clientId: clients[i]._id,
-                                    opportunityId: opportunity._id,
-                                });
-                                promiseArr.push(notification.save());
-                            });
-                        }
                         if (clients[i].notificationType.email && clients[i].email) {
                             let opportunityForMail = opportunities.map(
                                 ({ firstName, lastName, companyName, stage, profilePicUrl }) => ({
@@ -73,7 +63,7 @@ const scheduleNotification = async () => {
                 }
             }
             await Promise.all(promiseArr);
-            Logger.log.trace('Notifications sent successfully.');
+            Logger.log.trace('Email Notifications sent successfully.');
         },
         {
             scheduled: true,
@@ -81,7 +71,60 @@ const scheduleNotification = async () => {
             timezone: 'Australia/Melbourne',
         },
     ).start();
-    Logger.log.info('Successfully set up the cron for follow ups');
+    Logger.log.info('Successfully set up the cron for Email follow ups');
+};
+
+const scheduleBrowserNotification = async () => {
+    // Set Statically at 09:00 AM Australian Time
+    cron.schedule(
+        // '40 26 19 * * *',
+        '00 09 * * *', //For 9 AM
+        async () => {
+            Logger.log.info('Executing the cron for browser notifications at', new Date());
+            let dt = await getDateForSpecificTimezone();
+            Logger.log.info('Executing the cron for follow ups for the date:', dt.startDate);
+            let promiseArr = [];
+            let clients = await Client.find({
+                isDeleted: false,
+                isSubscriptionCancelled: false,
+                _id: '607695299c9b0940bf1c309d',
+            }).select('_id firstName lastName email notificationType fcmToken');
+            if (clients.length !== 0) {
+                for (let i = 0; i < clients.length; i++) {
+                    let opportunities = await Opportunity.find({
+                        clientId: clients[i]._id,
+                        isDeleted: false,
+                        followUp: { $lte: dt.endDate },
+                    })
+                        .limit(5)
+                        .sort({ followUp: 1, firstName: 1, lastName: 1 })
+                        .select('_id firstName lastName companyName stage profilePicUrl');
+                    if (opportunities.length !== 0) {
+                        if (clients[i].notificationType.browser) {
+                            promiseArr.push(
+                                FirebaseHelper.sendNotification({ tokens: clients[i].fcmToken, data: opportunities }),
+                            );
+                            opportunities.forEach((opportunity) => {
+                                let notification = new Notification({
+                                    clientId: clients[i]._id,
+                                    opportunityId: opportunity._id,
+                                });
+                                promiseArr.push(notification.save());
+                            });
+                        }
+                    }
+                }
+            }
+            await Promise.all(promiseArr);
+            Logger.log.trace('Browser Notifications sent successfully.');
+        },
+        {
+            scheduled: true,
+
+            timezone: 'Australia/Melbourne',
+        },
+    ).start();
+    Logger.log.info('Successfully set up the cron for Browser follow ups');
 };
 
 const getDateForSpecificTimezone = async () => {
@@ -124,5 +167,6 @@ const getStageStr = (stage) => {
 };
 
 module.exports = {
-    scheduleNotification: scheduleNotification,
+    scheduleEmailNotification: scheduleEmailNotification,
+    scheduleBrowserNotification: scheduleBrowserNotification,
 };
