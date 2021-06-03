@@ -22,7 +22,6 @@ const scheduleEmailNotification = async () => {
             let clients = await Client.find({
                 isDeleted: false,
                 isSubscriptionCancelled: false,
-                _id: '607695299c9b0940bf1c309d',
             }).select('_id firstName lastName email notificationType fcmToken');
             if (clients.length !== 0) {
                 for (let i = 0; i < clients.length; i++) {
@@ -87,7 +86,6 @@ const scheduleBrowserNotification = async () => {
             let clients = await Client.find({
                 isDeleted: false,
                 isSubscriptionCancelled: false,
-                _id: '607695299c9b0940bf1c309d',
             }).select('_id firstName lastName email notificationType fcmToken');
             if (clients.length !== 0) {
                 for (let i = 0; i < clients.length; i++) {

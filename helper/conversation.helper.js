@@ -641,7 +641,6 @@ let updateConversationList = async () => {
                     isDeleted: false,
                     isSubscriptionCancelled: false,
                     isCookieExpired: false,
-                    _id: '607695299c9b0940bf1c309d',
                 });
                 for (let i = 0; i < clients.length; i++) {
                     try {
