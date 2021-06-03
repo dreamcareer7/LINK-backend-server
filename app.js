@@ -121,7 +121,7 @@ notificationHelper.scheduleEmailNotification();
 notificationHelper.scheduleBrowserNotification();
 SchedulerHelper.scheduler();
 inviteeHelper.syncInvitees();
-conversationHelper.updateConversationList();
+conversationHelper.setCronToUpdateConversationList();
 opportunityHelper.syncOpportunityStage();
 
 /**

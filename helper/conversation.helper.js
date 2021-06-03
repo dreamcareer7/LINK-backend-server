@@ -631,66 +631,66 @@ const processSalesNavigatorConversation = async (
 //     publicIdentifier: 'parth-mansatta-b12a761bb'
 // })
 
-let updateConversationList = async () => {
+let updateConversationList = async ({ clients = [] }) => {
+    try {
+        Logger.log.info('Executing the cron for syncing LinkedIn chats at', new Date());
+        if (clients.length === 0) {
+            clients = await Client.find({
+                isDeleted: false,
+                isSubscriptionCancelled: false,
+                isCookieExpired: false,
+            });
+        }
+        for (let i = 0; i < clients.length; i++) {
+            try {
+                let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(clients[i].cookie);
+                let conversation = await Conversation.findOne({ clientId: clients[i]._id });
+                if (!conversation) {
+                    conversation = new Conversation({
+                        clientId: clients[i]._id,
+                        conversations: [],
+                    });
+                }
+                let linkedInConversations;
+                if (conversation.linkedInSyncedAt) {
+                    linkedInConversations = await extractChats({
+                        cookie: cookieStr,
+                        ajaxToken: ajaxToken,
+                        checkUntil: conversation.linkedInSyncedAt.getTime(),
+                        isForCron: true,
+                    });
+                } else {
+                    linkedInConversations = await extractChats({ cookie: cookieStr, ajaxToken: ajaxToken });
+                }
+                for (let j = 0; j < linkedInConversations.length; j++) {
+                    const dbIndex = conversation.conversations
+                        .map((c) => c.publicIdentifier)
+                        .indexOf(linkedInConversations[j].publicIdentifier);
+                    if (dbIndex !== -1) {
+                        conversation.conversations[dbIndex].conversationId = linkedInConversations[j].conversationId;
+                    } else {
+                        conversation.conversations.push({
+                            conversationId: linkedInConversations[j].conversationId,
+                            publicIdentifier: linkedInConversations[j].publicIdentifier,
+                        });
+                    }
+                }
+                conversation.linkedInSyncedAt = new Date();
+                await conversation.save();
+            } catch (e) {
+                Logger.log.warn('Error in syncing chats for the client:', clients[i]._id, clients[i].publicIdentifier);
+            }
+        }
+        Logger.log.info('Successfully executed the cron for syncing LinkedIn chats at', new Date());
+    } catch (e) {
+        Logger.log.warn('Error in CRON to sync chat list', e.message || e);
+    }
+};
+let setCronToUpdateConversationList = async () => {
     cron.schedule(
         '00 02 * * *', //For 2 AM
         async () => {
-            try {
-                Logger.log.info('Executing the cron for syncing LinkedIn chats at', new Date());
-                let clients = await Client.find({
-                    isDeleted: false,
-                    isSubscriptionCancelled: false,
-                    isCookieExpired: false,
-                });
-                for (let i = 0; i < clients.length; i++) {
-                    try {
-                        let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(clients[i].cookie);
-                        let conversation = await Conversation.findOne({ clientId: clients[i]._id });
-                        if (!conversation) {
-                            conversation = new Conversation({
-                                clientId: clients[i]._id,
-                                conversations: [],
-                            });
-                        }
-                        let linkedInConversations;
-                        if (conversation.linkedInSyncedAt) {
-                            linkedInConversations = await extractChats({
-                                cookie: cookieStr,
-                                ajaxToken: ajaxToken,
-                                checkUntil: conversation.linkedInSyncedAt.getTime(),
-                                isForCron: true,
-                            });
-                        } else {
-                            linkedInConversations = await extractChats({ cookie: cookieStr, ajaxToken: ajaxToken });
-                        }
-                        for (let j = 0; j < linkedInConversations.length; j++) {
-                            const dbIndex = conversation.conversations
-                                .map((c) => c.publicIdentifier)
-                                .indexOf(linkedInConversations[j].publicIdentifier);
-                            if (dbIndex !== -1) {
-                                conversation.conversations[dbIndex].conversationId =
-                                    linkedInConversations[j].conversationId;
-                            } else {
-                                conversation.conversations.push({
-                                    conversationId: linkedInConversations[j].conversationId,
-                                    publicIdentifier: linkedInConversations[j].publicIdentifier,
-                                });
-                            }
-                        }
-                        conversation.linkedInSyncedAt = new Date();
-                        await conversation.save();
-                    } catch (e) {
-                        Logger.log.warn(
-                            'Error in syncing chats for the client:',
-                            clients[i]._id,
-                            clients[i].publicIdentifier,
-                        );
-                    }
-                }
-                Logger.log.info('Successfully executed the cron for syncing LinkedIn chats at', new Date());
-            } catch (e) {
-                Logger.log.warn('Error in CRON to sync chat list', e.message || e);
-            }
+            updateConversationList({ clients: [] });
         },
         {
             scheduled: true,
@@ -707,4 +707,5 @@ module.exports = {
     getSalesNavigatorChatId,
     fetchSalesNavigatorConversation,
     updateConversationList,
+    setCronToUpdateConversationList,
 };

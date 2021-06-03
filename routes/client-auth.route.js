@@ -275,6 +275,17 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
         client.cookie = req.body.cookie;
         // client.cookieArr = req.body.cookie;
         client.publicIdentifier = req.body.publicIdentifier;
+        let conversation = await Conversation.findOne({ clientId: req.client._id, isDeleted: false });
+        if (
+            !conversation ||
+            (conversation && !conversation.linkedInSyncedAt) ||
+            (conversation &&
+                conversation.linkedInSyncedAt &&
+                conversation.linkedInSyncedAt.getTime() + 24 * 3600 < Date.now())
+        ) {
+            Logger.log.info('Syncing the LinkedIn Conversation list while get cookie call at', new Date());
+            await conversationHelper.updateConversationList({ clients: [client] });
+        }
         if (client.isConversationAdded === false) {
             client.isConversationAdded = true;
             client.isCookieExpired = false;
