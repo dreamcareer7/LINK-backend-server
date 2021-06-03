@@ -644,7 +644,7 @@ let updateConversationList = async ({ clients = [] }) => {
         for (let i = 0; i < clients.length; i++) {
             try {
                 let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(clients[i].cookie);
-                let conversation = await Conversation.findOne({ clientId: clients[i]._id });
+                let conversation = await Conversation.findOne({ clientId: clients[i]._id, isDeleted: false });
                 if (!conversation) {
                     conversation = new Conversation({
                         clientId: clients[i]._id,
