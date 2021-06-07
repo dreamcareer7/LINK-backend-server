@@ -166,6 +166,17 @@ router.get('/sign-up-extension', async (req, res) => {
         let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
         let linkedInIdToken = linkedInHelper.getLinkedInIdToken(linkedInToken, user.id);
         if (client) {
+            client.firstName = user.localizedFirstName;
+            client.lastName = user.localizedLastName;
+            client.linkedInID = user.id;
+            client.profilePicUrl = user.hasOwnProperty('profilePicture')
+                ? user.profilePicture['displayImage~'].elements[3].identifiers[0].identifier
+                : null;
+            let contactInfo = await linkedInHelper.getContactInfo(linkedInToken);
+            if (contactInfo.phone) {
+                client.phone = contactInfo.phone;
+            }
+            await client.save();
             let token = await client.getAuthToken();
             if (client.isSubscribed && !client.isSubscriptionCancelled) {
                 if (!client.isExtensionInstalled) {
