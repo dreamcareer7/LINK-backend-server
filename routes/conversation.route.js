@@ -26,6 +26,7 @@ router.post('/get-conversation-id-arr', async (req, res) => {
             let conversation = await Conversation.findOne({
                 clientId: req.client._id,
                 'conversations.conversationId': req.body.conversationIdArr[i],
+                isDeleted: false,
             });
 
             if (!conversation) {
@@ -40,11 +41,13 @@ router.post('/get-conversation-id-arr', async (req, res) => {
         });
         let dbConversation = await Conversation.findOne({
             clientId: req.client._id,
+            isDeleted: false,
         });
         for (let i = 0; i < conversation.length; i++) {
             let con = await Conversation.findOneAndUpdate(
                 {
                     clientId: req.client._id,
+                    isDeleted: false,
                     'conversations.publicIdentifier': conversation[i].publicIdentifier,
                 },
                 { $set: { 'conversations.$.conversationId': conversation[i].conversationId } },

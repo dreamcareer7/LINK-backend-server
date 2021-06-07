@@ -49,16 +49,20 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
                 });
                 opportunity = new Opportunity(opportunityData);
                 await opportunity.save();
-                let salesNavigatorChatId = await conversationHelper.getSalesNavigatorChatId({
-                    cookie: cookieStr,
-                    ajaxToken: ajaxToken,
-                    publicIdentifier: req.body.publicIdentifier,
-                    reqFrom: 'ADD_OPPORTUNITY',
-                });
+                let salesNavigatorChatId;
+                if (req.client.hasSalesNavigatorAccount) {
+                    salesNavigatorChatId = await conversationHelper.getSalesNavigatorChatId({
+                        cookie: cookieStr,
+                        ajaxToken: ajaxToken,
+                        publicIdentifier: req.body.publicIdentifier,
+                        reqFrom: 'ADD_OPPORTUNITY',
+                    });
+                }
                 Logger.log.info('salesNavigatorChatId response in the route', salesNavigatorChatId);
-                if (salesNavigatorChatId || req.bod.conversationId) {
+                if (salesNavigatorChatId || req.body.conversationId) {
                     let dbConversation = await Conversation.findOne({
                         clientId: req.client._id,
+                        isDeleted: false,
                     });
                     if (!dbConversation) {
                         dbConversation = new Conversation({
@@ -72,7 +76,7 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
                             if (salesNavigatorChatId) {
                                 dbConversation.conversations[i].salesNavigatorId = salesNavigatorChatId;
                             } else {
-                                dbConversation.conversations[i].conversationId = req.bod.conversationId;
+                                dbConversation.conversations[i].conversationId = req.body.conversationId;
                             }
                             await dbConversation.save();
                             break;
@@ -87,7 +91,7 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
                         } else {
                             dbConversation.conversations.push({
                                 publicIdentifier: req.body.publicIdentifier,
-                                conversationId: req.bod.conversationId,
+                                conversationId: req.body.conversationId,
                             });
                         }
                         await dbConversation.save();
@@ -103,6 +107,7 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
             let publicIdentifier;
             let dbConversation = await Conversation.findOne({
                 clientId: req.client._id,
+                isDeleted: false,
                 'conversations.conversationId': req.body.conversationId,
             });
 
