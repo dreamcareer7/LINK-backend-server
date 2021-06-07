@@ -57,7 +57,7 @@ router.get('/sign-up', async (req, res) => {
         }
         if (client && client.isSubscriptionCancelled) {
             return res.redirect(
-                `${config.clientUrls.clientFrontEndBaseUrl}signUp?message=Your Subscription is cancelled, please contact admin.`,
+                `${config.clientUrls.clientFrontEndBaseUrl}login?message=Your Subscription is cancelled, please contact admin.`,
             );
         }
         client.firstName = user.localizedFirstName;
@@ -99,7 +99,7 @@ router.get('/sign-up', async (req, res) => {
     } catch (e) {
         Logger.log.error('Error in SignUp API call.', e.message || e);
         return res.redirect(
-            `${config.clientUrls.clientFrontEndBaseUrl}signUp?message=Error signing in with LinkedIn. Please try again.`,
+            `${config.clientUrls.clientFrontEndBaseUrl}login?message=Error signing in with LinkedIn. Please try again.`,
         );
     }
 });
