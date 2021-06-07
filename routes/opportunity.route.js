@@ -17,7 +17,10 @@ const socketHelper = require('../helper/socket.helper');
  */
 router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
     try {
-        if (req.body.publicIdentifier) {
+        if (req.body.publicIdentifier && req.body.hasOwnProperty('conversationId')) {
+            if (!req.body.conversationId || req.body.conversationId === 'new') {
+                req.body.conversationId = null;
+            }
             let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
             let opportunityData = await opportunityHelper.getProfile(req.body.publicIdentifier, cookieStr, ajaxToken);
             let contactInfo = await opportunityHelper.getContactInfo(req.body.publicIdentifier, cookieStr, ajaxToken);
@@ -53,26 +56,41 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
                     reqFrom: 'ADD_OPPORTUNITY',
                 });
                 Logger.log.info('salesNavigatorChatId response in the route', salesNavigatorChatId);
-                if (salesNavigatorChatId) {
+                if (salesNavigatorChatId || req.bod.conversationId) {
                     let dbConversation = await Conversation.findOne({
                         clientId: req.client._id,
                     });
-                    if (dbConversation) {
-                        let i = 0;
-                        for (i = 0; i < dbConversation.conversations.length; i++) {
-                            if (dbConversation.conversations[i].publicIdentifier === req.body.publicIdentifier) {
+                    if (!dbConversation) {
+                        dbConversation = new Conversation({
+                            clientId: req.client._id,
+                            conversations: [],
+                        });
+                    }
+                    let i = 0;
+                    for (i = 0; i < dbConversation.conversations.length; i++) {
+                        if (dbConversation.conversations[i].publicIdentifier === req.body.publicIdentifier) {
+                            if (salesNavigatorChatId) {
                                 dbConversation.conversations[i].salesNavigatorId = salesNavigatorChatId;
-                                await dbConversation.save();
-                                break;
+                            } else {
+                                dbConversation.conversations[i].conversationId = req.bod.conversationId;
                             }
+                            await dbConversation.save();
+                            break;
                         }
-                        if (i === dbConversation.conversations.length) {
+                    }
+                    if (i === dbConversation.conversations.length) {
+                        if (salesNavigatorChatId) {
                             dbConversation.conversations.push({
                                 publicIdentifier: req.body.publicIdentifier,
                                 salesNavigatorId: salesNavigatorChatId,
                             });
-                            await dbConversation.save();
+                        } else {
+                            dbConversation.conversations.push({
+                                publicIdentifier: req.body.publicIdentifier,
+                                conversationId: req.bod.conversationId,
+                            });
                         }
+                        await dbConversation.save();
                     }
                 }
                 Logger.log.info('New Opportunity added.');
@@ -81,7 +99,7 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
                 status: 'SUCCESS',
                 data: opportunity,
             });
-        } else if (req.body.conversationId) {
+        } else if (!req.body.hasOwnProperty('publicIdentifier') && req.body.conversationId) {
             let publicIdentifier;
             let dbConversation = await Conversation.findOne({
                 clientId: req.client._id,
