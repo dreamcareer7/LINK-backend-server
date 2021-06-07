@@ -40,7 +40,7 @@ router.get('/sign-up', async (req, res) => {
         }
         let token = await linkedInHelper.genLinkedInAccessToken(req.query.code, redirectUrl);
         let user = await linkedInHelper.getLinkedInUserData(token);
-        let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
+        let client = await Client.findOne({ linkedInID: user.id, isDeleted: false, isSubscriptionCancelled: false });
         if (!client) {
             if (!subscriptionId) {
                 return res.redirect(config.linkFluencer.paymentPageUrl);
@@ -163,7 +163,7 @@ router.get('/sign-up-extension', async (req, res) => {
             config.backEndBaseUrl + 'client-auth/sign-up-extension',
         );
         let user = await linkedInHelper.getLinkedInUserData(linkedInToken);
-        let client = await Client.findOne({ linkedInID: user.id, isDeleted: false });
+        let client = await Client.findOne({ linkedInID: user.id, isDeleted: false, isSubscriptionCancelled: false });
         let linkedInIdToken = linkedInHelper.getLinkedInIdToken(linkedInToken, user.id);
         if (client) {
             client.firstName = user.localizedFirstName;
