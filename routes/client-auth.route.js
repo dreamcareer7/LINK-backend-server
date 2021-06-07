@@ -287,7 +287,12 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
         // client.cookieArr = req.body.cookie;
         client.publicIdentifier = req.body.publicIdentifier;
         // TODO to sync the Conversation list on update cookie, uncomment the below code
-        // let conversation = await Conversation.findOne({ clientId: req.client._id, isDeleted: false });
+        let conversation = await Conversation.findOne({ clientId: req.client._id, isDeleted: false });
+        if (!conversation) {
+            conversation = new Conversation({ clientId: req.client._id, conversations: [] });
+            await conversation.save();
+            client.isConversationAdded = true;
+        }
         // if (
         //     !conversation ||
         //     (conversation && !conversation.linkedInSyncedAt) ||
@@ -298,44 +303,42 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
         //     Logger.log.info('Syncing the LinkedIn Conversation list while get cookie call at', new Date());
         //     await conversationHelper.updateConversationList({ clients: [client] });
         // }
-        if (client.isConversationAdded === false) {
-            client.isConversationAdded = true;
-            client.isCookieExpired = false;
-            await client.save();
-            try {
-                let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.body.cookie);
-                let clientInfo = await opportunityHelper.getProfile(req.body.publicIdentifier, cookieStr, ajaxToken);
+        try {
+            let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.body.cookie);
+            let clientInfo = await opportunityHelper.getProfile(req.body.publicIdentifier, cookieStr, ajaxToken);
+            if (clientInfo.linkedInUrl) {
+                client.isCookieExpired = false;
                 client.title = clientInfo.title;
                 client.companyName = clientInfo.companyName;
                 client.linkedInUrl = clientInfo.linkedInUrl;
                 client.companyLocation = clientInfo.location;
                 client.profilePicUrl = clientInfo.profilePicUrl;
                 await client.save();
-                let conversations = await conversationHelper.extractChats({ cookie: cookieStr, ajaxToken: ajaxToken });
+                // let conversations = await conversationHelper.extractChats({ cookie: cookieStr, ajaxToken: ajaxToken });
 
-                let newConversation = new Conversation({
-                    clientId: req.client._id,
-                });
-                await newConversation.save();
+                // let newConversation = new Conversation({
+                //     clientId: req.client._id,
+                // });
+                // await newConversation.save();
 
-                for (let i = 0; i < conversations.length; i++) {
-                    await newConversation.conversations.push({
-                        conversationId: conversations[i].conversationId,
-                        publicIdentifier: conversations[i].publicIdentifier,
-                    });
-                }
-                await newConversation.save();
-            } catch (e) {
-                client.isConversationAdded = false;
+                // for (let i = 0; i < conversations.length; i++) {
+                //     await newConversation.conversations.push({
+                //         conversationId: conversations[i].conversationId,
+                //         publicIdentifier: conversations[i].publicIdentifier,
+                //     });
+                // }
+                // await newConversation.save();
+            } else {
+                client.isCookieExpired = false;
                 await client.save();
-                return res.status(200).json({
-                    status: 'SUCCESS',
-                    message: 'Cookie Successfully saved without fetching chats.',
-                });
             }
-        } else {
-            client.isCookieExpired = false;
+        } catch (e) {
+            client.isConversationAdded = false;
             await client.save();
+            return res.status(200).json({
+                status: 'SUCCESS',
+                message: 'Cookie Successfully saved without fetching chats.',
+            });
         }
         return res.status(200).send({
             status: 'SUCCESS',
