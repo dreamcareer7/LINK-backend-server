@@ -42,11 +42,6 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
             } else {
                 opportunityData.stageLogs = [];
                 let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
-                let conversation = await conversationHelper.extractChats({
-                    cookie: cookieStr,
-                    ajaxToken: ajaxToken,
-                    publicIdentifier: req.body.publicIdentifier,
-                });
                 opportunity = new Opportunity(opportunityData);
                 await opportunity.save();
                 let salesNavigatorChatId;
