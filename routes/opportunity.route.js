@@ -41,59 +41,59 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
                 Logger.log.info('Opportunity updated.');
             } else {
                 opportunityData.stageLogs = [];
-                let { cookieStr, ajaxToken } = await cookieHelper.getModifyCookie(req.client.cookie);
                 opportunity = new Opportunity(opportunityData);
                 await opportunity.save();
-                let salesNavigatorChatId;
-                if (req.client.hasSalesNavigatorAccount) {
-                    salesNavigatorChatId = await conversationHelper.getSalesNavigatorChatId({
-                        cookie: cookieStr,
-                        ajaxToken: ajaxToken,
-                        publicIdentifier: req.body.publicIdentifier,
-                        reqFrom: 'ADD_OPPORTUNITY',
+            }
+            let salesNavigatorChatId;
+            if (req.client.hasSalesNavigatorAccount) {
+                salesNavigatorChatId = await conversationHelper.getSalesNavigatorChatId({
+                    cookie: cookieStr,
+                    ajaxToken: ajaxToken,
+                    publicIdentifier: req.body.publicIdentifier,
+                    reqFrom: 'ADD_OPPORTUNITY',
+                });
+            }
+            Logger.log.info('salesNavigatorChatId response in the route', salesNavigatorChatId);
+            if (salesNavigatorChatId || req.body.conversationId) {
+                let dbConversation = await Conversation.findOne({
+                    clientId: req.client._id,
+                    isDeleted: false,
+                });
+                if (!dbConversation) {
+                    dbConversation = new Conversation({
+                        clientId: req.client._id,
+                        conversations: [],
                     });
                 }
-                Logger.log.info('salesNavigatorChatId response in the route', salesNavigatorChatId);
-                if (salesNavigatorChatId || req.body.conversationId) {
-                    let dbConversation = await Conversation.findOne({
-                        clientId: req.client._id,
-                        isDeleted: false,
-                    });
-                    if (!dbConversation) {
-                        dbConversation = new Conversation({
-                            clientId: req.client._id,
-                            conversations: [],
-                        });
-                    }
-                    let i = 0;
-                    for (i = 0; i < dbConversation.conversations.length; i++) {
-                        if (dbConversation.conversations[i].publicIdentifier === req.body.publicIdentifier) {
-                            if (salesNavigatorChatId) {
-                                dbConversation.conversations[i].salesNavigatorId = salesNavigatorChatId;
-                            } else {
-                                dbConversation.conversations[i].conversationId = req.body.conversationId;
-                            }
-                            await dbConversation.save();
-                            break;
-                        }
-                    }
-                    if (i === dbConversation.conversations.length) {
+                let i = 0;
+                for (i = 0; i < dbConversation.conversations.length; i++) {
+                    if (dbConversation.conversations[i].publicIdentifier === req.body.publicIdentifier) {
                         if (salesNavigatorChatId) {
-                            dbConversation.conversations.push({
-                                publicIdentifier: req.body.publicIdentifier,
-                                salesNavigatorId: salesNavigatorChatId,
-                            });
+                            dbConversation.conversations[i].salesNavigatorId = salesNavigatorChatId;
                         } else {
-                            dbConversation.conversations.push({
-                                publicIdentifier: req.body.publicIdentifier,
-                                conversationId: req.body.conversationId,
-                            });
+                            dbConversation.conversations[i].conversationId = req.body.conversationId;
                         }
                         await dbConversation.save();
+                        break;
                     }
                 }
-                Logger.log.info('New Opportunity added.');
+                if (i === dbConversation.conversations.length) {
+                    if (salesNavigatorChatId) {
+                        dbConversation.conversations.push({
+                            publicIdentifier: req.body.publicIdentifier,
+                            salesNavigatorId: salesNavigatorChatId,
+                        });
+                    } else {
+                        dbConversation.conversations.push({
+                            publicIdentifier: req.body.publicIdentifier,
+                            conversationId: req.body.conversationId,
+                        });
+                    }
+                    await dbConversation.save();
+                }
             }
+            Logger.log.info('New Opportunity added.');
+
             return res.status(200).send({
                 status: 'SUCCESS',
                 data: opportunity,
