@@ -17,7 +17,7 @@ const socketHelper = require('../helper/socket.helper');
  */
 router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (req, res) => {
     try {
-        if (req.body.publicIdentifier && req.body.hasOwnProperty('conversationId')) {
+        if (req.body.publicIdentifier) {
             if (!req.body.conversationId || req.body.conversationId === 'new') {
                 req.body.conversationId = null;
             }
@@ -98,7 +98,7 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
                 status: 'SUCCESS',
                 data: opportunity,
             });
-        } else if (!req.body.hasOwnProperty('publicIdentifier') && req.body.conversationId) {
+        } else if (req.body.conversationId) {
             let publicIdentifier;
             let dbConversation = await Conversation.findOne({
                 clientId: req.client._id,
