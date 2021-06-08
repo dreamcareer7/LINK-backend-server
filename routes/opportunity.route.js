@@ -392,8 +392,10 @@ router.put('/fetch-conversation/:id', async (req, res) => {
             salesNavigatorObj,
         });
     } catch (e) {
-        req.client.isCookieExpired = true;
-        await req.client.save();
+        if (req.query.chatFor !== 'SALES_NAVIGATOR') {
+            req.client.isCookieExpired = true;
+            await req.client.save();
+        }
         Logger.log.error('Error in fetch-conversation API call.', e.message || e);
         res.status(500).json({
             status: 'READ_ERROR_MESSAGE',
