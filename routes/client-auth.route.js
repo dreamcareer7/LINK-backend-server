@@ -262,7 +262,7 @@ router.get('/get-profile-for-extension', async (req, res) => {
  */
 router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res) => {
     try {
-        let clientData = await Client.findOne({ _id: req.client._id, isDeleted: false }).lean();
+        let clientData = await Client.findOne({ _id: req.client._id, isDeleted: false });
         if (
             req.body.publicIdentifier &&
             clientData.publicIdentifier &&
@@ -284,7 +284,7 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
             clientData.publicIdentifier = req.body.publicIdentifier;
         }
         clientData.cookie = req.body.cookie;
-        clientData.save();
+        await clientData.save();
         let conversation = await Conversation.findOne({ clientId: req.client._id, isDeleted: false });
         if (!conversation) {
             conversation = new Conversation({ clientId: req.client._id, conversations: [] });
