@@ -555,11 +555,7 @@ router.post('/sync-with-linkedIn/:id', authMiddleWare.linkedInLoggedInChecked, a
         req.client.isCookieExpired = true;
         await req.client.save();
         Logger.log.error('Error in sync with linkedIn API call.', e.message || e);
-        opportunity = await Opportunity.findOneAndUpdate(
-            { _id: req.params.id, clientId: req.client._id, isDeleted: false },
-            opportunityData,
-            { new: true },
-        );
+        let opportunity = await Opportunity.findOne({ _id: req.params.id, clientId: req.client._id, isDeleted: false });
         opportunity = JSON.parse(JSON.stringify(opportunity));
         opportunity.showSalesButton = req.client.hasSalesNavigatorAccount;
         return res.status(200).json({
