@@ -84,8 +84,6 @@ const clientSchema = new Schema(
     { timestamps: true },
 );
 
-const clientModel = mongoose.model('client', clientSchema);
-
 /**
  * Finds Client from token
  * @param token
@@ -155,7 +153,12 @@ clientSchema.methods.getAuthToken = async function(updateTime = true) {
             )
             .toString();
         if (updateTime) {
-            await clientModel.findByIdAndUpdate(c._id, { lastRequestAt: new Date() });
+            await c.updateOne(
+                {
+                    _id: c._id,
+                },
+                { lastRequestAt: new Date() },
+            );
         }
         return token;
     } catch (e) {
@@ -168,4 +171,4 @@ clientSchema.plugin(mongoosePaginate);
 /**
  * Export Schema
  */
-module.exports = clientModel;
+module.exports = mongoose.model('client', clientSchema);
