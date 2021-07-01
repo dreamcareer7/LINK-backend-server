@@ -34,13 +34,6 @@ module.exports = ({ linkedInSignUpLink, firstName, lastName }) => {
 
         <tr>
           <td align='left' valign='center'
-              style='padding: 10px 3%; font-size: 13px; line-height: 1.2; font-weight: 400; color: #222222'>
-            Hey${firstName ? ' ' + firstName : ''},
-          </td>
-        </tr>
-
-        <tr>
-          <td align='left' valign='center'
               style='padding: 10px 3%; font-size: 13px; line-height: 1.2; font-weight: 400;  color: #222222'>
             Congrats on signing up to Jayla.
           </td>
