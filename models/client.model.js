@@ -153,12 +153,8 @@ clientSchema.methods.getAuthToken = async function(updateTime = true) {
             )
             .toString();
         if (updateTime) {
-            await c.updateOne(
-                {
-                    _id: c._id,
-                },
-                { lastRequestAt: new Date() },
-            );
+            c.lastRequestAt = new Date();
+            await c.save();
         }
         return token;
     } catch (e) {
