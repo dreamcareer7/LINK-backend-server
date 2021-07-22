@@ -39,12 +39,12 @@ router.put('/filters', async (req, res) => {
             }
             queryObj.stage = { $in: req.body.stages, $nin: [] };
             queryObj['$or'] = [
-                { stage: { $in: lostClosedStages }, followUp: { $gt: today } },
+                { stage: { $in: lostClosedStages }, followUp: { $gte: today } },
                 { stage: { $in: otherStages } },
             ];
         } else {
             queryObj['$or'] = [
-                { stage: { $in: ['CLOSED', 'LOST'] }, followUp: { $gt: today } },
+                { stage: { $in: ['CLOSED', 'LOST'] }, followUp: { $gte: today } },
                 { stage: { $in: ['INITIAL_CONTACT', 'IN_CONVERSION', 'MEETING_BOOKED', 'FOLLOW_UP', 'POTENTIAL'] } },
             ];
         }
