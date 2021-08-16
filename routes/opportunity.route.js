@@ -421,7 +421,7 @@ router.put('/update-opportunity/:id', async (req, res) => {
             socketHelper.sendNotification({
                 notificationObj: {
                     publicIdentifier: opportunity.publicIdentifier,
-                    buttonText: 'Update Opportunity',
+                    buttonText: 'Update Contact',
                 },
                 clientId: req.client._id,
                 requestFor: 'extension',
