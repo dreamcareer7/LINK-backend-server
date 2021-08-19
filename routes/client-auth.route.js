@@ -307,6 +307,7 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
             let clientInfo = await opportunityHelper.getProfile(clientData.publicIdentifier, cookieStr, ajaxToken);
             if (clientInfo.linkedInUrl) {
                 clientData.isCookieExpired = false;
+                clientData.isSalesCookieExpired = false;
                 clientData.title = clientInfo.title;
                 clientData.companyName = clientInfo.companyName;
                 clientData.linkedInUrl = clientInfo.linkedInUrl;
@@ -329,6 +330,7 @@ router.post('/get-cookie', authMiddleWare.clientAuthMiddleWare, async (req, res)
                 // await newConversation.save();
             } else {
                 clientData.isCookieExpired = false;
+                clientData.isSalesCookieExpired = false;
                 await clientData.save();
             }
         } catch (e) {

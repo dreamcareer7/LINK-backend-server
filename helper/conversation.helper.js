@@ -381,7 +381,7 @@ const getSalesNavigatorChatId = async ({ cookie, ajaxToken, publicIdentifier, re
         if (reqFrom === 'ADD_OPPORTUNITY' && e.message.contains('403')) {
             return 'AUTHENTICATION_ERROR';
         } else {
-            return Promise.reject({ message: 'Error in Extract Chats from Sales Navigator' });
+            return Promise.reject({ message: e.message || 'Error in Extract Chats from Sales Navigator' });
         }
     }
 };
