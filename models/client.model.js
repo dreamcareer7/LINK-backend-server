@@ -68,6 +68,7 @@ const clientSchema = new Schema(
         cookie: Schema.Types.Mixed,
         // cookieArr: [Schema.Types.Mixed],
         isCookieExpired: { type: Schema.Types.Boolean },
+        isSalesCookieExpired: { type: Schema.Types.Boolean, default: false },
         isExtensionInstalled: { type: Schema.Types.Boolean, default: false },
 
         //  ajaxToken: Schema.Types.String,

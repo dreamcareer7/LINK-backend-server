@@ -4,6 +4,7 @@ const moment = require('moment-timezone');
 const mongoose = require('mongoose');
 const Opportunity = mongoose.model('opportunity');
 const Conversation = mongoose.model('conversation');
+const Client = mongoose.model('client');
 const Logger = require('../services/logger');
 const opportunityHelper = require('../helper/opportunity.helper');
 const cookieHelper = require('../helper/cookie.helper');
@@ -45,7 +46,7 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
                 await opportunity.save();
             }
             let salesNavigatorChatId;
-            if (req.client.hasSalesNavigatorAccount) {
+            if (req.client.hasSalesNavigatorAccount && !req.client.isSalesCookieExpired) {
                 salesNavigatorChatId = await conversationHelper.getSalesNavigatorChatId({
                     cookie: cookieStr,
                     ajaxToken: ajaxToken,
@@ -54,7 +55,7 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
                 });
             }
             Logger.log.info('salesNavigatorChatId response in the route', salesNavigatorChatId);
-            if (salesNavigatorChatId || req.body.conversationId) {
+            if ((salesNavigatorChatId && !salesNavigatorChatId !== 'AUTHENTICATION_ERROR') || req.body.conversationId) {
                 let dbConversation = await Conversation.findOne({
                     clientId: req.client._id,
                     isDeleted: false,
@@ -91,6 +92,8 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
                     }
                     await dbConversation.save();
                 }
+            } else if (salesNavigatorChatId === 'AUTHENTICATION_ERROR') {
+                await Client.updateOne({ _id: req.client._id }, { isSalesCookieExpired: true });
             }
             Logger.log.info('New Opportunity added.');
 
