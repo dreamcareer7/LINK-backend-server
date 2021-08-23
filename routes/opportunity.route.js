@@ -92,10 +92,11 @@ router.post('/add-opportunity', authMiddleWare.linkedInLoggedInChecked, async (r
                     }
                     await dbConversation.save();
                 }
-            } else if (salesNavigatorChatId === 'AUTHENTICATION_ERROR') {
+            }
+            if (salesNavigatorChatId === 'AUTHENTICATION_ERROR') {
                 await Client.updateOne({ _id: req.client._id }, { isSalesCookieExpired: true });
             }
-            Logger.log.info('New Opportunity added.');
+            Logger.log.info('New Opportunity added.', salesNavigatorChatId);
 
             return res.status(200).send({
                 status: 'SUCCESS',
@@ -560,13 +561,17 @@ router.post('/sync-with-linkedIn/:id', authMiddleWare.linkedInLoggedInChecked, a
         req.client.isCookieExpired = true;
         await req.client.save();
         Logger.log.error('Error in sync with linkedIn API call.', e.message || e);
-        // let opportunity = await Opportunity.findOne({ _id: req.params.id, clientId: req.client._id, isDeleted: false });
-        // opportunity = JSON.parse(JSON.stringify(opportunity));
-        // opportunity.showSalesButton = req.client.hasSalesNavigatorAccount;
-        res.status(500).json({
-            status: 'READ_ERROR_MESSAGE',
-            message: 'cookie_expired',
+        let opportunity = await Opportunity.findOne({ _id: req.params.id, clientId: req.client._id, isDeleted: false });
+        opportunity = JSON.parse(JSON.stringify(opportunity));
+        opportunity.showSalesButton = req.client.hasSalesNavigatorAccount;
+        return res.status(200).json({
+            status: 'SUCCESS',
+            data: opportunity,
         });
+        // return res.status(500).json({
+        //     status: 'READ_ERROR_MESSAGE',
+        //     message: 'cookie_expired',
+        // });
     }
 });
 
