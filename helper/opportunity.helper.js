@@ -18,7 +18,7 @@ const getProfile = async (publicIdentifier, cookie, ajaxToken) => {
         // console.log('publicIdentifier::', publicIdentifier);
         let data = {
             method: 'GET',
-            url: `https://www.linkedin.com/voyager/api/identity/dash/profiles?q=memberIdentity&memberIdentity=${publicIdentifier}&decorationId=com.linkedin.voyager.dash.deco.identity.profile.FullProfileWithEntities-57`,
+            url: `https://www.linkedin.com/voyager/api/identity/dash/profiles?q=memberIdentity&memberIdentity=${publicIdentifier}&decorationId=com.linkedin.voyager.dash.deco.identity.profile.FullProfileWithEntities-67`,
 
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
